@@ -1,0 +1,302 @@
+[
+  {
+    "_id": "prod_001",
+    "title": "Aurelius Chrono — Limited Edition Watch",
+    "slug": "aurelius-chrono-limited-watch",
+    "sku": "PLX-W-001",
+    "category": "Watches",
+    "tags": ["limited", "watch", "chronograph"],
+    "price": 12950.00,
+    "salePrice": 11500.00,
+    "currency": "USD",
+    "descriptionHTML": "<p>The Aurelius Chrono is a handcrafted limited-edition chronograph featuring a brushed matte-black case, gold accents, and Swiss automatic movement. Only 250 pieces worldwide.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1518544883636-4e1d7a0c2f64?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "Matte Black / Gold", "price": 12950.00, "stock": 25},
+      {"id": "v2", "name": "Polished Steel / Silver", "price": 12500.00, "stock": 15}
+    ],
+    "stock": 40,
+    "trackInventory": true,
+    "limitedEdition": true,
+    "demo": true,
+    "createdAt": "2025-11-01T10:00:00.000Z"
+  },
+
+  {
+    "_id": "prod_002",
+    "title": "Valentina All-Weather Leather Handbag",
+    "slug": "valentina-leather-handbag",
+    "sku": "PLX-B-002",
+    "category": "Bags",
+    "tags": ["handbag", "leather", "luxury"],
+    "price": 3490.00,
+    "salePrice": null,
+    "currency": "USD",
+    "descriptionHTML": "<p>Hand-stitched full-grain Italian leather with a structured silhouette and soft gold hardware. Spacious interior and a removable strap.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1520975911658-7a1b3f8a2b88?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "Black (Gold Hardware)", "price": 3490.00, "stock": 12},
+      {"id": "v2", "name": "Ivory (Palladium Hardware)", "price": 3490.00, "stock": 8}
+    ],
+    "stock": 20,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-09-12T09:30:00.000Z"
+  },
+
+  {
+    "_id": "prod_003",
+    "title": "Montecarlo Cashmere Coat",
+    "slug": "montecarlo-cashmere-coat",
+    "sku": "PLX-A-003",
+    "category": "Apparel",
+    "tags": ["coat", "cashmere", "outerwear"],
+    "price": 2190.00,
+    "salePrice": 1890.00,
+    "currency": "USD",
+    "descriptionHTML": "<p>Ultra-fine 100% Mongolian cashmere tailored coat with a minimalist cut and silk-lined interior — crafted for timeless warmth and silhouette.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "S - Charcoal", "price": 2190.00, "stock": 6},
+      {"id": "v2", "name": "M - Charcoal", "price": 2190.00, "stock": 4},
+      {"id": "v3", "name": "L - Charcoal", "price": 2190.00, "stock": 2}
+    ],
+    "stock": 12,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-10-05T14:20:00.000Z"
+  },
+
+  {
+    "_id": "prod_004",
+    "title": "Sartorio Bespoke Leather Wallet",
+    "slug": "sartorio-leather-wallet",
+    "sku": "PLX-A-004",
+    "category": "Accessories",
+    "tags": ["wallet", "leather", "accessories"],
+    "price": 490.00,
+    "salePrice": null,
+    "currency": "USD",
+    "descriptionHTML": "<p>Vegetable-tanned calfskin wallet with micro-stitched edges, RFID protection, and an embossed PRELUX logo.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1585386959984-a4155222c9d6?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "Tan", "price": 490.00, "stock": 40},
+      {"id": "v2", "name": "Ebony", "price": 490.00, "stock": 30}
+    ],
+    "stock": 70,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-08-18T08:00:00.000Z"
+  },
+
+  {
+    "_id": "prod_005",
+    "title": "Étoile Silk Scarf — Hand-Printed",
+    "slug": "etoile-silk-scarf",
+    "sku": "PLX-A-005",
+    "category": "Accessories",
+    "tags": ["scarf", "silk", "handmade"],
+    "price": 350.00,
+    "salePrice": 300.00,
+    "currency": "USD",
+    "descriptionHTML": "<p>Hand-printed 100% silk scarf with an exclusive PRELUX motif. Finished with hand-rolled edges.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "One Size", "price": 350.00, "stock": 48}
+    ],
+    "stock": 48,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-07-08T11:15:00.000Z"
+  },
+
+  {
+    "_id": "prod_006",
+    "title": "Lumière Crystal Chandelier — Small",
+    "slug": "lumiere-crystal-chandelier-small",
+    "sku": "PLX-H-006",
+    "category": "Lighting",
+    "tags": ["lighting", "chandelier", "home"],
+    "price": 7590.00,
+    "salePrice": null,
+    "currency": "USD",
+    "descriptionHTML": "<p>Hand-assembled crystal chandelier with brushed-gold fittings. Designed for intimate salons and boutique foyers.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "Small - 8 lights", "price": 7590.00, "stock": 5},
+      {"id": "v2", "name": "Medium - 12 lights", "price": 11900.00, "stock": 2}
+    ],
+    "stock": 7,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-06-21T16:45:00.000Z"
+  },
+
+  {
+    "_id": "prod_007",
+    "title": "Marcelli Marble Coffee Table",
+    "slug": "marcelli-marble-coffee-table",
+    "sku": "PLX-F-007",
+    "category": "Furniture",
+    "tags": ["table", "marble", "furniture"],
+    "price": 10450.00,
+    "salePrice": 9650.00,
+    "currency": "USD",
+    "descriptionHTML": "<p>Solid carrara marble top with hand-forged brass legs. Each piece is unique; natural veining varies.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1505691723518-36a2bbf23a8b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "Standard (120cm)", "price": 10450.00, "stock": 3}
+    ],
+    "stock": 3,
+    "trackInventory": true,
+    "limitedEdition": true,
+    "demo": true,
+    "createdAt": "2025-05-30T12:00:00.000Z"
+  },
+
+  {
+    "_id": "prod_008",
+    "title": "Noir Velvet Evening Loafers",
+    "slug": "noir-velvet-evening-loafers",
+    "sku": "PLX-FW-008",
+    "category": "Footwear",
+    "tags": ["loafers", "velvet", "shoes"],
+    "price": 790.00,
+    "salePrice": null,
+    "currency": "USD",
+    "descriptionHTML": "<p>Hand-lasted velvet loafers with leather soles and a gold-tone bit detail — evening elegance perfected.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "UK 8 / EU 42", "price": 790.00, "stock": 10},
+      {"id": "v2", "name": "UK 9 / EU 43", "price": 790.00, "stock": 8}
+    ],
+    "stock": 18,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-04-18T09:00:00.000Z"
+  },
+
+  {
+    "_id": "prod_009",
+    "title": "Maison Amber — Signature Fragrance (100ml)",
+    "slug": "maison-amber-fragrance-100ml",
+    "sku": "PLX-FR-009",
+    "category": "Fragrance",
+    "tags": ["fragrance", "perfume", "luxury"],
+    "price": 250.00,
+    "salePrice": 200.00,
+    "currency": "USD",
+    "descriptionHTML": "<p>A warm amber-based signature scent with notes of sandalwood, oud, and vanilla. Presented in a hand-blown glass bottle.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "100ml", "price": 250.00, "stock": 60},
+      {"id": "v2", "name": "50ml", "price": 150.00, "stock": 80}
+    ],
+    "stock": 140,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-03-11T10:10:00.000Z"
+  },
+
+  {
+    "_id": "prod_010",
+    "title": "Venezia Sunglasses — Handcrafted Acetate",
+    "slug": "venezia-sunglasses-acetate",
+    "sku": "PLX-EY-010",
+    "category": "Eyewear",
+    "tags": ["sunglasses", "eyewear", "accessories"],
+    "price": 420.00,
+    "salePrice": null,
+    "currency": "USD",
+    "descriptionHTML": "<p>Polished handcrafted acetate frames with polarized lenses and gold-plated hinges — a modern classic.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1503342452485-86f7b4a91d7b?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "Tortoise", "price": 420.00, "stock": 22},
+      {"id": "v2", "name": "Black", "price": 420.00, "stock": 18}
+    ],
+    "stock": 40,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-02-20T13:00:00.000Z"
+  },
+
+  {
+    "_id": "prod_011",
+    "title": "Sable Stationery Set — Handcrafted Leather Box",
+    "slug": "sable-stationery-set",
+    "sku": "PLX-ST-011",
+    "category": "Stationery",
+    "tags": ["stationery", "desk", "luxury"],
+    "price": 320.00,
+    "salePrice": null,
+    "currency": "USD",
+    "descriptionHTML": "<p>Luxury desk set with a leather-covered box, fountain pen, and hand-made paper folios — perfect for a distinguished office.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "Standard Box", "price": 320.00, "stock": 26}
+    ],
+    "stock": 26,
+    "trackInventory": true,
+    "limitedEdition": false,
+    "demo": true,
+    "createdAt": "2025-01-15T08:30:00.000Z"
+  },
+
+  {
+    "_id": "prod_012",
+    "title": "Opus Velvet Throw Pillow — Limited Run",
+    "slug": "opus-velvet-throw-pillow",
+    "sku": "PLX-HOM-012",
+    "category": "Home",
+    "tags": ["pillows", "velvet", "home-decor"],
+    "price": 120.00,
+    "salePrice": 95.00,
+    "currency": "USD",
+    "descriptionHTML": "<p>Plush velvet throw pillow with hand-stitched piping and a subtle PRELUX monogram. Limited seasonal run.</p>",
+    "images": [
+      "https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "variants": [
+      {"id": "v1", "name": "Deep Emerald", "price": 120.00, "stock": 45},
+      {"id": "v2", "name": "Midnight Black", "price": 120.00, "stock": 30}
+    ],
+    "stock": 75,
+    "trackInventory": true,
+    "limitedEdition": true,
+    "demo": true,
+    "createdAt": "2024-12-01T07:00:00.000Z"
+  }
+]

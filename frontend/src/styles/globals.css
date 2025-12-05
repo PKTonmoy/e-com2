@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.lux-container {
+  @apply mx-auto max-w-6xl px-4 sm:px-6 lg:px-10;
+}
+
+.lux-card {
+  @apply rounded-2xl bg-white/70 dark:bg-matte border border-gold/20 shadow-lg;
+}
+
+.lux-heading {
+  @apply font-display tracking-wide text-3xl sm:text-4xl text-matte dark:text-white;
+}
+
+.lux-btn {
+  @apply inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold tracking-wide transition duration-200;
+}
+
+.lux-btn-primary {
+  @apply lux-btn bg-gold text-matte hover:bg-amber-200;
+}
+
+.lux-badge {
+  @apply rounded-full border border-gold/50 bg-gold/10 px-3 py-1 text-xs uppercase tracking-[0.15em];
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
