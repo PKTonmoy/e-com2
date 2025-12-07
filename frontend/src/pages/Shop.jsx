@@ -196,11 +196,12 @@ const Shop = () => {
       {/* Page Content */}
       <div className="lux-container py-6">
         {/* Page Title */}
-        <div className="mb-6">
+        <div className="mb-6 animate-fade-in">
           <h1 className="font-display text-2xl sm:text-3xl text-matte dark:text-ivory">{content.title}</h1>
           <p className="text-neutral-500 dark:text-neutral-400 font-body mt-1 text-sm">
             Discover our curated collection of luxury products
           </p>
+          <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-3" />
         </div>
 
         {/* Products */}
@@ -234,7 +235,7 @@ const Shop = () => {
                 <Link
                   key={product._id}
                   to={`/product/${product.slug}`}
-                  className="flex gap-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 p-3 hover:border-gold/30 transition-all"
+                  className="flex gap-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 p-3 hover:border-gold/30 transition-all hover-lift"
                 >
                   {/* Product Image */}
                   <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800">
@@ -291,7 +292,7 @@ const Shop = () => {
                 <Link
                   key={product._id}
                   to={`/product/${product.slug}`}
-                  className="group bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 hover:shadow-xl transition-all duration-300"
+                  className="group bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 hover:shadow-xl transition-all duration-300 hover-lift hover-gold-border"
                 >
                   <div className="aspect-[4/5] overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                     <img

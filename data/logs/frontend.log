@@ -3,9 +3,13 @@
 > vite --host
 
 [33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
-Port 5173 is in use, trying another one...
 
-  VITE v5.4.21  ready in 300 ms
+  VITE v5.4.21  ready in 340 ms
 
-  ➜  Local:   http://localhost:5174/
-  ➜  Network: http://192.168.1.5:5174/
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.1.5:5173/
+11:53:02 PM [vite] hmr update /src/styles/globals.css
+11:54:07 PM [vite] hmr update /src/pages/Home.jsx, /src/styles/globals.css
+11:54:50 PM [vite] hmr update /src/pages/Shop.jsx, /src/styles/globals.css
+12:01:20 AM [vite] hmr update /src/pages/Home.jsx, /src/styles/globals.css
+12:08:55 AM [vite] hmr update /src/pages/Home.jsx, /src/styles/globals.css

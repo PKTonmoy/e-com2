@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { SparklesIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 
 const DEFAULT_HERO = {
@@ -87,47 +88,67 @@ const Home = () => {
   const blog = blogContent || DEFAULT_BLOG;
 
   return (
-    <div className="space-y-16">
+    <div>
       {/* Hero Section */}
-      <section className="relative min-h-[70vh] sm:min-h-[80vh] flex items-center overflow-hidden bg-matte text-white">
-        {/* Background Image */}
-        {hero.image && (
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url(${hero.image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }}
-          />
+      <section className="relative min-h-[80vh] flex items-center overflow-hidden bg-[#0a0a0a]">
+
+        {/* Background Image Logic */}
+        {hero.image ? (
+          <>
+            {/* User Uploaded Image */}
+            <div className="absolute inset-0 z-0">
+              <img
+                src={hero.image}
+                alt="Hero background"
+                className="w-full h-full object-cover opacity-80"
+              />
+              {/* Dark Overlay for Text Visibility */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Fallback Luxury Gradient */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,175,55,0.15),transparent)]" />
+            <div className="absolute top-20 right-10 w-32 h-32 border border-gold/10 rounded-full opacity-30" />
+            <div className="absolute bottom-32 right-1/4 w-20 h-20 border border-gold/20 rounded-full opacity-20" />
+            <div className="absolute top-1/3 right-20 w-2 h-2 bg-gold/40 rounded-full" />
+            <div className="absolute bottom-1/4 right-1/3 w-1.5 h-1.5 bg-gold/30 rounded-full" />
+          </>
         )}
 
-        {/* Overlay */}
-        <div className={`absolute inset-0 z-[1] ${hero.image ? 'bg-matte/60' : 'bg-matte'}`} />
-
-        {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 z-[2] bg-gradient-to-r from-matte/80 via-matte/40 to-transparent" />
-
-        {/* Content */}
-        <div className="lux-container relative z-10 py-16 sm:py-24">
-          <div className="max-w-2xl space-y-6">
+        {/* Content - ALWAYS VISIBLE (z-10 ensures it's above image/overlay) */}
+        <div className="relative z-10 lux-container py-20">
+          <div className="max-w-3xl space-y-8">
+            {/* Badge */}
             {hero.badge && (
-              <span className="inline-block px-4 py-1.5 text-xs uppercase tracking-[0.2em] border border-gold/50 rounded-full text-gold">
-                {hero.badge}
-              </span>
+              <div>
+                <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gold/10 border border-gold/30 rounded-full backdrop-blur-sm">
+                  <SparklesIcon className="h-4 w-4 text-gold" />
+                  <span className="text-xs uppercase tracking-[0.3em] text-gold font-medium">
+                    {hero.badge}
+                  </span>
+                </span>
+              </div>
             )}
-            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl leading-tight text-white">
+
+            {/* Title */}
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.05] text-white drop-shadow-lg">
               {hero.title}
             </h1>
-            <p className="text-base sm:text-lg text-neutral-200 leading-relaxed max-w-xl">
+
+            {/* Subtitle */}
+            <p className="text-xl sm:text-2xl text-neutral-200 leading-relaxed max-w-2xl drop-shadow-md">
               {hero.subtitle}
             </p>
-            <div className="flex flex-wrap gap-3 pt-2">
+
+            {/* Buttons */}
+            <div className="flex flex-wrap gap-4 pt-4">
               {hero.buttonText && (
                 <Link
                   to={hero.buttonLink || '/shop'}
-                  className="inline-flex items-center justify-center px-6 py-3 bg-gold text-matte font-medium text-sm rounded-lg hover:bg-gold/90 transition-colors"
+                  className="inline-flex items-center justify-center px-10 py-5 bg-gold text-[#0a0a0a] font-bold text-sm uppercase tracking-widest rounded-full hover:bg-white transition-all duration-500 shadow-lg shadow-gold/20"
                 >
                   {hero.buttonText}
                 </Link>
@@ -135,7 +156,7 @@ const Home = () => {
               {hero.button2Text && (
                 <Link
                   to={hero.button2Link || '/blog'}
-                  className="inline-flex items-center justify-center px-6 py-3 border border-white/30 text-white font-medium text-sm rounded-lg hover:bg-white/10 transition-colors"
+                  className="inline-flex items-center justify-center px-10 py-5 border-2 border-white/30 text-white font-medium text-sm uppercase tracking-widest rounded-full hover:border-gold hover:text-gold transition-all duration-500 backdrop-blur-sm"
                 >
                   {hero.button2Text}
                 </Link>
@@ -143,38 +164,50 @@ const Home = () => {
             </div>
           </div>
         </div>
+
+        {/* Bottom Gradient Fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-ivory dark:from-matte to-transparent pointer-events-none" />
       </section>
 
       {/* Limited Drops Section */}
-      <section className="lux-container space-y-8">
+      <section className="lux-container py-20 space-y-12">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl sm:text-3xl text-matte dark:text-ivory">{limited.title}</h2>
-          <Link to={limited.buttonLink || '/shop'} className="text-xs sm:text-sm uppercase tracking-[0.15em] text-neutral-600 dark:text-neutral-300 hover:text-gold transition-colors">
+          <div>
+            <h2 className="font-display text-3xl sm:text-4xl text-matte dark:text-ivory">{limited.title}</h2>
+            <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-3" />
+          </div>
+          <Link
+            to={limited.buttonLink || '/shop'}
+            className="text-sm uppercase tracking-[0.2em] text-neutral-500 hover:text-gold transition-colors duration-300"
+          >
             {limited.buttonText}
           </Link>
         </div>
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+
+        <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {products.slice(0, 3).map((product) => (
             <Link
               key={product._id}
               to={`/product/${product.slug}`}
-              className="group bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 transition-all"
+              className="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
             >
               <div className="aspect-[4/5] overflow-hidden bg-neutral-50 dark:bg-neutral-800">
                 <img
                   src={product.images?.[0]}
                   alt={product.title}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
-              <div className="p-4 space-y-2">
-                <span className="inline-block px-2 py-0.5 text-[10px] uppercase tracking-wider border border-gold/40 text-gold rounded">
-                  Limited
+              <div className="p-5 space-y-3">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] uppercase tracking-widest bg-gold/10 text-gold rounded-full">
+                  <SparklesIcon className="h-3.5 w-3.5" />
+                  Limited Edition
                 </span>
-                <h3 className="font-display text-lg leading-tight">{product.title}</h3>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  ${product.salePrice || product.price} • {product.category}
-                </p>
+                <h3 className="font-display text-xl leading-tight group-hover:text-gold transition-colors duration-300">{product.title}</h3>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg font-semibold text-matte dark:text-ivory">${product.salePrice || product.price}</span>
+                  <span className="text-sm text-neutral-400">• {product.category}</span>
+                </div>
               </div>
             </Link>
           ))}
@@ -183,54 +216,64 @@ const Home = () => {
 
       {/* Blog Section */}
       {blogPosts.length > 0 && (
-        <section className="lux-container space-y-8 pb-16">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-display text-2xl sm:text-3xl text-matte dark:text-ivory">{blog.title}</h2>
-              {blog.subtitle && (
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{blog.subtitle}</p>
-              )}
-            </div>
-            <Link to={blog.buttonLink || '/blog'} className="text-xs sm:text-sm uppercase tracking-[0.15em] text-neutral-600 dark:text-neutral-300 hover:text-gold transition-colors">
-              {blog.buttonText}
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {blogPosts.slice(0, 3).map((post) => (
-              <Link
-                key={post._id}
-                to={`/blog/${post.slug}`}
-                className="group bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 transition-all"
-              >
-                {post.coverImage ? (
-                  <div className="aspect-[16/10] overflow-hidden bg-neutral-50 dark:bg-neutral-800">
-                    <img
-                      src={post.coverImage}
-                      alt={post.title}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                ) : (
-                  <div className="aspect-[16/10] bg-gradient-to-br from-gold/20 to-matte/30 flex items-center justify-center">
-                    <span className="text-4xl font-display text-gold/50">{post.title.charAt(0)}</span>
-                  </div>
+        <section className="bg-neutral-50 dark:bg-neutral-900/50 py-20">
+          <div className="lux-container space-y-12">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-3xl sm:text-4xl text-matte dark:text-ivory">{blog.title}</h2>
+                {blog.subtitle && (
+                  <p className="text-neutral-500 dark:text-neutral-400 mt-2">{blog.subtitle}</p>
                 )}
-                <div className="p-4 space-y-2">
-                  {post.category && (
-                    <span className="inline-block px-2 py-0.5 text-[10px] uppercase tracking-wider border border-gold/40 text-gold rounded">
-                      {post.category}
-                    </span>
-                  )}
-                  <h3 className="font-display text-lg leading-tight">{post.title}</h3>
-                  {post.excerpt && (
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">{post.excerpt}</p>
-                  )}
-                </div>
+                <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-3" />
+              </div>
+              <Link
+                to={blog.buttonLink || '/blog'}
+                className="text-sm uppercase tracking-[0.2em] text-neutral-500 hover:text-gold transition-colors duration-300"
+              >
+                {blog.buttonText}
               </Link>
-            ))}
+            </div>
+
+            <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {blogPosts.slice(0, 3).map((post) => (
+                <Link
+                  key={post._id}
+                  to={`/blog/${post.slug}`}
+                  className="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                >
+                  {post.coverImage ? (
+                    <div className="aspect-[16/10] overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-[16/10] bg-gradient-to-br from-gold/20 via-neutral-100 to-neutral-200 dark:from-gold/10 dark:via-neutral-800 dark:to-neutral-900 flex items-center justify-center">
+                      <span className="text-5xl font-display text-gold/30">{post.title.charAt(0)}</span>
+                    </div>
+                  )}
+                  <div className="p-5 space-y-3">
+                    {post.category && (
+                      <span className="inline-block px-3 py-1 text-[11px] uppercase tracking-widest bg-gold/10 text-gold rounded-full">
+                        {post.category}
+                      </span>
+                    )}
+                    <h3 className="font-display text-xl leading-tight group-hover:text-gold transition-colors duration-300">{post.title}</h3>
+                    {post.excerpt && (
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">{post.excerpt}</p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
       )}
+
+      {/* Bottom Spacer */}
+      <div className="h-16" />
     </div>
   );
 };

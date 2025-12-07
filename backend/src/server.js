@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import http from 'http';
+import mongoose from 'mongoose';
 import { Server as SocketIOServer } from 'socket.io';
 import rateLimiter from './utils/rateLimiter.js';
 import connectDB from './config/db.js';
@@ -31,8 +32,10 @@ const io = new SocketIOServer(server, {
   },
 });
 
+// Connect to database
 connectDB();
 
+// Middleware
 app.use(rateLimiter);
 app.use(helmet());
 app.use(
@@ -52,10 +55,26 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', name: 'PRELUX API', version: '1.0.0' });
+// Health check with database status
+app.get('/health', async (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const dbStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+  };
+
+  res.json({
+    status: dbState === 1 ? 'ok' : 'degraded',
+    name: 'PRELUX API',
+    version: '1.0.0',
+    database: dbStates[dbState] || 'unknown',
+    timestamp: new Date().toISOString(),
+  });
 });
 
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
@@ -83,6 +102,19 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err.message);
+  console.error(err.stack);
+  // Keep the server running, don't exit
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Keep the server running, don't exit
+});
+
 if (process.env.NODE_ENV !== 'test') {
   server.listen(PORT, () => {
     console.log(`PRELUX API running on port ${PORT}`);
@@ -90,4 +122,3 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 export { app, server };
-
