@@ -19,6 +19,7 @@ const AdminProducts = () => {
     category: '',
     descriptionHTML: '',
     images: [''],
+    limitedEdition: false,
   });
 
   const { data: products = [] } = useQuery({
@@ -76,6 +77,7 @@ const AdminProducts = () => {
       category: '',
       descriptionHTML: '',
       images: [''],
+      limitedEdition: false,
     });
     setEditingProduct(null);
   };
@@ -91,6 +93,7 @@ const AdminProducts = () => {
       category: product.category || '',
       descriptionHTML: product.descriptionHTML || '',
       images: product.images || [''],
+      limitedEdition: product.limitedEdition || false,
     });
     setShowModal(true);
   };
@@ -144,16 +147,31 @@ const AdminProducts = () => {
               <th className="p-2">SKU</th>
               <th className="p-2">Price</th>
               <th className="p-2">Stock</th>
+              <th className="p-2">Limited</th>
               <th className="p-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredProducts.map((p) => (
               <tr key={p._id} className="border-t border-gold/20">
-                <td className="p-2">{p.title}</td>
+                <td className="p-2">
+                  <div className="flex items-center gap-2">
+                    {p.title}
+                    {p.limitedEdition && (
+                      <span className="text-xs bg-gold/20 text-gold px-1.5 py-0.5 rounded">LIMITED</span>
+                    )}
+                  </div>
+                </td>
                 <td className="p-2">{p.sku}</td>
                 <td className="p-2">${p.salePrice || p.price}</td>
                 <td className="p-2">{p.stock}</td>
+                <td className="p-2">
+                  {p.limitedEdition ? (
+                    <span className="text-emerald-600 dark:text-emerald-400">Yes</span>
+                  ) : (
+                    <span className="text-neutral-400">No</span>
+                  )}
+                </td>
                 <td className="p-2">
                   <div className="flex gap-2">
                     <button
@@ -245,6 +263,21 @@ const AdminProducts = () => {
                 value={form.images[0]}
                 onChange={(e) => setForm({ ...form, images: [e.target.value] })}
               />
+
+              {/* Limited Edition Toggle */}
+              <div className="flex items-center gap-3 p-4 border border-gold/30 rounded-lg bg-gold/5">
+                <input
+                  type="checkbox"
+                  id="limitedEdition"
+                  checked={form.limitedEdition}
+                  onChange={(e) => setForm({ ...form, limitedEdition: e.target.checked })}
+                  className="w-5 h-5 accent-gold rounded"
+                />
+                <label htmlFor="limitedEdition" className="flex flex-col cursor-pointer">
+                  <span className="font-semibold text-sm">Limited Edition</span>
+                  <span className="text-xs text-neutral-500">Mark this product as a limited drop (shown on homepage)</span>
+                </label>
+              </div>
               <div className="flex gap-3">
                 <button type="submit" className="lux-btn-primary">
                   {editingProduct ? 'Update' : 'Create'}

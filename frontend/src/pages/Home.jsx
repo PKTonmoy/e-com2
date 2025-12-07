@@ -89,36 +89,53 @@ const Home = () => {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <section
-        className="relative overflow-hidden bg-matte text-white"
-        style={{
-          backgroundImage: hero.image ? `url(${hero.image})` : undefined,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {/* Overlay for text readability */}
-        <div className={`absolute inset-0 ${hero.image ? 'bg-matte/70' : 'bg-matte'}`} />
+      <section className="relative min-h-[70vh] sm:min-h-[80vh] flex items-center overflow-hidden bg-matte text-white">
+        {/* Background Image */}
+        {hero.image && (
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url(${hero.image})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }}
+          />
+        )}
 
-        <div className="lux-container py-24 relative z-10">
-          <div className="max-w-3xl space-y-4">
-            {hero.badge && <p className="lux-badge">{hero.badge}</p>}
-            <h1 className="lux-heading text-white text-4xl sm:text-5xl">
+        {/* Overlay */}
+        <div className={`absolute inset-0 z-[1] ${hero.image ? 'bg-matte/60' : 'bg-matte'}`} />
+
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 z-[2] bg-gradient-to-r from-matte/80 via-matte/40 to-transparent" />
+
+        {/* Content */}
+        <div className="lux-container relative z-10 py-16 sm:py-24">
+          <div className="max-w-2xl space-y-6">
+            {hero.badge && (
+              <span className="inline-block px-4 py-1.5 text-xs uppercase tracking-[0.2em] border border-gold/50 rounded-full text-gold">
+                {hero.badge}
+              </span>
+            )}
+            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl leading-tight text-white">
               {hero.title}
             </h1>
-            <p className="text-lg text-neutral-200">
+            <p className="text-base sm:text-lg text-neutral-200 leading-relaxed max-w-xl">
               {hero.subtitle}
             </p>
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap gap-3 pt-2">
               {hero.buttonText && (
-                <Link to={hero.buttonLink || '/shop'} className="lux-btn-primary">
+                <Link
+                  to={hero.buttonLink || '/shop'}
+                  className="inline-flex items-center justify-center px-6 py-3 bg-gold text-matte font-medium text-sm rounded-lg hover:bg-gold/90 transition-colors"
+                >
                   {hero.buttonText}
                 </Link>
               )}
               {hero.button2Text && (
                 <Link
                   to={hero.button2Link || '/blog'}
-                  className="lux-btn border border-gold/40 text-white hover:bg-gold/10 hover:text-gold"
+                  className="inline-flex items-center justify-center px-6 py-3 border border-white/30 text-white font-medium text-sm rounded-lg hover:bg-white/10 transition-colors"
                 >
                   {hero.button2Text}
                 </Link>
@@ -126,25 +143,24 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-matte via-transparent to-transparent z-[5]" />
       </section>
 
       {/* Limited Drops Section */}
-      <section className="lux-container space-y-10">
+      <section className="lux-container space-y-8">
         <div className="flex items-center justify-between">
-          <h2 className="lux-heading">{limited.title}</h2>
-          <Link to={limited.buttonLink || '/shop'} className="text-sm uppercase tracking-[0.2em] hover:text-gold">
+          <h2 className="font-display text-2xl sm:text-3xl text-matte dark:text-ivory">{limited.title}</h2>
+          <Link to={limited.buttonLink || '/shop'} className="text-xs sm:text-sm uppercase tracking-[0.15em] text-neutral-600 dark:text-neutral-300 hover:text-gold transition-colors">
             {limited.buttonText}
           </Link>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {products.slice(0, 3).map((product) => (
             <Link
               key={product._id}
               to={`/product/${product.slug}`}
-              className="lux-card overflow-hidden group"
+              className="group bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 transition-all"
             >
-              <div className="aspect-[4/5] overflow-hidden">
+              <div className="aspect-[4/5] overflow-hidden bg-neutral-50 dark:bg-neutral-800">
                 <img
                   src={product.images?.[0]}
                   alt={product.title}
@@ -152,9 +168,11 @@ const Home = () => {
                 />
               </div>
               <div className="p-4 space-y-2">
-                <p className="lux-badge w-fit">Limited</p>
-                <p className="font-display text-xl">{product.title}</p>
-                <p className="text-sm text-neutral-600">
+                <span className="inline-block px-2 py-0.5 text-[10px] uppercase tracking-wider border border-gold/40 text-gold rounded">
+                  Limited
+                </span>
+                <h3 className="font-display text-lg leading-tight">{product.title}</h3>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   ${product.salePrice || product.price} • {product.category}
                 </p>
               </div>
@@ -165,27 +183,27 @@ const Home = () => {
 
       {/* Blog Section */}
       {blogPosts.length > 0 && (
-        <section className="lux-container space-y-10">
+        <section className="lux-container space-y-8 pb-16">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="lux-heading">{blog.title}</h2>
+              <h2 className="font-display text-2xl sm:text-3xl text-matte dark:text-ivory">{blog.title}</h2>
               {blog.subtitle && (
-                <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">{blog.subtitle}</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{blog.subtitle}</p>
               )}
             </div>
-            <Link to={blog.buttonLink || '/blog'} className="text-sm uppercase tracking-[0.2em] hover:text-gold">
+            <Link to={blog.buttonLink || '/blog'} className="text-xs sm:text-sm uppercase tracking-[0.15em] text-neutral-600 dark:text-neutral-300 hover:text-gold transition-colors">
               {blog.buttonText}
             </Link>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {blogPosts.slice(0, 3).map((post) => (
               <Link
                 key={post._id}
                 to={`/blog/${post.slug}`}
-                className="lux-card overflow-hidden group"
+                className="group bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 transition-all"
               >
                 {post.coverImage ? (
-                  <div className="aspect-[16/10] overflow-hidden">
+                  <div className="aspect-[16/10] overflow-hidden bg-neutral-50 dark:bg-neutral-800">
                     <img
                       src={post.coverImage}
                       alt={post.title}
@@ -198,10 +216,14 @@ const Home = () => {
                   </div>
                 )}
                 <div className="p-4 space-y-2">
-                  {post.category && <p className="lux-badge w-fit">{post.category}</p>}
-                  <p className="font-display text-xl">{post.title}</p>
+                  {post.category && (
+                    <span className="inline-block px-2 py-0.5 text-[10px] uppercase tracking-wider border border-gold/40 text-gold rounded">
+                      {post.category}
+                    </span>
+                  )}
+                  <h3 className="font-display text-lg leading-tight">{post.title}</h3>
                   {post.excerpt && (
-                    <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">{post.excerpt}</p>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">{post.excerpt}</p>
                   )}
                 </div>
               </Link>
