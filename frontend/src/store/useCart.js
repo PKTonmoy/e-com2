@@ -7,10 +7,10 @@ export const useCart = create(
     (set, get) => ({
       items: [],
       setItems: (items) => set({ items }),
-      addItem: (product, variantId, stock = null) => {
+      addItem: (product, variantId, stock = null, selectedSize = null) => {
         const maxStock = stock ?? product.stock ?? 999;
         const existing = get().items.find(
-          (i) => i.productId === product._id && i.variantId === variantId
+          (i) => i.productId === product._id && i.variantId === variantId && i.selectedSize === selectedSize
         );
 
         // Check if already at max stock
@@ -21,7 +21,7 @@ export const useCart = create(
         let next;
         if (existing) {
           next = get().items.map((i) =>
-            i.productId === product._id && i.variantId === variantId
+            i.productId === product._id && i.variantId === variantId && i.selectedSize === selectedSize
               ? { ...i, qty: Math.min(i.qty + 1, maxStock) }
               : i
           );
@@ -36,6 +36,8 @@ export const useCart = create(
               title: product.title,
               sku: product.sku,
               stock: maxStock,
+              selectedSize,
+              image: product.images?.[0],
             },
           ];
         }

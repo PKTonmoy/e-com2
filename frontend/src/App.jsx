@@ -24,6 +24,8 @@ import AdminUsers from './pages/admin/Users.jsx';
 import AdminCoupons from './pages/admin/Coupons.jsx';
 import AdminContent from './pages/admin/Content.jsx';
 import AdminAnalytics from './pages/admin/Analytics.jsx';
+import AdminReviews from './pages/admin/Reviews.jsx';
+import AdminBlog from './pages/admin/BlogAdmin.jsx';
 import QuickView from './pages/QuickView.jsx';
 import { ToastProvider } from './components/ToastProvider.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
@@ -66,6 +68,8 @@ const App = () => {
             <Route path="/admin/coupons" element={<AdminCoupons />} />
             <Route path="/admin/content" element={<AdminContent />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
+            <Route path="/admin/reviews" element={<AdminReviews />} />
+            <Route path="/admin/blog" element={<AdminBlog />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

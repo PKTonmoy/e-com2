@@ -7,27 +7,5 @@
 [33m[nodemon] watching path(s): *.*[39m
 [33m[nodemon] watching extensions: js,mjs,cjs,json[39m
 [32m[nodemon] starting `node src/server.js`[39m
-PRELUX API running on port 5000
-MongoDB Connected: localhost
-[0mGET /health [32m200[0m 2.833 ms - 53[0m
-[0mGET /api/auth/me [36m304[0m 27.108 ms - -[0m
-[0mGET /api/orders/mine [36m304[0m 7.256 ms - -[0m
-[0mGET /api/auth/me [36m304[0m 4.810 ms - -[0m
-[0mGET /api/admin/users [36m304[0m 12.298 ms - -[0m
-[0mGET /api/auth/me [36m304[0m 8.070 ms - -[0m
-[0mGET /api/auth/me [32m200[0m 6.073 ms - 213[0m
-[0mGET /api/admin/users [36m304[0m 12.134 ms - -[0m
-[0mGET /api/auth/me [36m304[0m 4.111 ms - -[0m
-[0mGET /api/admin/users [36m304[0m 7.922 ms - -[0m
-[0mGET /api/auth/me [36m304[0m 6.477 ms - -[0m
-[0mGET /api/admin/users [36m304[0m 4.814 ms - -[0m
-[0mGET /api/auth/me [36m304[0m 5.982 ms - -[0m
-[0mGET /api/auth/me [36m304[0m 3.972 ms - -[0m
-[0mGET /api/admin/users [36m304[0m 6.758 ms - -[0m
-[0mGET /api/auth/me [36m304[0m 10.936 ms - -[0m
-[0mGET /api/admin/users [36m304[0m 4.154 ms - -[0m
-[32m[nodemon] restarting child process[39m
-[32m[nodemon] restarting child process[39m
-[32m[nodemon] starting `node src/server.js`[39m
-PRELUX API running on port 5000
-MongoDB Connected: localhost
+PRELUX API running on port 5001
+MongoDB Connected: ac-jqr0enb-shard-00-02.lapvnow.mongodb.net

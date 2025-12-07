@@ -112,8 +112,14 @@ const AdminOrders = () => {
                           key={idx}
                           className="flex justify-between text-sm text-neutral-600 dark:text-neutral-300"
                         >
-                          <span>
-                            {item.title} × {item.qty}
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.selectedSize && (
+                              <span className="px-2 py-0.5 text-xs bg-gold/20 text-gold rounded-full font-medium">
+                                Size: {item.selectedSize}
+                              </span>
+                            )}
+                            <span className="text-neutral-500">× {item.qty}</span>
                           </span>
                           <span>${(item.price * item.qty).toFixed(2)}</span>
                         </div>

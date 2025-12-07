@@ -18,6 +18,7 @@ import statsRoutes from './routes/stats.js';
 import adminRoutes from './routes/admin.js';
 import couponRoutes from './routes/coupons.js';
 import wishlistRoutes from './routes/wishlist.js';
+import reviewRoutes from './routes/reviews.js';
 import { errorHandler, notFound } from './middleware/error.js';
 
 dotenv.config();
@@ -65,6 +66,7 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Friendly root response
 app.get('/', (req, res) => {

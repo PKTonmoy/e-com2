@@ -8,6 +8,7 @@ const orderItemSchema = new mongoose.Schema(
     price: Number,
     title: String,
     sku: String,
+    selectedSize: String,
   },
   { _id: false }
 );

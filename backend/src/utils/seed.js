@@ -10,9 +10,12 @@ import Cart from '../models/Cart.js';
 import BlogPost from '../models/BlogPost.js';
 import Coupon from '../models/Coupon.js';
 
-dotenv.config();
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+// Load .env from backend directory
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 const seedPath = path.resolve(__dirname, '../../../seed.json');
 
 const seed = async () => {

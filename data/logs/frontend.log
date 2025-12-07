@@ -3,13 +3,24 @@
 > vite --host
 
 [33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
-
-  VITE v5.4.21  ready in 346 ms
-
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: http://192.168.1.11:5173/
-  ➜  Network: http://172.17.0.1:5173/
-(node:20491) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/tonmoy/Desktop/e-com2/frontend/postcss.config.js is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/tonmoy/Desktop/e-com2/frontend/package.json.
+Re-optimizing dependencies because vite config has changed
+(node:7759) Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.
 (Use `node --trace-warnings ...` to show where the warning was created)
+[Failed to load PostCSS config: Failed to load PostCSS config (searchPath: /media/tonmoy/Drive 1/e-com4/e-com3/frontend): [SyntaxError] Unexpected token 'export'
+/media/tonmoy/Drive 1/e-com4/e-com3/frontend/postcss.config.js:1
+export default {
+^^^^^^
+
+SyntaxError: Unexpected token 'export'
+    at internalCompileFunction (node:internal/vm:73:18)
+    at wrapSafe (node:internal/modules/cjs/loader:1274:20)
+    at Module._compile (node:internal/modules/cjs/loader:1320:27)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1414:10)
+    at Module.load (node:internal/modules/cjs/loader:1197:32)
+    at Module._load (node:internal/modules/cjs/loader:1013:12)
+    at ModuleWrap.<anonymous> (node:internal/modules/esm/translators:202:29)
+    at ModuleJob.run (node:internal/modules/esm/module_job:195:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:336:24)
+    at async importDefault (file:///media/tonmoy/Drive%201/e-com4/e-com3/frontend/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:33759:18)]
+
+Node.js v18.19.1

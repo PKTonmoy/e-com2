@@ -5,6 +5,21 @@ import { protect, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Helper function to restore stock when order is cancelled
+async function restoreOrderStock(items) {
+  await Promise.all(
+    items.map(async ({ productId, variantId, qty }) => {
+      const product = await Product.findById(productId);
+      if (product) {
+        product.stock = product.stock + qty;
+        const variant = product.variants?.find((v) => v.id === variantId);
+        if (variant) variant.stock = variant.stock + qty;
+        await product.save();
+      }
+    })
+  );
+}
+
 router.post('/', protect, async (req, res) => {
   const { items, shipping, paymentStatus = 'pending' } = req.body;
   const total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
@@ -47,10 +62,48 @@ router.get('/:id', protect, async (req, res) => {
   res.json(order);
 });
 
+// User cancel order - only allowed for pending or confirmed orders
+router.put('/:id/cancel', protect, async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+
+  // Check if user owns this order
+  if (order.userId.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ message: 'You can only cancel your own orders' });
+  }
+
+  // Check if order can be cancelled (only pending or confirmed)
+  if (!['pending', 'confirmed'].includes(order.orderStatus)) {
+    return res.status(400).json({
+      message: 'Order can only be cancelled when status is pending or confirmed',
+    });
+  }
+
+  // Restore stock
+  await restoreOrderStock(order.items);
+
+  // Update order status
+  order.orderStatus = 'cancelled';
+  order.notes.push({ message: 'Order cancelled by customer' });
+  await order.save();
+
+  req.io.emit('order:update', order);
+  res.json(order);
+});
+
 router.put('/:id/status', protect, requireRole('staff', 'manager', 'admin'), async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'Not found' });
-  order.orderStatus = req.body.status || order.orderStatus;
+
+  const previousStatus = order.orderStatus;
+  const newStatus = req.body.status || order.orderStatus;
+
+  // Restore stock if changing to cancelled and wasn't already cancelled
+  if (newStatus === 'cancelled' && previousStatus !== 'cancelled') {
+    await restoreOrderStock(order.items);
+  }
+
+  order.orderStatus = newStatus;
   order.paymentStatus = req.body.paymentStatus || order.paymentStatus;
   if (req.body.note) {
     order.notes.push({ message: req.body.note });
@@ -61,4 +114,5 @@ router.put('/:id/status', protect, requireRole('staff', 'manager', 'admin'), asy
 });
 
 export default router;
+
 

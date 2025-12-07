@@ -26,6 +26,7 @@ const productSchema = new mongoose.Schema(
     stock: { type: Number, default: 0 },
     trackInventory: { type: Boolean, default: true },
     limitedEdition: { type: Boolean, default: false },
+    sizes: { type: [String], default: ['S', 'M', 'L', 'XL', 'XXL', '3XL'] },
     demo: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     lowStockThreshold: { type: Number, default: 5 },

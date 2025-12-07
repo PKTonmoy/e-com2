@@ -4,10 +4,30 @@ import { useState } from 'react';
 import { FunnelIcon, SparklesIcon, ArrowsUpDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 
+const DEFAULT_CONTENT = {
+  title: 'The Collection',
+  filterLabel: 'Filter & Sort',
+};
+
 const Shop = () => {
   const [category, setCategory] = useState('');
   const [limitedEdition, setLimitedEdition] = useState('');
   const [sort, setSort] = useState('-createdAt');
+
+  // Fetch CMS content
+  const { data: cmsContent } = useQuery({
+    queryKey: ['content', 'shop.header'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/content/shop.header');
+        return res.data?.content || DEFAULT_CONTENT;
+      } catch {
+        return DEFAULT_CONTENT;
+      }
+    },
+  });
+
+  const content = cmsContent || DEFAULT_CONTENT;
 
   // Fetch all products to get complete category list
   const { data: allProducts = [] } = useQuery({
@@ -43,7 +63,7 @@ const Shop = () => {
   return (
     <div className="lux-container py-12 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="lux-heading">The Collection</h1>
+        <h1 className="lux-heading">{content.title}</h1>
         <p className="text-sm text-neutral-600 dark:text-neutral-300 font-body">{products.length} items</p>
       </div>
 
@@ -51,7 +71,7 @@ const Shop = () => {
       <div className="lux-card p-5 space-y-3">
         <div className="flex items-center gap-2 mb-3">
           <FunnelIcon className="h-5 w-5 text-gold" />
-          <p className="font-semibold text-sm font-body">Filter & Sort</p>
+          <p className="font-semibold text-sm font-body">{content.filterLabel}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <select

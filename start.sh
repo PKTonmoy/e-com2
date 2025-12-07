@@ -159,9 +159,9 @@ echo "▶ Checking environment files..."
 if [ ! -f "$BACKEND/.env" ]; then
   echo "⚠️  Warning: $BACKEND/.env not found. Creating from template..."
   if cat > "$BACKEND/.env" << 'EOF'
-PORT=5000
+PORT=5001
 NODE_ENV=development
-MONGO_URI=mongodb://localhost:27017/prelux
+MONGO_URI=mongodb+srv://pktonmoy:%23iamTonmoy01@cluster0.lapvnow.mongodb.net/prelux?retryWrites=true&w=majority&appName=Cluster0
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 CLIENT_URL=http://localhost:5173
 EOF
@@ -178,7 +178,7 @@ fi
 if [ ! -f "$FRONTEND/.env" ]; then
   echo "⚠️  Warning: $FRONTEND/.env not found. Creating from template..."
   if cat > "$FRONTEND/.env" << 'EOF'
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5001/api
 EOF
   then
     echo "• Created $FRONTEND/.env"
@@ -251,21 +251,47 @@ cleanup() {
 
 trap cleanup INT TERM
 
-# Check if backend port is already in use
+# Kill any existing processes on backend port 5001
+echo "▶ Checking and clearing ports..."
 if command -v lsof >/dev/null 2>&1; then
-  if lsof -Pi :5000 -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "⚠️  Warning: Port 5000 is already in use"
-    echo "   Another process may be using the backend port"
+  PIDS_5001=$(lsof -Pi :5001 -sTCP:LISTEN -t 2>/dev/null || true)
+  if [ -n "$PIDS_5001" ]; then
+    echo "• Found processes on port 5001: $PIDS_5001 - killing them..."
+    echo "$PIDS_5001" | xargs kill -9 2>/dev/null || true
+    sleep 1
+    echo "✓ Cleared port 5001"
+  fi
+elif command -v fuser >/dev/null 2>&1; then
+  if fuser 5001/tcp >/dev/null 2>&1; then
+    echo "• Killing processes on port 5001..."
+    fuser -k 5001/tcp 2>/dev/null || true
+    sleep 1
+    echo "✓ Cleared port 5001"
   fi
 fi
 
-# Check if frontend port is already in use
+# Kill any existing processes on frontend port 5173
 if command -v lsof >/dev/null 2>&1; then
-  if lsof -Pi :5173 -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "⚠️  Warning: Port 5173 is already in use"
-    echo "   Another process may be using the frontend port"
+  PIDS_5173=$(lsof -Pi :5173 -sTCP:LISTEN -t 2>/dev/null || true)
+  if [ -n "$PIDS_5173" ]; then
+    echo "• Found processes on port 5173: $PIDS_5173 - killing them..."
+    echo "$PIDS_5173" | xargs kill -9 2>/dev/null || true
+    sleep 1
+    echo "✓ Cleared port 5173"
+  fi
+elif command -v fuser >/dev/null 2>&1; then
+  if fuser 5173/tcp >/dev/null 2>&1; then
+    echo "• Killing processes on port 5173..."
+    fuser -k 5173/tcp 2>/dev/null || true
+    sleep 1
+    echo "✓ Cleared port 5173"
   fi
 fi
+
+# Also kill any lingering nodemon or node processes for this project
+pkill -f "nodemon.*backend/src/server.js" 2>/dev/null || true
+pkill -f "vite.*frontend" 2>/dev/null || true
+sleep 1
 
 echo "▶ Starting PRELUX backend..."
 if [ ! -f "$BACKEND/package.json" ]; then
@@ -289,8 +315,8 @@ fi
 # Check if backend is listening on port
 sleep 2
 if command -v curl >/dev/null 2>&1; then
-  if curl -s http://localhost:5000/health >/dev/null 2>&1 || curl -s http://localhost:5000/ >/dev/null 2>&1; then
-    echo "✓ Backend is responding on port 5000"
+  if curl -s http://localhost:5001/health >/dev/null 2>&1 || curl -s http://localhost:5001/ >/dev/null 2>&1; then
+    echo "✓ Backend is responding on port 5001"
   else
     echo "⚠️  Backend started but not responding yet (may need more time)"
   fi
@@ -331,12 +357,12 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✨ PRELUX is running!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "• API:      http://localhost:5000"
+echo "• API:      http://localhost:5001"
 echo "• Frontend: http://localhost:5173"
 if [ "$MONGO_VERIFIED" = true ]; then
-  echo "• MongoDB:  ✓ Connected (mongodb://localhost:27017/prelux)"
+  echo "• MongoDB:  ✓ Connected (MongoDB Atlas)"
 else
-  echo "• MongoDB:  ⚠️  Connection status unknown"
+  echo "• MongoDB:  Using MongoDB Atlas"
 fi
 echo "• Logs:     $LOG_DIR/"
 echo ""

@@ -1,11 +1,36 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRightOnRectangleIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightOnRectangleIcon, UserCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 import api from '../lib/api.js';
+import { useToast } from '../components/ToastProvider.jsx';
+
+const DEFAULT_CONTENT = {
+  title: 'Profile',
+  welcomeTitle: 'Welcome to PRELUX',
+  welcomeSubtitle: 'Sign in to view your profile, track orders, and manage your wishlist.',
+};
 
 const Profile = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { addToast } = useToast();
+  const [cancellingOrderId, setCancellingOrderId] = useState(null);
+
+  // Fetch CMS content
+  const { data: cmsContent } = useQuery({
+    queryKey: ['content', 'profile.header'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/content/profile.header');
+        return res.data?.content || DEFAULT_CONTENT;
+      } catch {
+        return DEFAULT_CONTENT;
+      }
+    },
+  });
+
+  const content = cmsContent || DEFAULT_CONTENT;
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['me'],
@@ -29,6 +54,28 @@ const Profile = () => {
     enabled: !!user,
   });
 
+  const cancelOrderMutation = useMutation({
+    mutationFn: (orderId) => api.put(`/orders/${orderId}/cancel`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['my-orders']);
+      addToast('Order cancelled successfully. Stock has been restored.', 'success');
+      setCancellingOrderId(null);
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to cancel order', 'error');
+      setCancellingOrderId(null);
+    },
+  });
+
+  const handleCancelOrder = (orderId) => {
+    if (window.confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+      setCancellingOrderId(orderId);
+      cancelOrderMutation.mutate(orderId);
+    }
+  };
+
+  const canCancel = (status) => ['pending', 'confirmed'].includes(status);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     queryClient.invalidateQueries(['me']);
@@ -51,9 +98,9 @@ const Profile = () => {
         <div className="lux-card p-8 text-center space-y-6">
           <UserCircleIcon className="h-20 w-20 mx-auto text-gold/60" />
           <div>
-            <h1 className="font-display text-2xl mb-2">Welcome to PRELUX</h1>
+            <h1 className="font-display text-2xl mb-2">{content.welcomeTitle}</h1>
             <p className="text-sm text-neutral-600 dark:text-neutral-300">
-              Sign in to view your profile, track orders, and manage your wishlist.
+              {content.welcomeSubtitle}
             </p>
           </div>
           <div className="space-y-3">
@@ -126,34 +173,49 @@ const Profile = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map((order) => (
-              <div key={order._id} className="lux-card p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-sm">Order #{order._id.slice(-8)}</p>
-                    <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
+            {orders.map((order) => {
+              const isCancelling = cancellingOrderId === order._id;
+              return (
+                <div key={order._id} className="lux-card p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-sm">Order #{order._id.slice(-8)}</p>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-300">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">${order.total.toFixed(2)}</p>
+                      <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.orderStatus)}`}>
+                        {order.orderStatus}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${order.total.toFixed(2)}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.orderStatus)}`}>
-                      {order.orderStatus}
-                    </span>
+                  <div className="border-t border-gold/20 pt-3">
+                    <p className="text-sm font-semibold mb-2">{order.items.length} item(s)</p>
+                    <ul className="text-sm space-y-1">
+                      {order.items.map((item, idx) => (
+                        <li key={idx} className="text-neutral-600 dark:text-neutral-300">
+                          {item.title} × {item.qty}
+                        </li>
+                      ))}
+                    </ul>
+                    {canCancel(order.orderStatus) && (
+                      <div className="mt-4 pt-3 border-t border-dashed border-gold/20 flex justify-end">
+                        <button
+                          onClick={() => handleCancelOrder(order._id)}
+                          disabled={isCancelling}
+                          className="text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1 disabled:opacity-50 border border-red-200 dark:border-red-900 rounded px-3 py-1.5 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <XCircleIcon className="h-4 w-4" />
+                          {isCancelling ? 'Cancelling...' : 'Cancel Order'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="border-t border-gold/20 pt-3">
-                  <p className="text-sm font-semibold mb-2">{order.items.length} item(s)</p>
-                  <ul className="text-sm space-y-1">
-                    {order.items.map((item, idx) => (
-                      <li key={idx} className="text-neutral-600 dark:text-neutral-300">
-                        {item.title} × {item.qty}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

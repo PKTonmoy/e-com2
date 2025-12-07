@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { MinusIcon, PlusIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useCart } from '../store/useCart.js';
 import { useToast } from '../components/ToastProvider.jsx';
 import api from '../lib/api.js';
+
+const DEFAULT_CONTENT = {
+  title: 'Your Cart',
+  emptyMessage: 'Your cart is empty.',
+  emptyLink: 'Discover the collection.',
+};
 
 const Cart = () => {
   const { items, removeItem, updateQty, updateStock } = useCart();
@@ -13,6 +20,21 @@ const Cart = () => {
   const [couponError, setCouponError] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [stockData, setStockData] = useState({});
+
+  // Fetch CMS content
+  const { data: cmsContent } = useQuery({
+    queryKey: ['content', 'cart.header'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/content/cart.header');
+        return res.data?.content || DEFAULT_CONTENT;
+      } catch {
+        return DEFAULT_CONTENT;
+      }
+    },
+  });
+
+  const content = cmsContent || DEFAULT_CONTENT;
 
   // Fetch current stock for all items
   useEffect(() => {
@@ -82,11 +104,11 @@ const Cart = () => {
 
   return (
     <div className="lux-container py-12 space-y-6">
-      <h1 className="lux-heading">Your Cart</h1>
+      <h1 className="lux-heading">{content.title}</h1>
 
       {items.length === 0 ? (
         <p className="text-sm">
-          Your cart is empty. <Link to="/shop" className="underline">Discover the collection.</Link>
+          {content.emptyMessage} <Link to="/shop" className="underline">{content.emptyLink}</Link>
         </p>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
@@ -124,13 +146,26 @@ const Cart = () => {
 
               return (
                 <div
-                  key={`${item.productId}-${item.variantId}`}
+                  key={`${item.productId}-${item.variantId}-${item.selectedSize}`}
                   className={`lux-card p-4 ${isOutOfStock ? 'opacity-50' : ''}`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="font-display text-lg">{item.title}</p>
-                      <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1">SKU {item.sku}</p>
+                  <div className="flex items-start gap-4">
+                    {/* Product Image */}
+                    {item.image && (
+                      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100">
+                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-display text-lg truncate">{item.title}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <p className="text-xs text-neutral-600 dark:text-neutral-300">SKU {item.sku}</p>
+                        {item.selectedSize && (
+                          <span className="text-xs font-semibold bg-gold/20 text-gold px-2 py-0.5 rounded">
+                            Size: {item.selectedSize}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm font-semibold mt-2">${item.price}</p>
                       {isOutOfStock ? (
                         <p className="text-xs text-red-600 dark:text-red-400 mt-1">Out of Stock</p>
@@ -142,23 +177,31 @@ const Cart = () => {
                     </div>
                     <div className="flex flex-col items-end gap-3">
                       {!isOutOfStock && (
-                        <div className="flex items-center gap-2 border border-gold/30 rounded-lg p-1">
-                          <button
-                            onClick={() => handleQtyChange(item, item.qty - 1)}
-                            className="p-1 hover:bg-gold/10 rounded transition"
-                            disabled={item.qty <= 1}
+                        <>
+                          <div className="flex items-center gap-2 border border-gold/30 rounded-lg p-1">
+                            <button
+                              onClick={() => handleQtyChange(item, item.qty - 1)}
+                              className="p-1 hover:bg-gold/10 rounded transition"
+                              disabled={item.qty <= 1}
+                            >
+                              <MinusIcon className="h-4 w-4" />
+                            </button>
+                            <span className="w-8 text-center font-semibold text-sm">{item.qty}</span>
+                            <button
+                              onClick={() => handleQtyChange(item, item.qty + 1)}
+                              className="p-1 hover:bg-gold/10 rounded transition disabled:opacity-40"
+                              disabled={item.qty >= stock}
+                            >
+                              <PlusIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <Link
+                            to="/checkout"
+                            className="text-xs text-gold hover:underline flex items-center gap-1"
                           >
-                            <MinusIcon className="h-4 w-4" />
-                          </button>
-                          <span className="w-8 text-center font-semibold text-sm">{item.qty}</span>
-                          <button
-                            onClick={() => handleQtyChange(item, item.qty + 1)}
-                            className="p-1 hover:bg-gold/10 rounded transition disabled:opacity-40"
-                            disabled={item.qty >= stock}
-                          >
-                            <PlusIcon className="h-4 w-4" />
-                          </button>
-                        </div>
+                            Buy Now
+                          </Link>
+                        </>
                       )}
                       <button
                         className="text-xs text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"

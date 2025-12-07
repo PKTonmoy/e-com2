@@ -7,6 +7,8 @@ import {
     DocumentTextIcon,
     ClipboardDocumentListIcon,
     TicketIcon,
+    StarIcon,
+    NewspaperIcon,
 } from '@heroicons/react/24/outline';
 
 const adminLinks = [
@@ -14,7 +16,9 @@ const adminLinks = [
     { to: '/admin/products', label: 'Products', icon: ShoppingBagIcon },
     { to: '/admin/orders', label: 'Orders', icon: ClipboardDocumentListIcon },
     { to: '/admin/users', label: 'Users', icon: UsersIcon },
+    { to: '/admin/reviews', label: 'Reviews', icon: StarIcon },
     { to: '/admin/coupons', label: 'Coupons', icon: TicketIcon },
+    { to: '/admin/blog', label: 'Blog', icon: NewspaperIcon },
     { to: '/admin/analytics', label: 'Analytics', icon: ChartBarIcon },
     { to: '/admin/content', label: 'Content', icon: DocumentTextIcon },
 ];
