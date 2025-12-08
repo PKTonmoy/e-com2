@@ -100,11 +100,10 @@ const Home = () => {
               <img
                 src={hero.image}
                 alt="Hero background"
-                className="w-full h-full object-cover opacity-80"
+                className="w-full h-full object-cover opacity-50"
               />
               {/* Dark Overlay for Text Visibility */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
             </div>
           </>
         ) : (
