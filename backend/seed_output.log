@@ -1,0 +1,43 @@
+Error: Product validation failed: _id: Cast to ObjectId failed for value "prod_001" (type string) at path "_id" because of "BSONError"
+    at ValidationError.inspect (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/error/validation.js:52:26)
+    at formatValue (node:internal/util/inspect:887:19)
+    at inspect (node:internal/util/inspect:409:10)
+    at formatWithOptionsInternal (node:internal/util/inspect:2579:40)
+    at formatWithOptions (node:internal/util/inspect:2441:10)
+    at console.value (node:internal/console/constructor:345:14)
+    at console.error (node:internal/console/constructor:412:61)
+    at file:///home/tonmoy/Desktop/e-com2/backend/src/utils/seed.js:90:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  errors: {
+    _id: CastError: Cast to ObjectId failed for value "prod_001" (type string) at path "_id" because of "BSONError"
+        at SchemaObjectId.cast (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/schema/objectId.js:253:11)
+        at SchemaType.applySetters (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/schemaType.js:1288:12)
+        at model.$set (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/document.js:1442:22)
+        at model.$set (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/document.js:1136:16)
+        at model.Document (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/document.js:178:12)
+        at model.Model (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/model.js:127:12)
+        at new model (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/model.js:4861:15)
+        at Array.<anonymous> (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/model.js:3062:17)
+        at _start (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/helpers/parallelLimit.js:27:37)
+        at parallelLimit (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/helpers/parallelLimit.js:23:5) {
+      stringValue: '"prod_001"',
+      messageFormat: undefined,
+      kind: 'ObjectId',
+      value: 'prod_001',
+      path: '_id',
+      reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+          at new ObjectId (/home/tonmoy/Desktop/e-com2/backend/node_modules/bson/lib/bson.cjs:2538:23)
+          at castObjectId (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/cast/objectid.js:25:12)
+          at SchemaObjectId.cast (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/schema/objectId.js:251:12)
+          at SchemaType.applySetters (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/schemaType.js:1288:12)
+          at model.$set (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/document.js:1442:22)
+          at model.$set (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/document.js:1136:16)
+          at model.Document (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/document.js:178:12)
+          at model.Model (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/model.js:127:12)
+          at new model (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/model.js:4861:15)
+          at Array.<anonymous> (/home/tonmoy/Desktop/e-com2/backend/node_modules/mongoose/lib/model.js:3062:17),
+      valueType: 'string'
+    }
+  },
+  _message: 'Product validation failed'
+}
