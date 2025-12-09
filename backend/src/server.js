@@ -6,6 +6,7 @@ import cors from 'cors';
 import compression from 'compression';
 import http from 'http';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import { Server as SocketIOServer } from 'socket.io';
 import rateLimiter from './utils/rateLimiter.js';
@@ -98,14 +99,25 @@ app.use('/api/auth', googleAuthRoutes); // Google OAuth routes
 app.use('/api/upload', uploadRoutes); // Image upload routes
 
 // Friendly root response
-app.get('/', (req, res) => {
-  res.json({
-    name: 'PRELUX API',
-    status: 'ok',
-    docs: '/health',
-    api: '/api',
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+
+  app.get('*', (req, res) =>
+    res.sendFile(path.resolve(__dirname, '../../frontend', 'dist', 'index.html'))
+  );
+} else {
+  app.get('/', (req, res) => {
+    res.json({
+      name: 'PRELUX API',
+      status: 'ok',
+      docs: '/health',
+      api: '/api',
+    });
   });
-});
+}
 
 app.use(notFound);
 app.use(errorHandler);

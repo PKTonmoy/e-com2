@@ -1,5 +1,15 @@
 {
+  "name": "prelux-ecommerce",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npm start --prefix backend",
+    "build": "npm install && npm install --prefix backend && npm install --prefix frontend --production=false && npm run build --prefix frontend",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\""
+  },
   "dependencies": {
     "mongodb": "^7.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
