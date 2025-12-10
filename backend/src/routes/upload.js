@@ -1,34 +1,17 @@
 /**
  * Image Upload Routes
- * Handles file uploads with multer and stores them in /uploads folder
+ * Handles file uploads with multer and stores them in Cloudinary
  */
 
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import cloudinary from '../config/cloudinary.js';
 import { protect, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Configure multer storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        // Generate unique filename: timestamp-randomstring.ext
-        const ext = path.extname(file.originalname);
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + ext);
-    }
-});
+// Configure multer to use memory storage (files stored in buffer)
+const storage = multer.memoryStorage();
 
 // File filter - only allow images
 const fileFilter = (req, file, cb) => {
@@ -50,73 +33,107 @@ const upload = multer({
 });
 
 /**
+ * Upload buffer to Cloudinary
+ */
+const uploadToCloudinary = (buffer, options = {}) => {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'prelux',
+                resource_type: 'image',
+                ...options
+            },
+            (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            }
+        );
+        uploadStream.end(buffer);
+    });
+};
+
+/**
  * POST /api/upload
  * Upload a single image
- * Returns the URL to access the uploaded image
+ * Returns the Cloudinary URL to access the uploaded image
  */
-router.post('/', protect, requireRole('staff', 'manager', 'admin'), upload.single('image'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ message: 'No image file provided' });
+router.post('/', protect, requireRole('staff', 'manager', 'admin'), upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No image file provided' });
+        }
+
+        // Upload to Cloudinary
+        const result = await uploadToCloudinary(req.file.buffer);
+
+        console.log(`[Upload] Image uploaded to Cloudinary: ${result.public_id}`);
+
+        res.json({
+            success: true,
+            url: result.secure_url,
+            publicId: result.public_id,
+            size: req.file.size,
+            mimetype: req.file.mimetype
+        });
+    } catch (error) {
+        console.error('[Upload] Cloudinary upload error:', error);
+        res.status(500).json({ message: 'Failed to upload image', error: error.message });
     }
-
-    // Construct the URL to access the image
-    const imageUrl = `/uploads/${req.file.filename}`;
-
-    console.log(`[Upload] Image uploaded: ${req.file.filename}`);
-
-    res.json({
-        success: true,
-        url: imageUrl,
-        filename: req.file.filename,
-        size: req.file.size,
-        mimetype: req.file.mimetype
-    });
 });
 
 /**
  * POST /api/upload/multiple
  * Upload multiple images (max 10)
  */
-router.post('/multiple', protect, requireRole('staff', 'manager', 'admin'), upload.array('images', 10), (req, res) => {
-    if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ message: 'No image files provided' });
+router.post('/multiple', protect, requireRole('staff', 'manager', 'admin'), upload.array('images', 10), async (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No image files provided' });
+        }
+
+        // Upload all files to Cloudinary
+        const uploadPromises = req.files.map(file => uploadToCloudinary(file.buffer));
+        const results = await Promise.all(uploadPromises);
+
+        const uploadedFiles = results.map((result, index) => ({
+            url: result.secure_url,
+            publicId: result.public_id,
+            size: req.files[index].size
+        }));
+
+        console.log(`[Upload] ${uploadedFiles.length} images uploaded to Cloudinary`);
+
+        res.json({
+            success: true,
+            files: uploadedFiles
+        });
+    } catch (error) {
+        console.error('[Upload] Cloudinary upload error:', error);
+        res.status(500).json({ message: 'Failed to upload images', error: error.message });
     }
-
-    const uploadedFiles = req.files.map(file => ({
-        url: `/uploads/${file.filename}`,
-        filename: file.filename,
-        size: file.size
-    }));
-
-    console.log(`[Upload] ${uploadedFiles.length} images uploaded`);
-
-    res.json({
-        success: true,
-        files: uploadedFiles
-    });
 });
 
 /**
- * DELETE /api/upload/:filename
- * Delete an uploaded image
+ * DELETE /api/upload/:publicId
+ * Delete an uploaded image from Cloudinary
+ * Note: publicId should be URL-encoded if it contains slashes
  */
-router.delete('/:filename', protect, requireRole('staff', 'manager', 'admin'), (req, res) => {
-    const { filename } = req.params;
-    const filepath = path.join(uploadsDir, filename);
+router.delete('/:publicId(*)', protect, requireRole('staff', 'manager', 'admin'), async (req, res) => {
+    try {
+        const { publicId } = req.params;
 
-    // Security: Make sure we're only deleting from uploads folder
-    if (!filepath.startsWith(uploadsDir)) {
-        return res.status(400).json({ message: 'Invalid filename' });
+        const result = await cloudinary.uploader.destroy(publicId);
+
+        if (result.result === 'ok') {
+            console.log(`[Upload] Image deleted from Cloudinary: ${publicId}`);
+            res.json({ success: true, message: 'Image deleted' });
+        } else {
+            res.status(404).json({ message: 'Image not found or already deleted' });
+        }
+    } catch (error) {
+        console.error('[Upload] Cloudinary delete error:', error);
+        res.status(500).json({ message: 'Failed to delete image', error: error.message });
     }
-
-    if (!fs.existsSync(filepath)) {
-        return res.status(404).json({ message: 'File not found' });
-    }
-
-    fs.unlinkSync(filepath);
-    console.log(`[Upload] Image deleted: ${filename}`);
-
-    res.json({ success: true, message: 'Image deleted' });
 });
 
 // Error handling middleware for multer
