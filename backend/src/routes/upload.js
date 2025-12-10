@@ -63,6 +63,14 @@ router.post('/', protect, requireRole('staff', 'manager', 'admin'), upload.singl
             return res.status(400).json({ message: 'No image file provided' });
         }
 
+        // Check if Cloudinary is configured
+        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            console.error('[Upload] Cloudinary credentials not configured');
+            return res.status(500).json({
+                message: 'Image upload service not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables.'
+            });
+        }
+
         // Upload to Cloudinary
         const result = await uploadToCloudinary(req.file.buffer);
 
@@ -76,7 +84,8 @@ router.post('/', protect, requireRole('staff', 'manager', 'admin'), upload.singl
             mimetype: req.file.mimetype
         });
     } catch (error) {
-        console.error('[Upload] Cloudinary upload error:', error);
+        console.error('[Upload] Cloudinary upload error:', error.message);
+        console.error('[Upload] Full error:', error);
         res.status(500).json({ message: 'Failed to upload image', error: error.message });
     }
 });
