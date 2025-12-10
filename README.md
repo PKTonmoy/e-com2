@@ -24,7 +24,7 @@ CLIENT_URL=http://localhost:5173
 STRIPE_SECRET=test_mode
 EMAIL_FROM=hello@prelux.lux
 SOCKET_ORIGIN=http://localhost:5173
-MAILBOXLAYER_KEY=your_mailboxlayer_api_key
+ABSTRACT_API_KEY=your_abstract_api_key
 ```
 
 Create `frontend/.env`:
@@ -62,14 +62,14 @@ Visit http://localhost:5173
 - Content blocks (WYSIWYG): `GET/POST /api/content/:key`.
 - Coupons: `GET /api/coupons/:code`.
 - Stats: `GET /api/stats/sales?range=30`, `GET /api/stats/top-products`, `GET /api/stats/admin-tiles`.
-- Email Validation: `POST /api/validate-email` (Mailboxlayer integration).
+- Email Validation: `POST /api/validate-email` (Abstract API integration).
 
 ## Email Validation Configuration
-The signup form validates emails using Mailboxlayer API. Configuration in `backend/src/config/emailValidationConfig.js`:
+The signup form validates emails using Abstract API. Configuration in `backend/src/config/emailValidationConfig.js`:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `minScore` | 0.7 | Minimum Mailboxlayer score (0-1) |
+| `minScore` | 0.7 | Minimum Abstract API quality score (0-1) |
 | `allowRoleEmails` | false | Allow admin@, info@ etc. |
 | `allowFreeEmails` | true | Allow Gmail, Yahoo, etc. |
 | `cache.ttl` | 1 hour | Cache validation results |

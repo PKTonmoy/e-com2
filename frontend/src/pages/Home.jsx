@@ -118,8 +118,8 @@ const Home = () => {
   });
 
   const hero = { ...DEFAULT_HERO, ...heroContent };
-  const limited = limitedContent || DEFAULT_LIMITED;
-  const blog = blogContent || DEFAULT_BLOG;
+  const limited = { ...DEFAULT_LIMITED, ...limitedContent };
+  const blog = { ...DEFAULT_BLOG, ...blogContent };
 
   // Get hero images with fallbacks
   const heroImages = hero.heroImages?.length >= 4 ? hero.heroImages : DEFAULT_HERO.heroImages;
@@ -241,17 +241,20 @@ const Home = () => {
       </section>
 
       {/* Limited Drops Section */}
-      <section className="lux-container py-20 space-y-12">
-        <div className="flex items-center justify-between">
+      <section className="lux-container py-12 sm:py-20 space-y-8 sm:space-y-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="font-display text-3xl sm:text-4xl text-matte dark:text-ivory">{limited.title}</h2>
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-matte dark:text-ivory">{limited.title}</h2>
             <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-3" />
           </div>
           <Link
             to={limited.buttonLink || '/shop'}
-            className="text-sm uppercase tracking-[0.2em] text-neutral-500 hover:text-gold transition-colors duration-300"
+            className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-gold sm:text-neutral-500 hover:text-gold transition-colors duration-300 font-medium"
           >
             {limited.buttonText}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
 
@@ -287,21 +290,24 @@ const Home = () => {
 
       {/* Blog Section */}
       {blogPosts.length > 0 && (
-        <section className="bg-neutral-50 dark:bg-neutral-900/50 py-20">
-          <div className="lux-container space-y-12">
-            <div className="flex items-center justify-between">
+        <section className="bg-neutral-50 dark:bg-neutral-900/50 py-12 sm:py-20">
+          <div className="lux-container space-y-8 sm:space-y-12">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div>
-                <h2 className="font-display text-3xl sm:text-4xl text-matte dark:text-ivory">{blog.title}</h2>
+                <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-matte dark:text-ivory">{blog.title}</h2>
                 {blog.subtitle && (
-                  <p className="text-neutral-500 dark:text-neutral-400 mt-2">{blog.subtitle}</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm sm:text-base">{blog.subtitle}</p>
                 )}
                 <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-3" />
               </div>
               <Link
                 to={blog.buttonLink || '/blog'}
-                className="text-sm uppercase tracking-[0.2em] text-neutral-500 hover:text-gold transition-colors duration-300"
+                className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-gold sm:text-neutral-500 hover:text-gold transition-colors duration-300 font-medium"
               >
                 {blog.buttonText}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             </div>
 
@@ -343,8 +349,26 @@ const Home = () => {
         </section>
       )}
 
-      {/* Bottom Spacer */}
-      <div className="h-16" />
+      {/* Shop Now CTA Section */}
+      <section className="bg-gradient-to-br from-matte via-neutral-900 to-matte py-16 sm:py-24">
+        <div className="lux-container text-center space-y-6">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-ivory">
+            Ready to Elevate Your Style?
+          </h2>
+          <p className="text-neutral-400 max-w-xl mx-auto text-sm sm:text-base">
+            Discover our curated collection of premium fashion pieces crafted for the discerning individual.
+          </p>
+          <Link
+            to="/shop"
+            className="inline-flex items-center gap-3 px-8 sm:px-10 py-4 bg-gold text-matte font-semibold text-sm uppercase tracking-widest rounded-full hover:bg-white transition-all duration-300 group shadow-lg shadow-gold/20"
+          >
+            Shop Now
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 };

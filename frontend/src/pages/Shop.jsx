@@ -5,6 +5,7 @@ import { SparklesIcon, XMarkIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon
 import api from '../lib/api.js';
 import { useCart } from '../store/useCart.js';
 import { useToast } from '../components/ToastProvider.jsx';
+import { useBottomNav } from '../context/BottomNavContext.jsx';
 
 const DEFAULT_CONTENT = {
   title: 'The Collection',
@@ -56,6 +57,7 @@ const Shop = () => {
   // Cart and Toast
   const addItem = useCart((s) => s.addItem);
   const { addToast } = useToast();
+  const { hideBottomNav, showBottomNav } = useBottomNav();
 
   // Desktop filter dropdowns state
   const [openFilters, setOpenFilters] = useState({
@@ -154,6 +156,15 @@ const Shop = () => {
     };
   }, [isFilterOpen]);
 
+  // Hide/show bottom nav when filter modal is open
+  useEffect(() => {
+    if (isFilterOpen) {
+      hideBottomNav();
+    } else {
+      showBottomNav();
+    }
+  }, [isFilterOpen, hideBottomNav, showBottomNav]);
+
   return (
     <div className="min-h-screen bg-ivory dark:bg-matte">
 
@@ -239,10 +250,10 @@ const Shop = () => {
                         onClick={(e) => handleAddToCart(e, product)}
                         disabled={product.stock <= 0}
                         className={`p-1.5 rounded-full transition-colors ${addedProducts[product._id]
-                            ? 'bg-emerald-500 text-white'
-                            : product.stock <= 0
-                              ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400'
-                              : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-gold hover:text-white'
+                          ? 'bg-emerald-500 text-white'
+                          : product.stock <= 0
+                            ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400'
+                            : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-gold hover:text-white'
                           }`}
                       >
                         {addedProducts[product._id] ? <CheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
@@ -307,8 +318,8 @@ const Shop = () => {
                           key={option.value}
                           onClick={() => setSort(option.value)}
                           className={`block w-full text-left px-3 py-2 rounded-lg text-sm font-body transition-colors ${sort === option.value
-                              ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte font-medium'
-                              : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                            ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte font-medium'
+                            : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
                             }`}
                         >
                           {option.label}

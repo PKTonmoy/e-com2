@@ -20,9 +20,15 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     passwordHash: { type: String, required: false }, // Optional for OAuth users
+    phone: { type: String }, // User's mobile number
+    address: { type: String }, // User's address
+    city: { type: String },
+    country: { type: String },
+    postalCode: { type: String },
     role: { type: String, enum: ['customer', 'staff', 'manager', 'admin'], default: 'customer' },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
     addresses: [addressSchema],
+    profileComplete: { type: Boolean, default: false }, // Track if Google user completed profile
 
     // Google OAuth fields
     googleId: { type: String, unique: true, sparse: true }, // Google's unique user ID

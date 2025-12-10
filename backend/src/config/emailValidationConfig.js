@@ -4,11 +4,11 @@
  */
 
 export default {
-    // Skip Mailboxlayer API call entirely (useful for development or if API is unavailable)
+    // Skip Abstract API call entirely (useful for development or if API is unavailable)
     // When true, any properly formatted email will be accepted
-    skipExternalValidation: false, // Set to false to enable Mailboxlayer API
+    skipExternalValidation: false, // Set to false to enable Abstract API
 
-    // Minimum acceptable score from Mailboxlayer (0-1)
+    // Minimum acceptable score from Abstract API (0-1)
     // Higher = stricter, recommended: 0.7
     minScore: 0.7,
 
@@ -40,10 +40,9 @@ export default {
         maxRequests: 5, // 5 requests per minute per IP
     },
 
-    // Mailboxlayer API settings
+    // Abstract API settings
     api: {
-        // Uses HTTP for free tier, change to https for paid plans
-        baseUrl: 'http://apilayer.net/api/check',
+        baseUrl: 'https://emailreputation.abstractapi.com/v1/',
         timeout: 10000, // 10 seconds
         retries: 2,
         retryDelay: 1000, // 1 second initial delay (exponential backoff)

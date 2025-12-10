@@ -65,7 +65,7 @@ const emailValidationLimiter = rateLimit({
 });
 
 // ============================================
-// MAILBOXLAYER API CALL WITH RETRY (using native http)
+// ABSTRACT API CALL WITH RETRY (using native https)
 // ============================================
 function httpGet(url, timeout) {
     return new Promise((resolve, reject) => {
@@ -89,41 +89,60 @@ function httpGet(url, timeout) {
     });
 }
 
-async function callMailboxlayer(email, attempt = 1) {
-    const apiKey = process.env.MAILBOXLAYER_KEY;
+async function callAbstractAPI(email, attempt = 1) {
+    const apiKey = process.env.ABSTRACT_API_KEY;
 
     if (!apiKey) {
-        console.error('[EmailValidation] MAILBOXLAYER_KEY not configured');
+        console.error('[EmailValidation] ABSTRACT_API_KEY not configured');
         throw new Error('Email validation service not configured');
     }
 
-    const url = `${config.api.baseUrl}?access_key=${apiKey}&email=${encodeURIComponent(email)}&catch_all=1`;
-    console.log(`[EmailValidation] Calling API for domain: @${email.split('@')[1]}`);
+    const url = `${config.api.baseUrl}?api_key=${apiKey}&email=${encodeURIComponent(email)}`;
+    console.log(`[EmailValidation] Calling Abstract API for domain: @${email.split('@')[1]}`);
 
     try {
         const response = await httpGet(url, config.api.timeout);
 
         if (response.status !== 200) {
-            throw new Error(`Mailboxlayer API returned ${response.status}`);
+            throw new Error(`Abstract API returned ${response.status}`);
         }
 
         const data = response.data;
 
         // Check for API errors
         if (data.error) {
-            console.error('[EmailValidation] Mailboxlayer API error:', data.error);
+            console.error('[EmailValidation] Abstract API error:', data.error);
 
             // Alert on critical errors
-            if (data.error.code === 101) {
+            if (data.error.code === 'invalid_api_key') {
                 console.error('[EmailValidation] ALERT: Invalid API key');
-            } else if (data.error.code === 104) {
+            } else if (data.error.code === 'quota_exceeded') {
                 console.error('[EmailValidation] ALERT: Rate limit reached');
             }
 
-            throw new Error(data.error.info || 'API error');
+            throw new Error(data.error.message || 'API error');
         }
 
-        return data;
+        // Transform Abstract Email Reputation API response to match expected format
+        // Response structure: email_deliverability, email_quality, email_risk, etc.
+        const deliverability = data.email_deliverability || {};
+        const quality = data.email_quality || {};
+
+        return {
+            email: data.email_address,
+            format_valid: deliverability.is_format_valid ?? true,
+            disposable: quality.is_disposable ?? false,
+            role: quality.is_role ?? false,
+            free: quality.is_free_email ?? false,
+            mx_found: deliverability.is_mx_valid ?? null,
+            smtp_check: deliverability.is_smtp_valid ?? null,
+            catch_all: quality.is_catchall ?? null,
+            score: quality.score ?? 0,
+            did_you_mean: null, // Email Reputation API doesn't have autocorrect
+            deliverability: deliverability.status,
+            // Additional fields from Email Reputation API
+            risk: data.email_risk,
+        };
     } catch (error) {
         console.error(`[EmailValidation] API call failed:`, error.message);
 
@@ -132,7 +151,7 @@ async function callMailboxlayer(email, attempt = 1) {
             const delay = config.api.retryDelay * Math.pow(2, attempt - 1);
             console.log(`[EmailValidation] Retrying in ${delay}ms (attempt ${attempt + 1}/${config.api.retries})`);
             await new Promise(resolve => setTimeout(resolve, delay));
-            return callMailboxlayer(email, attempt + 1);
+            return callAbstractAPI(email, attempt + 1);
         }
 
         throw error;
@@ -179,25 +198,52 @@ function evaluateValidation(data) {
         console.log('[EmailValidation] catch_all is null (unsupported by plan) for:', data.email);
     }
 
-    // 6. Check SMTP and MX validity with score
-    const score = data.score ?? 0;
-    const hasMx = data.mx_found === true;
-    const hasSmtp = data.smtp_check === true;
-
-    if ((hasSmtp || hasMx) && score >= config.minScore) {
+    // 6. Check deliverability status (Abstract API primary check)
+    // Status can be: "deliverable", "undeliverable", "unknown"
+    // ONLY accept "deliverable" as valid - this means API confirmed the mailbox exists
+    if (data.deliverability === 'deliverable') {
         result.valid = true;
         result.reason = 'valid';
         return result;
     }
 
-    // 7. Needs confirmation case
-    if (hasMx && score >= config.confirmationScoreRange.min && score < config.confirmationScoreRange.max) {
+    // 7. If explicitly undeliverable, reject immediately
+    if (data.deliverability === 'undeliverable') {
+        result.reason = 'low_score';
+        return result;
+    }
+
+    // 8. Check SMTP and MX validity with score (for paid tiers with score data)
+    const score = data.score ?? null;
+    const hasMx = data.mx_found === true;
+    const hasSmtp = data.smtp_check === true;
+
+    // If we have a valid score (paid tier), use score-based validation
+    if (score !== null && score > 0) {
+        if ((hasSmtp || hasMx) && score >= config.minScore) {
+            result.valid = true;
+            result.reason = 'valid';
+            return result;
+        }
+
+        // Needs confirmation case - medium score
+        if (hasMx && score >= config.confirmationScoreRange.min && score < config.confirmationScoreRange.max) {
+            result.valid = false;
+            result.reason = 'needs_confirmation';
+            return result;
+        }
+    }
+
+    // 9. For "unknown" deliverability (free tier limitation):
+    // We can only verify the domain exists, NOT the specific mailbox
+    // Mark as "needs_confirmation" so user must verify via email
+    if (data.deliverability === 'unknown' && data.format_valid !== false && hasMx) {
         result.valid = false;
         result.reason = 'needs_confirmation';
         return result;
     }
 
-    // 8. Default: low score or unverifiable
+    // 10. Default: low score or unverifiable
     result.reason = 'low_score';
     return result;
 }
@@ -245,8 +291,8 @@ router.post('/', emailValidationLimiter, async (req, res) => {
             });
         }
 
-        // Call Mailboxlayer API
-        const apiResponse = await callMailboxlayer(normalizedEmail);
+        // Call Abstract API
+        const apiResponse = await callAbstractAPI(normalizedEmail);
 
         // Evaluate the response
         const result = evaluateValidation(apiResponse);

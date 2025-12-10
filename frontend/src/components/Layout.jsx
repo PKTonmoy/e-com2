@@ -15,6 +15,7 @@ import {
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 import AdminSidebar from './AdminSidebar.jsx';
+import MobileBottomNav from './MobileBottomNav.jsx';
 
 const navLinks = [
   { to: '/shop', label: 'Shop', icon: ShoppingCartIcon },
@@ -25,7 +26,16 @@ const navLinks = [
 ];
 
 const Layout = ({ children }) => {
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  // Initialize theme based on: 1) localStorage, 2) system preference
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved;
+    // Check system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -36,6 +46,19 @@ const Layout = ({ children }) => {
     root.classList.add(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => {
+      // Only auto-switch if user hasn't manually set a preference
+      if (!localStorage.getItem('theme')) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -56,52 +79,81 @@ const Layout = ({ children }) => {
 
   return (
     <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'dark bg-matte text-white' : 'bg-ivory text-matte'}`}>
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-ivory/90 dark:bg-matte/90 border-b border-gold/20 flex-shrink-0">
-        <div className="lux-container flex items-center justify-between py-4">
-          {/* Mobile Menu Button */}
-          <button
-            aria-label="Open menu"
-            className="md:hidden rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors"
-            onClick={() => setIsMobileMenuOpen(true)}
-          >
-            <Bars3Icon className="h-5 w-5" />
-          </button>
-
-          {/* Logo */}
-          <Link to="/" className="font-display text-2xl tracking-wide">
-            PRELUX
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6 text-sm uppercase tracking-[0.18em]">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) =>
-                  isActive ? 'text-gold font-semibold' : 'hover:text-gold transition-colors'
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          {/* Right Side Icons */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-ivory/95 dark:bg-matte/95 border-b border-gold/20 flex-shrink-0">
+        {/* Mobile Header - Hidden since we use bottom nav */}
+        <div className="hidden">
+          <div className="flex items-center justify-between">
+            {/* Menu Button */}
             <button
-              aria-label="Toggle theme"
-              className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label="Open menu"
+              className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/30 hover:bg-gold/10 transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
             >
-              {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+              <Bars3Icon className="h-4 w-4" />
             </button>
-            <Link to="/cart" className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors">
-              <ShoppingBagIcon className="h-5 w-5" />
+
+            {/* Centered Logo */}
+            <Link to="/" className="font-display text-lg tracking-[0.12em] text-matte dark:text-ivory">
+              PRELUX
             </Link>
-            <Link to="/profile" className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors">
-              <UserIcon className="h-5 w-5" />
+
+            {/* Right Icons */}
+            <div className="flex items-center gap-2">
+              <Link
+                to="/cart"
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/30 hover:bg-gold/10 transition-colors"
+              >
+                <ShoppingBagIcon className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/profile"
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/30 hover:bg-gold/10 transition-colors"
+              >
+                <UserIcon className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden md:block">
+          <div className="lux-container flex items-center justify-between py-4">
+            {/* Logo */}
+            <Link to="/" className="font-display text-2xl tracking-wide">
+              PRELUX
             </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="flex items-center space-x-6 text-sm uppercase tracking-[0.18em]">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className={({ isActive }) =>
+                    isActive ? 'text-gold font-semibold' : 'hover:text-gold transition-colors'
+                  }
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+            </nav>
+
+            {/* Right Side Icons */}
+            <div className="flex items-center space-x-3">
+              <button
+                aria-label="Toggle theme"
+                className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              >
+                {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+              </button>
+              <Link to="/cart" className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors">
+                <ShoppingBagIcon className="h-5 w-5" />
+              </Link>
+              <Link to="/profile" className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors">
+                <UserIcon className="h-5 w-5" />
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -198,7 +250,10 @@ const Layout = ({ children }) => {
           <main className="flex-1 min-h-[calc(100vh-73px)] overflow-y-auto">{children}</main>
         </div>
       ) : (
-        <main className="flex-1">{children}</main>
+        <>
+          <main className="flex-1 pb-24 md:pb-0">{children}</main>
+          <MobileBottomNav />
+        </>
       )}
 
       {!isAdminRoute && (

@@ -172,9 +172,53 @@ const Profile = () => {
             Logout
           </button>
         </div>
-        <div className="lux-card p-4 space-y-2 mt-4">
-          <p className="font-semibold">{user.name}</p>
-          <p className="text-sm text-neutral-600 dark:text-neutral-300">{user.email}</p>
+        <div className="lux-card p-4 space-y-3 mt-4">
+          <div className="flex items-center gap-3">
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name} className="w-14 h-14 rounded-full object-cover" />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center">
+                <span className="text-gold font-display text-xl">{user.name?.charAt(0)?.toUpperCase()}</span>
+              </div>
+            )}
+            <div>
+              <p className="font-semibold text-lg">{user.name}</p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-300">{user.email}</p>
+              {user.provider === 'google' && (
+                <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
+                  Google Account
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Phone and Address */}
+          {(user.phone || user.address) && (
+            <div className="pt-3 border-t border-gold/20 space-y-2">
+              {user.phone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span className="text-neutral-700 dark:text-neutral-300">{user.phone}</span>
+                </div>
+              )}
+              {user.address && (
+                <div className="flex items-start gap-2 text-sm">
+                  <svg className="w-4 h-4 text-gold mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <div className="text-neutral-700 dark:text-neutral-300">
+                    <p>{user.address}</p>
+                    {(user.city || user.country) && (
+                      <p className="text-neutral-500">{[user.city, user.postalCode, user.country].filter(Boolean).join(', ')}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="lux-card p-4 space-y-3 mt-4">

@@ -26,6 +26,7 @@ import validateEmailRoutes from './routes/validateEmail.js';
 import googleAuthRoutes from './routes/googleAuth.js';
 import uploadRoutes from './routes/upload.js';
 import { errorHandler, notFound } from './middleware/error.js';
+import ensureAdmin from './utils/ensureAdmin.js';
 
 dotenv.config();
 
@@ -37,8 +38,10 @@ const io = new SocketIOServer(server, {
   },
 });
 
-// Connect to database
-connectDB();
+// Connect to database and ensure admin user exists
+connectDB().then(() => {
+  ensureAdmin();
+});
 
 // Middleware
 app.use(rateLimiter);

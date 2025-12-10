@@ -29,56 +29,60 @@ import AdminReviews from './pages/admin/Reviews.jsx';
 import AdminBlog from './pages/admin/BlogAdmin.jsx';
 import QuickView from './pages/QuickView.jsx';
 import { ToastProvider } from './components/ToastProvider.jsx';
+import { BottomNavProvider } from './context/BottomNavContext.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 const App = () => {
   return (
-    <ToastProvider>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/product/:slug" element={<Product />} />
-          <Route path="/quick/:slug" element={<QuickView />} />
-          <Route path="/cart" element={<Cart />} />
+    <BottomNavProvider>
+      <ToastProvider>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/product/:slug" element={<Product />} />
+            <Route path="/quick/:slug" element={<QuickView />} />
+            <Route path="/cart" element={<Cart />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/checkout" element={<Checkout />} />
-          </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/checkout" element={<Checkout />} />
+            </Route>
 
-          <Route path="/order/thank-you" element={<OrderThankYou />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/auth/google/callback" element={<GoogleCallback />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/search" element={<Search />} />
+            <Route path="/order/thank-you" element={<OrderThankYou />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/auth/google/callback" element={<GoogleCallback />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/search" element={<Search />} />
 
-          {/* Protected Admin Routes */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/orders" element={<AdminOrders />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/coupons" element={<AdminCoupons />} />
-            <Route path="/admin/content" element={<AdminContent />} />
-            <Route path="/admin/analytics" element={<AdminAnalytics />} />
-            <Route path="/admin/reviews" element={<AdminReviews />} />
-            <Route path="/admin/blog" element={<AdminBlog />} />
-          </Route>
+            {/* Protected Admin Routes */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/products" element={<AdminProducts />} />
+              <Route path="/admin/orders" element={<AdminOrders />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/coupons" element={<AdminCoupons />} />
+              <Route path="/admin/content" element={<AdminContent />} />
+              <Route path="/admin/analytics" element={<AdminAnalytics />} />
+              <Route path="/admin/reviews" element={<AdminReviews />} />
+              <Route path="/admin/blog" element={<AdminBlog />} />
+            </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
-    </ToastProvider>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </ToastProvider>
+    </BottomNavProvider>
   );
 };
 
 export default App;
+
