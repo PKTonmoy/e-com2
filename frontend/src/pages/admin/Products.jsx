@@ -3,8 +3,7 @@ import { useState, useMemo } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon, MagnifyingGlassIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import api from '../../lib/api.js';
 import { useToast } from '../../components/ToastProvider.jsx';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { getImageUrl } from '../../utils/imageUrl.js';
 
 const AdminProducts = () => {
   const qc = useQueryClient();
@@ -309,7 +308,7 @@ const AdminProducts = () => {
                 </div>
                 {form.images[0] && (
                   <img
-                    src={form.images[0].startsWith('/uploads') ? `${API_BASE}${form.images[0]}` : form.images[0]}
+                    src={getImageUrl(form.images[0])}
                     alt="Preview"
                     className="mt-2 h-32 w-auto object-cover rounded-lg border border-gold/20"
                   />

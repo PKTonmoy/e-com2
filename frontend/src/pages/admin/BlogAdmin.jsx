@@ -2,8 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon, PhotoIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import api from '../../lib/api.js';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { getImageUrl } from '../../utils/imageUrl.js';
 
 const BlogAdmin = () => {
     const qc = useQueryClient();
@@ -159,7 +158,7 @@ const BlogAdmin = () => {
                         <div key={post._id} className="lux-card p-4 flex items-center gap-4">
                             {post.coverImage ? (
                                 <img
-                                    src={post.coverImage.startsWith('/uploads') ? `${API_BASE}${post.coverImage}` : post.coverImage}
+                                    src={getImageUrl(post.coverImage)}
                                     alt={post.title}
                                     className="w-20 h-14 object-cover rounded-lg flex-shrink-0"
                                 />
@@ -275,7 +274,7 @@ const BlogAdmin = () => {
                                 </div>
                                 {formData.coverImage && (
                                     <img
-                                        src={formData.coverImage.startsWith('/uploads') ? `${API_BASE}${formData.coverImage}` : formData.coverImage}
+                                        src={getImageUrl(formData.coverImage)}
                                         alt="Preview"
                                         className="mt-2 h-32 object-cover rounded-lg"
                                     />
