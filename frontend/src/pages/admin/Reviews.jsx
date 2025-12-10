@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TrashIcon, StarIcon } from '@heroicons/react/24/solid';
 import api from '../../lib/api.js';
 import { useToast } from '../../components/ToastProvider.jsx';
+import { getImageUrl } from '../../utils/imageUrl.js';
 
 const Reviews = () => {
     const queryClient = useQueryClient();
@@ -44,14 +45,14 @@ const Reviews = () => {
     }
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-display">Reviews Monitoring</h1>
+        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 max-w-7xl mx-auto">
+            <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Reviews Monitoring</h1>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="lux-card p-4">
-                    <p className="text-sm text-neutral-500">Total Reviews</p>
-                    <p className="text-3xl font-bold">{totalReviews}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="lux-card p-3 sm:p-4">
+                    <p className="text-xs sm:text-sm text-neutral-500">Total Reviews</p>
+                    <p className="text-2xl sm:text-3xl font-bold">{totalReviews}</p>
                 </div>
                 <div className="lux-card p-4">
                     <p className="text-sm text-neutral-500">Average Rating</p>
@@ -95,7 +96,7 @@ const Reviews = () => {
                                             <div className="flex items-center gap-2">
                                                 {review.productId?.images?.[0] && (
                                                     <img
-                                                        src={review.productId.images[0]}
+                                                        src={getImageUrl(review.productId.images[0])}
                                                         alt={review.productId?.title}
                                                         className="w-10 h-10 rounded object-cover"
                                                     />

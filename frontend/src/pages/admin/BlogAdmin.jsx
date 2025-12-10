@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon, PhotoIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import api from '../../lib/api.js';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const BlogAdmin = () => {
     const qc = useQueryClient();
@@ -16,6 +18,28 @@ const BlogAdmin = () => {
         category: '',
         tags: '',
     });
+    const [uploading, setUploading] = useState(false);
+
+    // Handle cover image upload
+    const handleImageUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await api.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setFormData(prev => ({ ...prev, coverImage: res.data.url }));
+        } catch (err) {
+            console.error('Upload failed:', err);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const { data: posts = [], isLoading } = useQuery({
         queryKey: ['admin-blog'],
@@ -106,10 +130,10 @@ const BlogAdmin = () => {
     };
 
     return (
-        <div className="lux-container py-10 space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="lux-heading">Blog Management</h1>
-                <button onClick={() => openModal()} className="lux-btn-primary flex items-center gap-2">
+        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Blog Management</h1>
+                <button onClick={() => openModal()} className="lux-btn-primary flex items-center justify-center gap-2 text-sm">
                     <PlusIcon className="h-5 w-5" />
                     New Post
                 </button>
@@ -135,7 +159,7 @@ const BlogAdmin = () => {
                         <div key={post._id} className="lux-card p-4 flex items-center gap-4">
                             {post.coverImage ? (
                                 <img
-                                    src={post.coverImage}
+                                    src={post.coverImage.startsWith('/uploads') ? `${API_BASE}${post.coverImage}` : post.coverImage}
                                     alt={post.title}
                                     className="w-20 h-14 object-cover rounded-lg flex-shrink-0"
                                 />
@@ -226,16 +250,35 @@ const BlogAdmin = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Cover Image URL</label>
-                                <input
-                                    type="url"
-                                    value={formData.coverImage}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, coverImage: e.target.value }))}
-                                    className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30"
-                                    placeholder="https://example.com/image.jpg"
-                                />
+                                <label className="block text-sm font-medium mb-1">Cover Image</label>
+                                <div className="flex gap-3 items-start">
+                                    <div className="flex-1">
+                                        <input
+                                            type="url"
+                                            value={formData.coverImage}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, coverImage: e.target.value }))}
+                                            className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30"
+                                            placeholder="https://example.com/image.jpg (or upload)"
+                                        />
+                                    </div>
+                                    <label className="lux-btn border border-gold/40 flex items-center gap-2 cursor-pointer">
+                                        <ArrowUpTrayIcon className="h-4 w-4" />
+                                        {uploading ? 'Uploading...' : 'Upload'}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleImageUpload}
+                                            disabled={uploading}
+                                        />
+                                    </label>
+                                </div>
                                 {formData.coverImage && (
-                                    <img src={formData.coverImage} alt="Preview" className="mt-2 h-32 object-cover rounded-lg" />
+                                    <img
+                                        src={formData.coverImage.startsWith('/uploads') ? `${API_BASE}${formData.coverImage}` : formData.coverImage}
+                                        alt="Preview"
+                                        className="mt-2 h-32 object-cover rounded-lg"
+                                    />
                                 )}
                             </div>
 

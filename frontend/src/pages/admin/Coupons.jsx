@@ -107,12 +107,12 @@ const AdminCoupons = () => {
     const isExpired = (date) => date && new Date(date) < new Date();
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="font-display text-2xl">Coupon Management</h1>
+        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Coupon Management</h1>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="lux-btn-primary flex items-center gap-2"
+                    className="lux-btn-primary flex items-center justify-center gap-2 text-sm"
                 >
                     <PlusIcon className="h-5 w-5" />
                     Add Coupon
@@ -169,8 +169,8 @@ const AdminCoupons = () => {
                                 <td className="p-3">
                                     <span
                                         className={`px-2 py-1 rounded-full text-xs ${coupon.active && !isExpired(coupon.expiresAt)
-                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                             }`}
                                     >
                                         {coupon.active && !isExpired(coupon.expiresAt) ? 'Active' : 'Inactive'}

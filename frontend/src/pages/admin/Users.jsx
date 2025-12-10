@@ -35,8 +35,8 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="lux-container py-10 space-y-4">
-      <h1 className="lux-heading">Admin Users & Roles</h1>
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-4 max-w-7xl mx-auto">
+      <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Admin Users & Roles</h1>
       <p className="text-sm text-neutral-500">{users.length} users registered</p>
 
       <div className="lux-card overflow-hidden">

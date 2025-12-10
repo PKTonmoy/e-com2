@@ -8,6 +8,7 @@ import { useCart } from '../store/useCart.js';
 import { useWishlist } from '../store/useWishlist.js';
 import { socket, connectSocket, disconnectSocket } from '../lib/socket.js';
 import { useToast } from '../components/ToastProvider.jsx';
+import { getImageUrl } from '../utils/imageUrl.js';
 
 const Product = () => {
   const { slug } = useParams();
@@ -136,7 +137,7 @@ const Product = () => {
       sku: product.sku,
       stock: currentStock,
       selectedSize,
-      image: product.images?.[0],
+      image: getImageUrl(product.images?.[0]),
     };
     setItems([newItem]);
     navigate('/checkout');
@@ -187,11 +188,11 @@ const Product = () => {
         {/* Images */}
         <div className="space-y-3">
           <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-200">
-            <img src={product.images?.[0]} alt={product.title} className="h-full w-full object-cover" />
+            <img src={getImageUrl(product.images?.[0])} alt={product.title} className="h-full w-full object-cover" />
           </div>
           <div className="grid grid-cols-4 gap-2">
             {product.images?.slice(0, 4).map((img, idx) => (
-              <img key={idx} src={img} alt={product.title} className="h-20 w-full rounded-md object-cover cursor-pointer hover:ring-2 hover:ring-gold transition" />
+              <img key={idx} src={getImageUrl(img)} alt={product.title} className="h-20 w-full rounded-md object-cover cursor-pointer hover:ring-2 hover:ring-gold transition" />
             ))}
           </div>
         </div>
@@ -233,8 +234,8 @@ const Product = () => {
                   key={size}
                   onClick={() => setSelectedSize(size)}
                   className={`w-12 h-12 rounded-lg border-2 font-semibold text-sm transition-all ${selectedSize === size
-                      ? 'bg-gold text-matte border-gold'
-                      : 'border-gold/40 hover:border-gold/70 bg-transparent'
+                    ? 'bg-gold text-matte border-gold'
+                    : 'border-gold/40 hover:border-gold/70 bg-transparent'
                     }`}
                 >
                   {size}
@@ -300,8 +301,8 @@ const Product = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`pb-3 text-sm font-semibold capitalize transition border-b-2 ${activeTab === tab
-                  ? 'border-gold text-gold'
-                  : 'border-transparent hover:text-gold/70'
+                ? 'border-gold text-gold'
+                : 'border-transparent hover:text-gold/70'
                 }`}
             >
               {tab === 'reviews' ? `Reviews` : tab}

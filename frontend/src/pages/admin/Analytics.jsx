@@ -13,8 +13,8 @@ const AdminAnalytics = () => {
   });
 
   return (
-    <div className="lux-container py-10 space-y-6">
-      <h1 className="lux-heading">Analytics</h1>
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 max-w-7xl mx-auto">
+      <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Analytics</h1>
 
       <div className="lux-card p-4 space-y-3">
         <p className="font-semibold">Top Selling</p>

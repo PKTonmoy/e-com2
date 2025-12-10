@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   MoonIcon,
   SunIcon,
@@ -12,10 +13,12 @@ import {
   BookOpenIcon,
   InformationCircleIcon,
   ChatBubbleLeftRightIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import AdminSidebar from './AdminSidebar.jsx';
 import MobileBottomNav from './MobileBottomNav.jsx';
+import api from '../lib/api.js';
 
 const navLinks = [
   { to: '/shop', label: 'Shop', icon: ShoppingCartIcon },
@@ -40,11 +43,26 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
 
+  // Fetch current user to check admin role
+  const { data: user } = useQuery({
+    queryKey: ['me'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/auth/me');
+        return res.data;
+      } catch {
+        return null;
+      }
+    },
+    retry: false,
+  });
+
+  const isAdmin = user?.role === 'admin';
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
-    localStorage.setItem('theme', theme);
   }, [theme]);
 
   // Listen for system theme changes
@@ -136,6 +154,17 @@ const Layout = ({ children }) => {
                   {link.label}
                 </NavLink>
               ))}
+              {isAdmin && (
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) =>
+                    `flex items-center gap-1 ${isActive ? 'text-gold font-semibold' : 'hover:text-gold transition-colors'}`
+                  }
+                >
+                  <Cog6ToothIcon className="h-4 w-4" />
+                  Admin
+                </NavLink>
+              )}
             </nav>
 
             {/* Right Side Icons */}
@@ -143,7 +172,11 @@ const Layout = ({ children }) => {
               <button
                 aria-label="Toggle theme"
                 className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                onClick={() => {
+                  const newTheme = theme === 'dark' ? 'light' : 'dark';
+                  setTheme(newTheme);
+                  localStorage.setItem('theme', newTheme);
+                }}
               >
                 {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
               </button>
@@ -231,6 +264,23 @@ const Layout = ({ children }) => {
                   </NavLink>
                 );
               })}
+
+              {/* Admin Panel Link - Only for admins */}
+              {isAdmin && (
+                <NavLink
+                  to="/admin"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all ${isActive
+                      ? 'bg-gold/10 text-gold font-semibold'
+                      : 'hover:bg-gold/5 text-matte dark:text-ivory'
+                    }`
+                  }
+                >
+                  <Cog6ToothIcon className="h-5 w-5" />
+                  <span className="text-sm uppercase tracking-widest">Admin Panel</span>
+                </NavLink>
+              )}
             </nav>
 
             {/* Footer */}
@@ -245,9 +295,9 @@ const Layout = ({ children }) => {
 
       {/* Main Content Area */}
       {isAdminRoute ? (
-        <div className="flex flex-1">
+        <div className="flex flex-col lg:flex-row flex-1">
           <AdminSidebar />
-          <main className="flex-1 min-h-[calc(100vh-73px)] overflow-y-auto">{children}</main>
+          <main className="flex-1 min-h-[calc(100vh-73px)] overflow-x-hidden">{children}</main>
         </div>
       ) : (
         <>

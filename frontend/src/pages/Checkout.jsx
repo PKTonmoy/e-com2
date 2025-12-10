@@ -58,19 +58,19 @@ const Checkout = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8 sm:py-12">
+    <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-6 sm:py-12 overflow-x-hidden">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="font-display text-3xl sm:text-4xl text-matte dark:text-ivory">Checkout</h1>
-        <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-3" />
+      <div className="mb-6 sm:mb-8">
+        <h1 className="font-display text-2xl sm:text-4xl text-matte dark:text-ivory">Checkout</h1>
+        <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-2 sm:mt-3" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Shipping Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Contact Information */}
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-5 border border-neutral-100 dark:border-neutral-800">
-            <h2 className="font-display text-lg font-semibold mb-4">Contact Information</h2>
+          <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-100 dark:border-neutral-800">
+            <h2 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4">Contact Information</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm text-neutral-600 dark:text-neutral-400 mb-1.5">Full Name *</label>
@@ -96,8 +96,8 @@ const Checkout = () => {
           </div>
 
           {/* Shipping Address */}
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-5 border border-neutral-100 dark:border-neutral-800">
-            <h2 className="font-display text-lg font-semibold mb-4">Shipping Address</h2>
+          <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-100 dark:border-neutral-800">
+            <h2 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4">Shipping Address</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className="block text-sm text-neutral-600 dark:text-neutral-400 mb-1.5">Address *</label>
@@ -144,17 +144,17 @@ const Checkout = () => {
         </div>
 
         {/* Order Summary */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl p-5 border border-neutral-100 dark:border-neutral-800 h-fit lg:sticky lg:top-24">
-          <h2 className="font-display text-lg font-semibold mb-4">Order Summary</h2>
+        <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-100 dark:border-neutral-800 h-fit lg:sticky lg:top-24">
+          <h2 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4">Order Summary</h2>
 
           {/* Items */}
-          <div className="space-y-2 pb-4 border-b border-neutral-100 dark:border-neutral-800 mb-4">
+          <div className="space-y-2 pb-3 sm:pb-4 border-b border-neutral-100 dark:border-neutral-800 mb-3 sm:mb-4">
             {items.map((item, idx) => (
-              <div key={idx} className="flex justify-between text-sm">
-                <span className="text-neutral-600 dark:text-neutral-400 truncate flex-1 mr-2">
+              <div key={idx} className="flex justify-between items-start gap-2 text-sm">
+                <span className="text-neutral-600 dark:text-neutral-400 break-words flex-1 min-w-0 text-xs sm:text-sm">
                   {item.title} × {item.qty}
                 </span>
-                <span className="font-medium">${(item.price * item.qty).toFixed(0)}</span>
+                <span className="font-medium text-sm whitespace-nowrap">${(item.price * item.qty).toFixed(0)}</span>
               </div>
             ))}
           </div>
@@ -163,14 +163,14 @@ const Checkout = () => {
             <span className="text-neutral-600 dark:text-neutral-400">Items</span>
             <span>{items.length}</span>
           </div>
-          <div className="flex justify-between text-sm mb-4">
+          <div className="flex justify-between text-sm mb-3 sm:mb-4">
             <span className="text-neutral-600 dark:text-neutral-400">Shipping</span>
             <span className="text-green-600">Free</span>
           </div>
 
-          <div className="flex justify-between items-center pt-4 border-t border-neutral-100 dark:border-neutral-800 mb-6">
+          <div className="flex justify-between items-center pt-3 sm:pt-4 border-t border-neutral-100 dark:border-neutral-800 mb-4 sm:mb-6">
             <span className="font-semibold">Total</span>
-            <span className="text-xl font-bold text-gold">${total.toFixed(0)}</span>
+            <span className="text-lg sm:text-xl font-bold text-gold">${total.toFixed(0)}</span>
           </div>
 
           <button

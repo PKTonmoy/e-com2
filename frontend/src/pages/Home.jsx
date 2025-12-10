@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { SparklesIcon, TruckIcon, ShieldCheckIcon, CurrencyDollarIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
+import { getImageUrl } from '../utils/imageUrl.js';
 
 const DEFAULT_HERO = {
   promoBanner: {
@@ -267,7 +268,7 @@ const Home = () => {
             >
               <div className="aspect-[4/5] overflow-hidden bg-neutral-50 dark:bg-neutral-800">
                 <img
-                  src={product.images?.[0]}
+                  src={getImageUrl(product.images?.[0])}
                   alt={product.title}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
@@ -321,7 +322,7 @@ const Home = () => {
                   {post.coverImage ? (
                     <div className="aspect-[16/10] overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                       <img
-                        src={post.coverImage}
+                        src={getImageUrl(post.coverImage)}
                         alt={post.title}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />

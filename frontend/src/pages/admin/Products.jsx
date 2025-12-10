@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
-import { PencilIcon, TrashIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, PlusIcon, MagnifyingGlassIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import api from '../../lib/api.js';
 import { useToast } from '../../components/ToastProvider.jsx';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const AdminProducts = () => {
   const qc = useQueryClient();
@@ -21,6 +23,30 @@ const AdminProducts = () => {
     images: [''],
     limitedEdition: false,
   });
+  const [uploading, setUploading] = useState(false);
+
+  // Handle image upload
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      // Use the returned URL
+      setForm(prev => ({ ...prev, images: [res.data.url] }));
+      addToast('Image uploaded successfully!');
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Upload failed', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const { data: products = [] } = useQuery({
     queryKey: ['admin-products'],
@@ -113,15 +139,15 @@ const AdminProducts = () => {
   };
 
   return (
-    <div className="lux-container py-10 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="lux-heading">Admin Products</h1>
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-4 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Admin Products</h1>
         <button
           onClick={() => {
             resetForm();
             setShowModal(true);
           }}
-          className="lux-btn-primary flex items-center gap-2"
+          className="lux-btn-primary flex items-center justify-center gap-2 text-sm"
         >
           <PlusIcon className="h-5 w-5" />
           Add Product
@@ -132,7 +158,7 @@ const AdminProducts = () => {
         <MagnifyingGlassIcon className="h-5 w-5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
         <input
           type="text"
-          placeholder="Search products by title, SKU, or category..."
+          placeholder="Search products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full border border-gold/30 rounded-lg pl-10 pr-4 py-2.5 text-sm bg-ivory/80 dark:bg-matte font-body"
@@ -257,12 +283,38 @@ const AdminProducts = () => {
                 value={form.descriptionHTML}
                 onChange={(e) => setForm({ ...form, descriptionHTML: e.target.value })}
               />
-              <input
-                className="w-full border p-3 rounded-lg"
-                placeholder="Image URL"
-                value={form.images[0]}
-                onChange={(e) => setForm({ ...form, images: [e.target.value] })}
-              />
+              {/* Image Upload Section */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Product Image</label>
+                <div className="flex gap-3 items-start">
+                  <div className="flex-1">
+                    <input
+                      className="w-full border p-3 rounded-lg"
+                      placeholder="Image URL (or upload below)"
+                      value={form.images[0]}
+                      onChange={(e) => setForm({ ...form, images: [e.target.value] })}
+                    />
+                  </div>
+                  <label className="lux-btn border border-gold/40 flex items-center gap-2 cursor-pointer">
+                    <ArrowUpTrayIcon className="h-4 w-4" />
+                    {uploading ? 'Uploading...' : 'Upload'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                  </label>
+                </div>
+                {form.images[0] && (
+                  <img
+                    src={form.images[0].startsWith('/uploads') ? `${API_BASE}${form.images[0]}` : form.images[0]}
+                    alt="Preview"
+                    className="mt-2 h-32 w-auto object-cover rounded-lg border border-gold/20"
+                  />
+                )}
+              </div>
 
               {/* Limited Edition Toggle */}
               <div className="flex items-center gap-3 p-4 border border-gold/30 rounded-lg bg-gold/5">

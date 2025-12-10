@@ -431,19 +431,19 @@ const AdminContent = () => {
   const [activeTab, setActiveTab] = useState('home');
 
   return (
-    <div className="lux-container py-10 space-y-6">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="lux-heading">Site Content Management</h1>
-        <PhotoIcon className="h-8 w-8 text-gold" />
+        <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Site Content Management</h1>
+        <PhotoIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gold" />
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 border-b border-gold/20">
+      <div className="flex overflow-x-auto space-x-1 border-b border-gold/20 -mx-4 px-4 sm:mx-0 sm:px-0">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${activeTab === tab.id
+            className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
               ? 'text-gold border-b-2 border-gold -mb-px'
               : 'text-neutral-600 hover:text-gold'
               }`}

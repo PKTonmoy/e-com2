@@ -34,29 +34,29 @@ const AdminOrders = () => {
   };
 
   return (
-    <div className="lux-container py-10 space-y-4">
-      <h1 className="lux-heading">Admin Orders</h1>
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-4 max-w-7xl mx-auto">
+      <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Admin Orders</h1>
       <div className="space-y-3">
         {orders.map((order) => {
           const isExpanded = expandedOrder === order._id;
           return (
-            <div key={order._id} className="lux-card p-4">
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <p className="font-semibold">{order.userId?.name || 'Guest'}</p>
+            <div key={order._id} className="lux-card p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <p className="font-semibold text-sm sm:text-base">{order.userId?.name || 'Guest'}</p>
                     <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.orderStatus)}`}>
                       {order.orderStatus}
                     </span>
                   </div>
                   <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                    Order #{order._id.slice(-8)} • {order.items.length} items • ${order.total.toFixed(2)}
+                    #{order._id.slice(-8)} • {order.items.length} items • ${order.total.toFixed(2)}
                   </p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     {new Date(order.createdAt).toLocaleString()}
                   </p>
                 </div>
-                <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2 sm:flex-col sm:items-end">
                   <select
                     value={order.orderStatus}
                     onChange={(e) => {
@@ -65,7 +65,7 @@ const AdminOrders = () => {
                         status: e.target.value,
                       });
                     }}
-                    className="border border-gold/30 rounded-lg px-3 py-1.5 text-sm bg-ivory/80 dark:bg-matte font-body"
+                    className="border border-gold/30 rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-ivory/80 dark:bg-matte font-body"
                   >
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>

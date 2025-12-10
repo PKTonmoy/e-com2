@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../store/useWishlist.js';
+import { getImageUrl } from '../utils/imageUrl.js';
 
 const Wishlist = () => {
   const { items, fetchWishlist, removeFromWishlist } = useWishlist();
@@ -30,7 +31,7 @@ const Wishlist = () => {
               <Link to={`/product/${product.slug}`}>
                 <div className="aspect-[4/5]">
                   <img
-                    src={product.images?.[0]}
+                    src={getImageUrl(product.images?.[0])}
                     alt={product.title}
                     className="h-full w-full object-cover"
                   />

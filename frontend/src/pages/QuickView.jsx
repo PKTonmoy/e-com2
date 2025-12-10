@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api.js';
 import { useCart } from '../store/useCart.js';
+import { getImageUrl } from '../utils/imageUrl.js';
 
 const QuickView = () => {
   const { slug } = useParams();
@@ -19,7 +20,7 @@ const QuickView = () => {
   return (
     <div className="lux-container py-12">
       <div className="lux-card p-6 grid gap-6 md:grid-cols-2">
-        <img src={product.images?.[0]} alt={product.title} className="w-full rounded-xl object-cover" />
+        <img src={getImageUrl(product.images?.[0])} alt={product.title} className="w-full rounded-xl object-cover" />
         <div className="space-y-4">
           <p className="lux-badge">Preview</p>
           <p className="font-display text-2xl">{product.title}</p>

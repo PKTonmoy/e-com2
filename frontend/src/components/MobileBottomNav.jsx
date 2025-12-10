@@ -1,10 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
     HomeIcon,
     Squares2X2Icon,
     ShoppingBagIcon,
     HeartIcon,
     UserIcon,
+    Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import {
     HomeIcon as HomeIconSolid,
@@ -12,10 +14,12 @@ import {
     ShoppingBagIcon as ShoppingBagIconSolid,
     HeartIcon as HeartIconSolid,
     UserIcon as UserIconSolid,
+    Cog6ToothIcon as Cog6ToothIconSolid,
 } from '@heroicons/react/24/solid';
 import { useBottomNav } from '../context/BottomNavContext.jsx';
+import api from '../lib/api.js';
 
-const navItems = [
+const baseNavItems = [
     { to: '/', label: 'Home', icon: HomeIcon, iconActive: HomeIconSolid },
     { to: '/shop', label: 'Category', icon: Squares2X2Icon, iconActive: Squares2X2IconSolid },
     { to: '/cart', label: 'Cart', icon: ShoppingBagIcon, iconActive: ShoppingBagIconSolid },
@@ -23,9 +27,30 @@ const navItems = [
     { to: '/profile', label: 'Profile', icon: UserIcon, iconActive: UserIconSolid },
 ];
 
+const adminNavItem = { to: '/admin', label: 'Admin', icon: Cog6ToothIcon, iconActive: Cog6ToothIconSolid };
+
 const MobileBottomNav = () => {
     const location = useLocation();
     const { isBottomNavVisible } = useBottomNav();
+
+    // Fetch current user to check admin role
+    const { data: user } = useQuery({
+        queryKey: ['me'],
+        queryFn: async () => {
+            try {
+                const res = await api.get('/auth/me');
+                return res.data;
+            } catch {
+                return null;
+            }
+        },
+        retry: false,
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    // Build nav items - add admin item if user is admin
+    const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems;
 
     // Don't show on admin pages
     if (location.pathname.startsWith('/admin')) {

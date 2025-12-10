@@ -6,6 +6,7 @@ import api from '../lib/api.js';
 import { useCart } from '../store/useCart.js';
 import { useToast } from '../components/ToastProvider.jsx';
 import { useBottomNav } from '../context/BottomNavContext.jsx';
+import { getImageUrl } from '../utils/imageUrl.js';
 
 const DEFAULT_CONTENT = {
   title: 'The Collection',
@@ -230,7 +231,7 @@ const Shop = () => {
                   className="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden shadow-sm"
                 >
                   <div className="aspect-square overflow-hidden bg-neutral-50 dark:bg-neutral-800 relative">
-                    <img src={product.images?.[0]} alt={product.title} className="w-full h-full object-cover" />
+                    <img src={getImageUrl(product.images?.[0])} alt={product.title} className="w-full h-full object-cover" />
                     {product.limitedEdition && (
                       <span className="absolute top-2 left-2 inline-flex items-center gap-0.5 text-[10px] font-body font-medium text-gold bg-gold/10 backdrop-blur-sm px-2 py-1 rounded-full">
                         <SparklesIcon className="h-3 w-3" />
@@ -406,7 +407,7 @@ const Shop = () => {
                       {/* Product Image */}
                       <div className="aspect-[4/5] overflow-hidden bg-neutral-50 dark:bg-neutral-800 relative">
                         <img
-                          src={product.images?.[0]}
+                          src={getImageUrl(product.images?.[0])}
                           alt={product.title}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
