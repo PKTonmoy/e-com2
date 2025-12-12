@@ -50,8 +50,8 @@ const Product = () => {
   useEffect(() => {
     if (!product) return;
 
-    // Set default size
-    if (product.sizes?.length > 0 && !selectedSize) {
+    // Set default size (only if product has sizes enabled)
+    if (product.hasSizes !== false && product.sizes?.length > 0 && !selectedSize) {
       setSelectedSize(product.sizes[2] || product.sizes[0]); // Default to L or first
     }
 
@@ -99,7 +99,8 @@ const Product = () => {
 
   const currentStock = liveStock !== null ? liveStock : product.stock;
   const inWishlist = isInWishlist(product._id);
-  const sizes = product.sizes || ['S', 'M', 'L', 'XL', 'XXL', '3XL'];
+  const hasSizes = product.hasSizes !== false && product.sizes?.length > 0;
+  const sizes = hasSizes ? product.sizes : [];
 
   const toggleWishlist = () => {
     if (inWishlist) {
@@ -110,20 +111,21 @@ const Product = () => {
   };
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
+    if (hasSizes && !selectedSize) {
       addToast('Please select a size');
       return;
     }
-    const result = addItem(product, product.variants?.[0]?.id, currentStock, selectedSize);
+    const result = addItem(product, product.variants?.[0]?.id, currentStock, selectedSize || null);
     if (result.success) {
-      addToast(`${product.title} (${selectedSize}) added to cart!`);
+      const sizeText = selectedSize ? ` (${selectedSize})` : '';
+      addToast(`${product.title}${sizeText} added to cart!`);
     } else {
       addToast(result.message || 'Could not add to cart');
     }
   };
 
   const handleBuyNow = () => {
-    if (!selectedSize) {
+    if (hasSizes && !selectedSize) {
       addToast('Please select a size');
       return;
     }
@@ -217,32 +219,34 @@ const Product = () => {
             )}
           </p>
 
-          {/* Size Selector */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Select Size</p>
-              <button
-                onClick={() => setShowSizeGuide(true)}
-                className="text-sm text-gold hover:underline"
-              >
-                Size Guide
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {sizes.map((size) => (
+          {/* Size Selector - Only shown if product has sizes */}
+          {hasSizes && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold">Select Size</p>
                 <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`w-12 h-12 rounded-lg border-2 font-semibold text-sm transition-all ${selectedSize === size
-                    ? 'bg-gold text-matte border-gold'
-                    : 'border-gold/40 hover:border-gold/70 bg-transparent'
-                    }`}
+                  onClick={() => setShowSizeGuide(true)}
+                  className="text-sm text-gold hover:underline"
                 >
-                  {size}
+                  Size Guide
                 </button>
-              ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`w-12 h-12 rounded-lg border-2 font-semibold text-sm transition-all ${selectedSize === size
+                      ? 'bg-gold text-matte border-gold'
+                      : 'border-gold/40 hover:border-gold/70 bg-transparent'
+                      }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Buy Now & Add to Cart Buttons */}
           <div className="flex gap-3 pt-2">
@@ -321,7 +325,7 @@ const Product = () => {
           <div className="space-y-2 text-sm">
             <p><strong>SKU:</strong> {product.sku}</p>
             <p><strong>Category:</strong> {product.category || 'N/A'}</p>
-            <p><strong>Available Sizes:</strong> {sizes.join(', ')}</p>
+            {hasSizes && <p><strong>Available Sizes:</strong> {sizes.join(', ')}</p>}
             <p><strong>Stock:</strong> {currentStock} units</p>
           </div>
         )}

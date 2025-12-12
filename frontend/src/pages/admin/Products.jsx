@@ -11,6 +11,7 @@ const AdminProducts = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL'];
   const [form, setForm] = useState({
     title: '',
     slug: '',
@@ -21,6 +22,8 @@ const AdminProducts = () => {
     descriptionHTML: '',
     images: [''],
     limitedEdition: false,
+    hasSizes: true,
+    sizes: ALL_SIZES,
   });
   const [uploading, setUploading] = useState(false);
 
@@ -108,6 +111,8 @@ const AdminProducts = () => {
       descriptionHTML: '',
       images: [''],
       limitedEdition: false,
+      hasSizes: true,
+      sizes: ALL_SIZES,
     });
     setEditingProduct(null);
   };
@@ -124,8 +129,19 @@ const AdminProducts = () => {
       descriptionHTML: product.descriptionHTML || '',
       images: product.images || [''],
       limitedEdition: product.limitedEdition || false,
+      hasSizes: product.hasSizes !== false,
+      sizes: product.sizes || ALL_SIZES,
     });
     setShowModal(true);
+  };
+
+  const toggleSize = (size) => {
+    setForm((prev) => {
+      const sizes = prev.sizes.includes(size)
+        ? prev.sizes.filter((s) => s !== size)
+        : [...prev.sizes, size];
+      return { ...prev, sizes };
+    });
   };
 
   const handleSubmit = (e) => {
@@ -333,6 +349,45 @@ const AdminProducts = () => {
                   <span className="font-semibold text-sm">Limited Edition</span>
                   <span className="text-xs text-neutral-500">Mark this product as a limited drop (shown on homepage)</span>
                 </label>
+              </div>
+
+              {/* Size Options Section */}
+              <div className="p-4 border border-gold/30 rounded-lg bg-gold/5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="hasSizes"
+                    checked={form.hasSizes}
+                    onChange={(e) => setForm({ ...form, hasSizes: e.target.checked })}
+                    className="w-5 h-5 accent-gold rounded"
+                  />
+                  <label htmlFor="hasSizes" className="flex flex-col cursor-pointer">
+                    <span className="font-semibold text-sm">This product has sizes</span>
+                    <span className="text-xs text-neutral-500">Enable size selection for this product (disable for watches, accessories, etc.)</span>
+                  </label>
+                </div>
+
+                {form.hasSizes && (
+                  <div className="pt-3 border-t border-gold/20">
+                    <p className="text-sm font-medium mb-2">Available Sizes</p>
+                    <div className="flex flex-wrap gap-2">
+                      {ALL_SIZES.map((size) => (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => toggleSize(size)}
+                          className={`w-12 h-10 rounded-lg border-2 font-semibold text-sm transition-all ${form.sizes.includes(size)
+                            ? 'bg-gold text-matte border-gold'
+                            : 'border-gold/40 hover:border-gold/70 bg-transparent'
+                            }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-neutral-500 mt-2">Click to toggle which sizes are available for this product</p>
+                  </div>
+                )}
               </div>
               <div className="flex gap-3">
                 <button type="submit" className="lux-btn-primary">

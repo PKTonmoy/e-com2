@@ -51,8 +51,19 @@ router.delete('/:id', protect, requireRole('manager', 'admin'), async (req, res)
   res.json({ message: 'Coupon deleted' });
 });
 
-// Validate coupon (public - for cart use)
-router.post('/validate', async (req, res) => {
+// Reset coupon usage (admin only) - clears all users who have used this coupon
+router.post('/:id/reset-usage', protect, requireRole('admin'), async (req, res) => {
+  const coupon = await Coupon.findByIdAndUpdate(
+    req.params.id,
+    { $set: { usedBy: [] } },
+    { new: true }
+  );
+  if (!coupon) return res.status(404).json({ message: 'Coupon not found' });
+  res.json({ message: 'Coupon usage reset successfully', coupon });
+});
+
+// Validate coupon (requires auth to check usage)
+router.post('/validate', protect, async (req, res) => {
   const { code, cartTotal } = req.body;
 
   if (!code) {
@@ -65,6 +76,11 @@ router.post('/validate', async (req, res) => {
     return res.status(404).json({ message: 'Invalid coupon code' });
   }
 
+  // Check if user already used this coupon
+  if (coupon.usedBy.includes(req.user._id)) {
+    return res.status(400).json({ message: 'You have already used this coupon' });
+  }
+
   // Check expiry
   if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
     return res.status(400).json({ message: 'This coupon has expired' });
@@ -73,7 +89,7 @@ router.post('/validate', async (req, res) => {
   // Check minimum purchase
   if (coupon.minPurchase && cartTotal && cartTotal < coupon.minPurchase) {
     return res.status(400).json({
-      message: `Minimum purchase of $${coupon.minPurchase} required for this coupon`
+      message: `Minimum purchase of ৳${coupon.minPurchase} required for this coupon`
     });
   }
 

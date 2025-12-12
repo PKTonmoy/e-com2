@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import api from '../../lib/api.js';
 import { useToast } from '../../components/ToastProvider.jsx';
 
@@ -54,6 +54,15 @@ const AdminCoupons = () => {
             addToast('Coupon deleted');
         },
         onError: (err) => addToast(err.response?.data?.message || 'Failed to delete coupon'),
+    });
+
+    const resetUsageMutation = useMutation({
+        mutationFn: (id) => api.post(`/coupons/${id}/reset-usage`),
+        onSuccess: () => {
+            queryClient.invalidateQueries(['admin-coupons']);
+            addToast('Coupon usage reset! All users can now use this coupon again.');
+        },
+        onError: (err) => addToast(err.response?.data?.message || 'Failed to reset usage'),
     });
 
     const resetForm = () => {
@@ -142,6 +151,7 @@ const AdminCoupons = () => {
                             <th className="text-left p-3">Min. Purchase</th>
                             <th className="text-left p-3">Expires</th>
                             <th className="text-left p-3">Status</th>
+                            <th className="text-left p-3">Used By</th>
                             <th className="text-left p-3">Actions</th>
                         </tr>
                     </thead>
@@ -177,6 +187,11 @@ const AdminCoupons = () => {
                                     </span>
                                 </td>
                                 <td className="p-3">
+                                    <span className="text-sm">
+                                        {coupon.usedBy?.length || 0} user(s)
+                                    </span>
+                                </td>
+                                <td className="p-3">
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleEdit(coupon)}
@@ -191,9 +206,23 @@ const AdminCoupons = () => {
                                                 }
                                             }}
                                             className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded text-red-600"
+                                            title="Delete Coupon"
                                         >
                                             <TrashIcon className="h-4 w-4" />
                                         </button>
+                                        {coupon.usedBy?.length > 0 && (
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm(`Reset usage for ${coupon.code}? This will allow all ${coupon.usedBy.length} user(s) to use this coupon again.`)) {
+                                                        resetUsageMutation.mutate(coupon._id);
+                                                    }
+                                                }}
+                                                className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded text-blue-600"
+                                                title="Reset Usage"
+                                            >
+                                                <ArrowPathIcon className="h-4 w-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>

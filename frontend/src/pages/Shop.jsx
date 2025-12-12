@@ -171,7 +171,25 @@ const Shop = () => {
 
       {/* ========== MOBILE LAYOUT ========== */}
       <div className="lg:hidden">
-        {/* Mobile Header with Search */}
+        {/* Compact Mobile Header */}
+        <div className="sm:hidden bg-ivory dark:bg-matte border-b border-gold/20 px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-gold text-[10px] font-medium uppercase tracking-widest">Collection</p>
+              <div className="flex items-baseline gap-2">
+                <h1 className="font-display text-lg text-matte dark:text-ivory leading-tight">{content.title}</h1>
+                {products.length > 0 && <span className="text-xs text-neutral-400">({products.length})</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Search & Filter */}
         <div className="bg-ivory dark:bg-matte px-4 py-4">
           <div className="flex items-center gap-3">
             {/* Search Input */}

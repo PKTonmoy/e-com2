@@ -69,7 +69,7 @@ export const useCart = create(
         );
         set({ items: next });
       },
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], coupon: null }),
       syncToServer: async () => {
         const { items } = get();
         try {
@@ -84,6 +84,8 @@ export const useCart = create(
     }),
     {
       name: 'prelux-cart', // localStorage key
+      // Only persist items, NOT the coupon - coupon must be applied each session
+      partialize: (state) => ({ items: state.items }),
     }
   )
 );
