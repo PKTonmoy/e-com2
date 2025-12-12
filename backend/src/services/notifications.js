@@ -289,44 +289,80 @@ ${details.fullAddress}
 <html>
 <head>
   <style>
-    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .header { background: linear-gradient(135deg, #b8860b, #daa520); color: white; padding: 24px; text-align: center; }
-    .header h1 { margin: 0; font-size: 24px; }
-    .content { padding: 24px; }
-    .row { display: flex; padding: 12px 0; border-bottom: 1px solid #eee; }
-    .label { color: #666; width: 120px; font-weight: 600; }
-    .value { color: #333; flex: 1; }
-    .items { background: #f9f9f9; padding: 16px; border-radius: 8px; margin: 16px 0; }
-    .item { padding: 8px 0; border-bottom: 1px solid #eee; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; padding: 20px; line-height: 1.5; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #b8860b, #daa520); color: white; padding: 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 300; letter-spacing: 1px; }
+    .subtitle { opacity: 0.9; font-size: 14px; margin-top: 5px; }
+    .content { padding: 30px; }
+    .section { margin-bottom: 25px; }
+    .section-title { font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600; }
+    .row { display: flex; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+    .label { color: #666; width: 140px; font-size: 14px; }
+    .value { color: #333; flex: 1; font-weight: 500; font-size: 14px; }
+    .items { background: #fafafa; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+    .item { padding: 15px; border-bottom: 1px solid #eee; display: flex; gap: 15px; }
     .item:last-child { border: none; }
-    .total { font-size: 24px; color: #b8860b; font-weight: bold; text-align: center; padding: 20px; }
-    .footer { background: #f5f5f5; padding: 16px; text-align: center; color: #666; font-size: 12px; }
+    .item-img { width: 50px; height: 50px; background: #eee; border-radius: 4px; object-fit: cover; }
+    .item-details { flex: 1; }
+    .item-title { font-weight: 600; color: #333; margin-bottom: 4px; }
+    .item-meta { font-size: 12px; color: #888; }
+    .item-price { font-weight: 600; color: #b8860b; }
+    .total-section { margin-top: 20px; text-align: right; padding-top: 15px; border-top: 2px solid #eee; }
+    .total-row { display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 5px; color: #666; }
+    .final-total { font-size: 20px; color: #b8860b; font-weight: bold; margin-top: 10px; }
+    .footer { background: #f9f9f9; padding: 20px; text-align: center; color: #999; font-size: 12px; border-top: 1px solid #eee; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <h1>${emoji} ${title}</h1>
+      <div class="subtitle">Order #${details.orderId}</div>
     </div>
     <div class="content">
-      <div class="row"><span class="label">Order ID</span><span class="value">#${details.orderId}</span></div>
-      <div class="row"><span class="label">Customer</span><span class="value">${details.customerName}</span></div>
-      <div class="row"><span class="label">Phone</span><span class="value">${details.customerPhone}</span></div>
-      <div class="row"><span class="label">Status</span><span class="value">${details.status}</span></div>
-      <div class="row"><span class="label">Address</span><span class="value">${details.address}</span></div>
-      
-      <div class="items">
-        <strong>Items (${details.itemCount}):</strong>
-        ${order.items.map(item => `
-          <div class="item">${item.title} × ${item.qty} — ৳${(item.price * item.qty).toFixed(0)}</div>
-        `).join('')}
+      <div class="section">
+        <div class="section-title">Customer Information</div>
+        <div class="row"><span class="label">Name</span><span class="value">${details.customerName}</span></div>
+        <div class="row"><span class="label">Phone</span><span class="value">${details.customerPhone}</span></div>
+        <div class="row"><span class="label">Email</span><span class="value">${details.customerEmail}</span></div>
+        <div class="row"><span class="label">Address</span><span class="value" style="white-space: pre-line;">${details.fullAddress}</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Order Info</div>
+        <div class="row"><span class="label">Order ID</span><span class="value">#${details.fullOrderId}</span></div>
+        <div class="row"><span class="label">Date</span><span class="value">${new Date().toLocaleString()}</span></div>
+        <div class="row"><span class="label">Status</span><span class="value" style="text-transform: capitalize;">${details.status}</span></div>
+        <div class="row"><span class="label">Payment</span><span class="value" style="text-transform: capitalize;">${details.paymentStatus}</span></div>
       </div>
       
-      <div class="total">Total: ৳${details.total}</div>
+      <div class="section">
+        <div class="section-title">Order Items (${details.itemCount})</div>
+        <div class="items">
+          ${order.items.map(item => `
+            <div class="item">
+               <div class="item-details">
+                 <div class="item-title">${item.title}</div>
+                 <div class="item-meta">
+                   ${item.selectedSize ? `Size: ${item.selectedSize} • ` : ''} Qty: ${item.qty}
+                 </div>
+               </div>
+               <div class="item-price">৳${(item.price * item.qty).toFixed(0)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <div class="total-section">
+        <div class="total-row"><span>Subtotal:</span> <span>৳${details.total}</span></div>
+        ${parseFloat(details.discount) > 0 ? `<div class="total-row"><span>Discount:</span> <span>-৳${details.discount}</span></div>` : ''}
+        <div class="final-total">Total: ৳${details.total}</div>
+      </div>
     </div>
     <div class="footer">
-      PRELUX Admin Notification System
+      PRELUX Admin Notification System<br>
+      Automated message from your e-commerce platform
     </div>
   </div>
 </body>
@@ -336,15 +372,26 @@ ${details.fullAddress}
     // WhatsApp message
     const whatsappMessage = `${emoji} *${title}*
 
-Order: #${details.orderId}
-Customer: ${details.customerName}
+━━━━━━━━━━━━━━
+👤 *CUSTOMER INFO*
+Name: ${details.customerName}
 Phone: ${details.customerPhone}
-Total: ৳${details.total}
+Email: ${details.customerEmail}
 
-Items: ${details.itemCount}
+📍 *ADDRESS*
+${details.fullAddress}
+
+━━━━━━━━━━━━━━
+📋 *ORDER DETAILS*
+Order ID: #${details.orderId}
+Status: ${details.status}
+Payment: ${details.paymentStatus}
+
+📦 *ITEMS (${details.itemCount})*
 ${details.itemsList}
 
-Address: ${details.address}`;
+💰 *TOTAL: ৳${details.total}*
+━━━━━━━━━━━━━━`.trim();
 
     // Get notification settings from database
     let settings = { emailEnabled: true, telegramEnabled: true, whatsappEnabled: false };

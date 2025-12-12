@@ -128,76 +128,138 @@ const AdminOrders = () => {
 
               {isExpanded && (
                 <div className="mt-4 border-t border-gold/20 pt-4 space-y-4">
-                  {/* Shipping Address */}
-                  <div>
-                    <p className="font-semibold text-sm mb-2">Shipping Address</p>
-                    <div className="text-sm text-neutral-600 dark:text-neutral-300 space-y-1">
-                      <p className="font-medium">{order.shipping?.name}</p>
-                      {order.shipping?.phone && (
+                  {/* Contact & Order Info Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Contact Information */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                      <p className="font-semibold text-sm mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Contact Information
+                      </p>
+                      <div className="text-sm space-y-2">
                         <p className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          <span className="font-medium text-gold">{order.shipping?.phone}</span>
+                          <span className="text-neutral-500 dark:text-neutral-400">Name:</span>
+                          <span className="font-medium text-matte dark:text-ivory">{order.shipping?.name || 'N/A'}</span>
                         </p>
-                      )}
-                      <p>{order.shipping?.address}</p>
-                      <p>{order.shipping?.city}, {order.shipping?.postalCode}</p>
-                      <p>{order.shipping?.country}</p>
+                        <p className="flex items-center gap-2">
+                          <span className="text-neutral-500 dark:text-neutral-400">Phone:</span>
+                          <a href={`tel:${order.shipping?.phone}`} className="font-medium text-gold hover:underline">{order.shipping?.phone || 'N/A'}</a>
+                        </p>
+                        {order.shipping?.email && (
+                          <p className="flex items-center gap-2">
+                            <span className="text-neutral-500 dark:text-neutral-400">Email:</span>
+                            <a href={`mailto:${order.shipping?.email}`} className="font-medium text-gold hover:underline text-xs">{order.shipping.email}</a>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Shipping Address */}
+                    <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4">
+                      <p className="font-semibold text-sm mb-3 flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Shipping Address
+                      </p>
+                      <div className="text-sm text-neutral-600 dark:text-neutral-300 space-y-1">
+                        <p>{order.shipping?.address || 'N/A'}</p>
+                        <p>{order.shipping?.city}{order.shipping?.postalCode ? `, ${order.shipping.postalCode}` : ''}</p>
+                        <p className="font-medium">{order.shipping?.country || 'N/A'}</p>
+                      </div>
+                    </div>
+
+                    {/* Order Info */}
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                      <p className="font-semibold text-sm mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        Order Details
+                      </p>
+                      <div className="text-sm space-y-2">
+                        <p className="flex justify-between">
+                          <span className="text-neutral-500 dark:text-neutral-400">Order ID:</span>
+                          <span className="font-mono text-xs">#{order._id.slice(-8)}</span>
+                        </p>
+                        <p className="flex justify-between">
+                          <span className="text-neutral-500 dark:text-neutral-400">Payment:</span>
+                          <span className={`font-medium ${order.paymentStatus === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>{order.paymentStatus || 'pending'}</span>
+                        </p>
+                        {order.couponCode && (
+                          <p className="flex justify-between">
+                            <span className="text-neutral-500 dark:text-neutral-400">Coupon:</span>
+                            <span className="font-medium text-purple-600">{order.couponCode}</span>
+                          </p>
+                        )}
+                        {order.discount > 0 && (
+                          <p className="flex justify-between">
+                            <span className="text-neutral-500 dark:text-neutral-400">Discount:</span>
+                            <span className="font-medium text-red-500">-৳{order.discount.toFixed(0)}</span>
+                          </p>
+                        )}
+                        <p className="flex justify-between border-t border-green-200 dark:border-green-800 pt-2 mt-2">
+                          <span className="font-semibold">Total:</span>
+                          <span className="font-bold text-gold">৳{order.total.toFixed(0)}</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-sm mb-2">Order Items</p>
-                    <div className="space-y-3">
-                      {order.items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex gap-3 p-3 bg-ivory/50 dark:bg-charcoal/50 rounded-lg"
-                        >
-                          {/* Product Image */}
-                          {item.image && (
-                            <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800">
-                              <img
-                                src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/uploads/${item.image}`}
-                                alt={item.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          {/* Product Details */}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-matte dark:text-ivory truncate">{item.title}</p>
-                            <div className="flex flex-wrap items-center gap-2 mt-1">
-                              {item.category && (
-                                <span className="px-2 py-0.5 text-[10px] bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-full uppercase tracking-wide">
-                                  {item.category}
-                                </span>
-                              )}
-                              {item.selectedSize && (
-                                <span className="px-2 py-0.5 text-[10px] bg-gold/20 text-gold rounded-full font-medium">
-                                  Size: {item.selectedSize}
-                                </span>
-                              )}
-                              <span className="text-xs text-neutral-500">Qty: {item.qty}</span>
-                            </div>
-                            <p className="text-[11px] text-neutral-400 mt-1">SKU: {item.sku || 'N/A'}</p>
+
+                  <p className="font-semibold text-sm mb-2">Order Items</p>
+                  <div className="space-y-3">
+                    {order.items.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex gap-3 p-3 bg-ivory/50 dark:bg-charcoal/50 rounded-lg"
+                      >
+                        {/* Product Image */}
+                        {item.image && (
+                          <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                            <img
+                              src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/uploads/${item.image}`}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
-                          {/* Price */}
-                          <div className="text-right flex-shrink-0">
-                            <p className="font-semibold text-sm text-gold">৳{(item.price * item.qty).toFixed(0)}</p>
-                            <p className="text-[10px] text-neutral-400">৳{item.price?.toFixed(0)} each</p>
+                        )}
+                        {/* Product Details */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-matte dark:text-ivory truncate">{item.title}</p>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            {item.category && (
+                              <span className="px-2 py-0.5 text-[10px] bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-full uppercase tracking-wide">
+                                {item.category}
+                              </span>
+                            )}
+                            {item.selectedSize && (
+                              <span className="px-2 py-0.5 text-[10px] bg-gold/20 text-gold rounded-full font-medium">
+                                Size: {item.selectedSize}
+                              </span>
+                            )}
+                            <span className="text-xs text-neutral-500">Qty: {item.qty}</span>
                           </div>
+                          <p className="text-[11px] text-neutral-400 mt-1">SKU: {item.sku || 'N/A'}</p>
                         </div>
-                      ))}
-                    </div>
+                        {/* Price */}
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-semibold text-sm text-gold">৳{(item.price * item.qty).toFixed(0)}</p>
+                          <p className="text-[10px] text-neutral-400">৳{item.price?.toFixed(0)} each</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              )}
+              )
+              }
             </div>
           );
         })}
       </div>
-    </div>
+    </div >
   );
 };
 
