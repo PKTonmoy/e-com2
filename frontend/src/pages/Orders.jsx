@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ChevronDownIcon, ChevronUpIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 import { useToast } from '../components/ToastProvider.jsx';
+import MobileHeader from '../components/MobileHeader';
 
 const Orders = () => {
   const [expandedOrder, setExpandedOrder] = useState(null);
@@ -55,22 +56,7 @@ const Orders = () => {
   return (
     <div className="min-h-screen bg-ivory dark:bg-matte">
       {/* Compact Mobile Header */}
-      <div className="sm:hidden bg-ivory dark:bg-matte border-b border-gold/20 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-gold text-[10px] font-medium uppercase tracking-widest">History</p>
-            <div className="flex items-baseline gap-2">
-              <h1 className="font-display text-lg text-matte dark:text-ivory leading-tight">My Orders</h1>
-              {orders.length > 0 && <span className="text-xs text-neutral-400">({orders.length})</span>}
-            </div>
-          </div>
-        </div>
-      </div>
+      <MobileHeader title="My Orders" subtitle="History" />
 
       {/* Content */}
       <div className="lux-container py-4 sm:py-12 space-y-6">

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api.js';
+import MobileHeader from '../components/MobileHeader';
 import { useCart } from '../store/useCart.js';
 import { useState, useEffect } from 'react';
 import { useToast } from '../components/ToastProvider.jsx';
@@ -107,19 +108,7 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-ivory dark:bg-matte overflow-x-hidden">
       {/* Compact Mobile Header */}
-      <div className="sm:hidden bg-ivory dark:bg-matte border-b border-gold/20 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-gold text-[10px] font-medium uppercase tracking-widest">Secure</p>
-            <h1 className="font-display text-lg text-matte dark:text-ivory leading-tight">Checkout</h1>
-          </div>
-        </div>
-      </div>
+      <MobileHeader title="Checkout" subtitle="Secure" />
 
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-4 sm:py-12">
         {/* Desktop Header */}

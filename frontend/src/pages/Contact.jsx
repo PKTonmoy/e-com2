@@ -1,20 +1,10 @@
+import MobileHeader from '../components/MobileHeader';
+
 const Contact = () => {
   return (
     <div className="min-h-screen bg-ivory dark:bg-matte">
       {/* Compact Mobile Header */}
-      <div className="sm:hidden bg-ivory dark:bg-matte border-b border-gold/20 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-gold text-[10px] font-medium uppercase tracking-widest">Concierge</p>
-            <h1 className="font-display text-lg text-matte dark:text-ivory leading-tight">Contact Us</h1>
-          </div>
-        </div>
-      </div>
+      <MobileHeader title="Contact Us" subtitle="Concierge" />
 
       {/* Content */}
       <div className="lux-container py-6 sm:py-12 grid gap-6 md:grid-cols-2">

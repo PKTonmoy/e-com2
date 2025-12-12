@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../store/useWishlist.js';
 import { getImageUrl } from '../utils/imageUrl.js';
+import MobileHeader from '../components/MobileHeader';
 
 const Wishlist = () => {
   const { items, fetchWishlist, removeFromWishlist } = useWishlist();
@@ -13,22 +14,7 @@ const Wishlist = () => {
   return (
     <div className="min-h-screen bg-ivory dark:bg-matte">
       {/* Compact Mobile Header */}
-      <div className="sm:hidden bg-ivory dark:bg-matte border-b border-gold/20 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-gold text-[10px] font-medium uppercase tracking-widest">Coveted</p>
-            <div className="flex items-baseline gap-2">
-              <h1 className="font-display text-lg text-matte dark:text-ivory leading-tight">Wishlist</h1>
-              {items.length > 0 && <span className="text-xs text-neutral-400">({items.length})</span>}
-            </div>
-          </div>
-        </div>
-      </div>
+      <MobileHeader title="Wishlist" subtitle="Coveted" />
 
       {/* Content */}
       <div className="lux-container py-4 sm:py-12 space-y-4">

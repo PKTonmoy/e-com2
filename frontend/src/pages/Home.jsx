@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { SparklesIcon, TruckIcon, ShieldCheckIcon, CurrencyDollarIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 import { getImageUrl } from '../utils/imageUrl.js';
+import MobileHeader from '../components/MobileHeader';
 
 const DEFAULT_HERO = {
   promoBanner: {
@@ -129,17 +130,7 @@ const Home = () => {
   return (
     <div>
       {/* Compact Mobile Header - Mobile Only */}
-      <div className="sm:hidden bg-ivory dark:bg-matte border-b border-gold/20 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
-            <SparklesIcon className="w-5 h-5 text-gold" />
-          </div>
-          <div>
-            <p className="text-gold text-[10px] font-medium uppercase tracking-widest">Welcome to</p>
-            <h1 className="font-display text-lg text-matte dark:text-ivory leading-tight">PRELUX</h1>
-          </div>
-        </div>
-      </div>
+      <MobileHeader title="PRELUX" subtitle="Welcome to" />
 
       {/* Promo Banner */}
       {hero.promoBanner?.enabled && (

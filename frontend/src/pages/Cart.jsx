@@ -5,6 +5,7 @@ import { MinusIcon, PlusIcon, TrashIcon, ExclamationTriangleIcon } from '@heroic
 import { useCart } from '../store/useCart.js';
 import { useToast } from '../components/ToastProvider.jsx';
 import api from '../lib/api.js';
+import MobileHeader from '../components/MobileHeader';
 
 const DEFAULT_CONTENT = {
   title: 'Your Cart',
@@ -115,22 +116,7 @@ const Cart = () => {
   return (
     <div className="min-h-screen bg-ivory dark:bg-matte">
       {/* Compact Mobile Header */}
-      <div className="sm:hidden bg-ivory dark:bg-matte border-b border-gold/20 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-gold text-[10px] font-medium uppercase tracking-widest">Shopping</p>
-            <div className="flex items-baseline gap-2">
-              <h1 className="font-display text-lg text-matte dark:text-ivory leading-tight">{content.title}</h1>
-              {items.length > 0 && <span className="text-xs text-neutral-400">({items.length})</span>}
-            </div>
-          </div>
-        </div>
-      </div>
+      <MobileHeader title={content.title} subtitle="Shopping" />
 
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-4 sm:py-12">
         {/* Desktop Header */}
