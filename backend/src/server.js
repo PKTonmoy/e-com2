@@ -47,6 +47,19 @@ connectDB().then(() => {
 app.use(rateLimiter);
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://res.cloudinary.com", "https://*.cloudinary.com"],
+      connectSrc: ["'self'", "https://res.cloudinary.com", "https://api.cloudinary.com", "wss:", "ws:"],
+      mediaSrc: ["'self'", "https://res.cloudinary.com"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'self'"],
+    },
+  },
 }));
 app.use(
   cors({
