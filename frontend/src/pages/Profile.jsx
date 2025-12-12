@@ -98,6 +98,7 @@ const Profile = () => {
   };
 
   const canCancel = (status) => ['pending', 'confirmed'].includes(status);
+  const canDelete = (status) => ['delivered', 'cancelled'].includes(status);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -284,14 +285,16 @@ const Profile = () => {
                           {isCancelling ? 'Cancelling...' : 'Cancel Order'}
                         </button>
                       )}
-                      <button
-                        onClick={() => handleDeleteOrder(order._id)}
-                        disabled={isDeleting}
-                        className="text-xs text-neutral-600 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300 flex items-center gap-1 disabled:opacity-50 border border-neutral-200 dark:border-neutral-700 rounded px-3 py-1.5 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                        {isDeleting ? 'Deleting...' : 'Delete'}
-                      </button>
+                      {canDelete(order.orderStatus) && (
+                        <button
+                          onClick={() => handleDeleteOrder(order._id)}
+                          disabled={isDeleting}
+                          className="text-xs text-neutral-600 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300 flex items-center gap-1 disabled:opacity-50 border border-neutral-200 dark:border-neutral-700 rounded px-3 py-1.5 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                          {isDeleting ? 'Deleting...' : 'Delete'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
