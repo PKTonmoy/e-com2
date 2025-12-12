@@ -9,6 +9,8 @@ const orderItemSchema = new mongoose.Schema(
     title: String,
     sku: String,
     selectedSize: String,
+    image: String,
+    category: String,
   },
   { _id: false }
 );

@@ -38,6 +38,7 @@ export const useCart = create(
               stock: maxStock,
               selectedSize,
               image: product.images?.[0],
+              category: product.category,
             },
           ];
         }

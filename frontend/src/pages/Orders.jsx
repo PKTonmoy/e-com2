@@ -8,6 +8,7 @@ import MobileHeader from '../components/MobileHeader';
 const Orders = () => {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
   const qc = useQueryClient();
   const { addToast } = useToast();
 
@@ -39,7 +40,28 @@ const Orders = () => {
     }
   };
 
+  const deleteOrderMutation = useMutation({
+    mutationFn: (orderId) => api.delete(`/orders/${orderId}`),
+    onSuccess: () => {
+      qc.invalidateQueries(['orders']);
+      addToast('Order deleted from history.', 'success');
+      setDeletingOrderId(null);
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to delete order', 'error');
+      setDeletingOrderId(null);
+    },
+  });
+
+  const handleDeleteOrder = (orderId) => {
+    if (window.confirm('Are you sure you want to delete this order from your history? This action cannot be undone.')) {
+      setDeletingOrderId(orderId);
+      deleteOrderMutation.mutate(orderId);
+    }
+  };
+
   const canCancel = (status) => ['pending', 'confirmed'].includes(status);
+  const canDelete = (status) => ['delivered', 'cancelled'].includes(status);
 
   const getStatusColor = (status) => {
     const colors = {
@@ -75,6 +97,7 @@ const Orders = () => {
             {orders.map((order) => {
               const isExpanded = expandedOrder === order._id;
               const isCancelling = cancellingOrderId === order._id;
+              const isDeleting = deletingOrderId === order._id;
               return (
                 <div key={order._id} className="lux-card p-4">
                   <div className="flex justify-between items-start gap-4">
@@ -121,6 +144,18 @@ const Orders = () => {
                         >
                           <XCircleIcon className="h-4 w-4" />
                           {isCancelling ? 'Cancelling...' : 'Cancel Order'}
+                        </button>
+                      )}
+                      {canDelete(order.orderStatus) && (
+                        <button
+                          onClick={() => handleDeleteOrder(order._id)}
+                          disabled={isDeleting}
+                          className="text-xs text-neutral-500 hover:text-red-600 dark:text-neutral-400 dark:hover:text-red-400 flex items-center gap-1 disabled:opacity-50"
+                        >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          {isDeleting ? 'Deleting...' : 'Delete'}
                         </button>
                       )}
                     </div>

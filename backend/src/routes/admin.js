@@ -33,9 +33,20 @@ router.get('/orders', async (req, res) => {
   res.json(orders);
 });
 
-router.get('/logs', requireRole('admin'), async (req, res) => {
-  const logs = await ActivityLog.find().sort('-createdAt').limit(200);
-  res.json(logs);
+// Admin delete order - only allowed for delivered or cancelled orders
+router.delete('/orders/:id', async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+
+  // Only allow deletion for delivered or cancelled orders
+  if (!['delivered', 'cancelled'].includes(order.orderStatus)) {
+    return res.status(400).json({
+      message: 'Orders can only be deleted when status is delivered or cancelled',
+    });
+  }
+
+  await Order.findByIdAndDelete(req.params.id);
+  res.json({ message: 'Order deleted successfully' });
 });
 
 export default router;

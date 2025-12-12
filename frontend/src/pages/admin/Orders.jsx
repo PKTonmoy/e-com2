@@ -8,6 +8,7 @@ const AdminOrders = () => {
   const qc = useQueryClient();
   const { addToast } = useToast();
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
 
   const { data: orders = [] } = useQuery({
     queryKey: ['admin-orders'],
@@ -21,6 +22,28 @@ const AdminOrders = () => {
       addToast('Order status updated!');
     },
   });
+
+  const deleteOrderMutation = useMutation({
+    mutationFn: (orderId) => api.delete(`/admin/orders/${orderId}`),
+    onSuccess: () => {
+      qc.invalidateQueries(['admin-orders']);
+      addToast('Order deleted successfully.', 'success');
+      setDeletingOrderId(null);
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to delete order', 'error');
+      setDeletingOrderId(null);
+    },
+  });
+
+  const handleDeleteOrder = (orderId) => {
+    if (window.confirm('Are you sure you want to permanently delete this order? This action cannot be undone.')) {
+      setDeletingOrderId(orderId);
+      deleteOrderMutation.mutate(orderId);
+    }
+  };
+
+  const canDelete = (status) => ['delivered', 'cancelled'].includes(status);
 
   const getStatusColor = (status) => {
     const colors = {
@@ -39,6 +62,7 @@ const AdminOrders = () => {
       <div className="space-y-3">
         {orders.map((order) => {
           const isExpanded = expandedOrder === order._id;
+          const isDeleting = deletingOrderId === order._id;
           return (
             <div key={order._id} className="lux-card p-3 sm:p-4">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
@@ -87,6 +111,18 @@ const AdminOrders = () => {
                       </>
                     )}
                   </button>
+                  {canDelete(order.orderStatus) && (
+                    <button
+                      onClick={() => handleDeleteOrder(order._id)}
+                      disabled={isDeleting}
+                      className="text-xs text-neutral-500 hover:text-red-600 dark:text-neutral-400 dark:hover:text-red-400 flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      {isDeleting ? 'Deleting...' : 'Delete Order'}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -112,22 +148,45 @@ const AdminOrders = () => {
                   </div>
                   <div>
                     <p className="font-semibold text-sm mb-2">Order Items</p>
-                    <div className="space-y-1">
+                    <div className="space-y-3">
                       {order.items.map((item, idx) => (
                         <div
                           key={idx}
-                          className="flex justify-between text-sm text-neutral-600 dark:text-neutral-300"
+                          className="flex gap-3 p-3 bg-ivory/50 dark:bg-charcoal/50 rounded-lg"
                         >
-                          <span className="flex items-center gap-2">
-                            {item.title}
-                            {item.selectedSize && (
-                              <span className="px-2 py-0.5 text-xs bg-gold/20 text-gold rounded-full font-medium">
-                                Size: {item.selectedSize}
-                              </span>
-                            )}
-                            <span className="text-neutral-500">× {item.qty}</span>
-                          </span>
-                          <span>৳{(item.price * item.qty).toFixed(2)}</span>
+                          {/* Product Image */}
+                          {item.image && (
+                            <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                              <img
+                                src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/uploads/${item.image}`}
+                                alt={item.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          {/* Product Details */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm text-matte dark:text-ivory truncate">{item.title}</p>
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              {item.category && (
+                                <span className="px-2 py-0.5 text-[10px] bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-full uppercase tracking-wide">
+                                  {item.category}
+                                </span>
+                              )}
+                              {item.selectedSize && (
+                                <span className="px-2 py-0.5 text-[10px] bg-gold/20 text-gold rounded-full font-medium">
+                                  Size: {item.selectedSize}
+                                </span>
+                              )}
+                              <span className="text-xs text-neutral-500">Qty: {item.qty}</span>
+                            </div>
+                            <p className="text-[11px] text-neutral-400 mt-1">SKU: {item.sku || 'N/A'}</p>
+                          </div>
+                          {/* Price */}
+                          <div className="text-right flex-shrink-0">
+                            <p className="font-semibold text-sm text-gold">৳{(item.price * item.qty).toFixed(0)}</p>
+                            <p className="text-[10px] text-neutral-400">৳{item.price?.toFixed(0)} each</p>
+                          </div>
                         </div>
                       ))}
                     </div>
