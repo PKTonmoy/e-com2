@@ -40,6 +40,9 @@ const upload = multer({
 const uploadToCloudinary = (buffer, options = {}) => {
     return new Promise((resolve, reject) => {
         console.log('[Cloudinary] Starting upload to Cloudinary...');
+        console.log('[Cloudinary] Cloud name:', process.env.CLOUDINARY_CLOUD_NAME);
+        console.log('[Cloudinary] API Key (first 8 chars):', process.env.CLOUDINARY_API_KEY?.substring(0, 8) + '...');
+
         const uploadStream = cloudinary.uploader.upload_stream(
             {
                 folder: 'prelux',
@@ -50,8 +53,13 @@ const uploadToCloudinary = (buffer, options = {}) => {
                 if (error) {
                     console.error('[Cloudinary] Upload stream error:', error);
                     reject(error);
+                } else if (!result || !result.secure_url || !result.public_id) {
+                    // Catch case where Cloudinary returns an incomplete response
+                    console.error('[Cloudinary] Invalid response from Cloudinary:', result);
+                    reject(new Error('Cloudinary returned an invalid response. Please check your API credentials.'));
                 } else {
                     console.log('[Cloudinary] Upload successful:', result.public_id);
+                    console.log('[Cloudinary] Secure URL:', result.secure_url);
                     resolve(result);
                 }
             }
@@ -170,6 +178,49 @@ router.post('/multiple', protect, requireRole('staff', 'manager', 'admin'), uplo
     } catch (error) {
         console.error('[Upload] Cloudinary upload error:', error);
         res.status(500).json({ message: 'Failed to upload images', error: error.message });
+    }
+});
+
+/**
+ * GET /api/upload/health
+ * Check Cloudinary configuration and connectivity
+ */
+router.get('/health', protect, requireRole('staff', 'manager', 'admin'), async (req, res) => {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    const config = {
+        cloudName: cloudName || 'NOT SET',
+        apiKey: apiKey ? apiKey.substring(0, 8) + '...' + apiKey.slice(-4) : 'NOT SET',
+        apiSecret: apiSecret ? '***SET***' : 'NOT SET',
+        isConfigured: !!(cloudName && apiKey && apiSecret)
+    };
+
+    if (!config.isConfigured) {
+        return res.json({
+            status: 'error',
+            message: 'Cloudinary credentials not configured',
+            config
+        });
+    }
+
+    try {
+        // Try to ping Cloudinary API
+        const result = await cloudinary.api.ping();
+        res.json({
+            status: 'ok',
+            message: 'Cloudinary is properly configured and connected',
+            config,
+            ping: result
+        });
+    } catch (error) {
+        res.json({
+            status: 'error',
+            message: error.message,
+            config,
+            errorCode: error.http_code
+        });
     }
 });
 
