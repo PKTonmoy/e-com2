@@ -40,8 +40,15 @@ router.post(
 );
 
 router.put('/:id', protect, requireRole('admin', 'manager'), async (req, res) => {
+  // Debug: Log what we're receiving
+  console.log('[Products PUT] Received images:', req.body.images);
+
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
   if (!product) return res.status(404).json({ message: 'Not found' });
+
+  // Debug: Log what was saved
+  console.log('[Products PUT] Saved product images:', product.images);
+
   req.io.emit('product:update', product);
   res.json(product);
 });

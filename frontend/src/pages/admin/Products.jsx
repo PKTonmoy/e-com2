@@ -37,6 +37,11 @@ const AdminProducts = () => {
       const res = await api.post('/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      // Debug: Log the full response
+      console.log('[ImageUpload] Full response:', res.data);
+      console.log('[ImageUpload] URL received:', res.data.url);
+      console.log('[ImageUpload] URL length:', res.data.url?.length);
+
       // Use the returned URL
       setForm(prev => ({ ...prev, images: [res.data.url] }));
       addToast('Image uploaded successfully!');
