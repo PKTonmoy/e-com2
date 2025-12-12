@@ -151,10 +151,10 @@ const AdminCoupons = () => {
                                 <td className="p-3 font-semibold">{coupon.code}</td>
                                 <td className="p-3 capitalize">{coupon.type}</td>
                                 <td className="p-3">
-                                    {coupon.type === 'percentage' ? `${coupon.value}%` : `$${coupon.value}`}
+                                    {coupon.type === 'percentage' ? `${coupon.value}%` : `৳${coupon.value}`}
                                 </td>
                                 <td className="p-3">
-                                    {coupon.minPurchase ? `$${coupon.minPurchase}` : '-'}
+                                    {coupon.minPurchase ? `৳${coupon.minPurchase}` : '-'}
                                 </td>
                                 <td className="p-3">
                                     {coupon.expiresAt ? (
@@ -231,11 +231,11 @@ const AdminCoupons = () => {
                                     onChange={(e) => setForm({ ...form, type: e.target.value })}
                                 >
                                     <option value="percentage">Percentage (%)</option>
-                                    <option value="fixed">Fixed Amount ($)</option>
+                                    <option value="fixed">Fixed Amount (৳)</option>
                                 </select>
                                 <input
                                     className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte"
-                                    placeholder={form.type === 'percentage' ? 'Discount %' : 'Discount $'}
+                                    placeholder={form.type === 'percentage' ? 'Discount %' : 'Discount ৳'}
                                     type="number"
                                     min="0"
                                     value={form.value}

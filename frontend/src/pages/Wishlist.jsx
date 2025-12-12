@@ -43,7 +43,7 @@ const Wishlist = () => {
                   <p className="font-display text-xl hover:text-gold">{product.title}</p>
                 </Link>
                 <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                  ${product.salePrice || product.price}
+                  ৳{product.salePrice || product.price}
                 </p>
                 <button
                   onClick={() => removeFromWishlist(product._id)}

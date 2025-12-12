@@ -75,7 +75,7 @@ const Orders = () => {
                       </span>
                     </div>
                     <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                      {order.items.length} item{order.items.length > 1 ? 's' : ''} • Total: ${order.total?.toFixed(2)}
+                      {order.items.length} item{order.items.length > 1 ? 's' : ''} • Total: ৳{order.total?.toFixed(2)}
                     </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                       Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
@@ -137,11 +137,11 @@ const Orders = () => {
                                   Qty: {item.qty}
                                 </span>
                                 <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                                  @ ${item.price?.toFixed(2)} each
+                                  @ ৳{item.price?.toFixed(2)} each
                                 </span>
                               </div>
                             </div>
-                            <p className="font-semibold text-sm">${(item.price * item.qty).toFixed(2)}</p>
+                            <p className="font-semibold text-sm">৳{(item.price * item.qty).toFixed(2)}</p>
                           </div>
                         ))}
                       </div>
@@ -161,7 +161,7 @@ const Orders = () => {
 
                     <div className="flex justify-between items-center pt-2 border-t border-gold/10">
                       <span className="font-semibold">Total</span>
-                      <span className="font-bold text-lg text-gold">${order.total?.toFixed(2)}</span>
+                      <span className="font-bold text-lg text-gold">৳{order.total?.toFixed(2)}</span>
                     </div>
                   </div>
                 )}

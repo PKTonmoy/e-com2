@@ -203,8 +203,8 @@ const Product = () => {
           <h1 className="font-display text-3xl">{product.title}</h1>
           <p className="text-sm text-neutral-600 dark:text-neutral-300" dangerouslySetInnerHTML={{ __html: product.descriptionHTML }} />
           <p className="text-xl">
-            ${product.salePrice || product.price}{' '}
-            {product.salePrice && <span className="text-sm text-neutral-500 line-through">${product.price}</span>}
+            <span className="text-2xl">৳</span> {product.salePrice || product.price}{' '}
+            {product.salePrice && <span className="text-sm text-neutral-500 line-through"><span className="text-base">৳</span> {product.price}</span>}
           </p>
           <p className="text-sm text-emerald-700 dark:text-emerald-200">
             {currentStock > 0 ? (

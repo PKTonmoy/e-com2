@@ -57,7 +57,9 @@ const ImageUpload = ({
             if (response.data.success) {
                 // Construct full URL for the image
                 const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-                const imageUrl = baseUrl + response.data.url;
+                // If it's a relative path (local upload), prepend base URL. If absolute (Cloudinary), use as is.
+                const isAbsolute = response.data.url.startsWith('http');
+                const imageUrl = isAbsolute ? response.data.url : baseUrl + response.data.url;
                 onChange(imageUrl);
             }
         } catch (err) {
@@ -97,8 +99,8 @@ const ImageUpload = ({
                     type="button"
                     onClick={() => setMode('url')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${mode === 'url'
-                            ? 'bg-gold/20 text-gold border border-gold/30'
-                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                        ? 'bg-gold/20 text-gold border border-gold/30'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
                         }`}
                 >
                     <LinkIcon className="w-3.5 h-3.5" />
@@ -108,8 +110,8 @@ const ImageUpload = ({
                     type="button"
                     onClick={() => setMode('upload')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${mode === 'upload'
-                            ? 'bg-gold/20 text-gold border border-gold/30'
-                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                        ? 'bg-gold/20 text-gold border border-gold/30'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
                         }`}
                 >
                     <CloudArrowUpIcon className="w-3.5 h-3.5" />

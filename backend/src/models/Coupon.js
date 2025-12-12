@@ -8,6 +8,7 @@ const couponSchema = new mongoose.Schema(
     active: { type: Boolean, default: true },
     expiresAt: Date,
     minPurchase: Number,
+    usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   { timestamps: true }
 );

@@ -253,7 +253,7 @@ const Profile = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">${order.total.toFixed(2)}</p>
+                      <p className="font-semibold">৳{order.total.toFixed(2)}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.orderStatus)}`}>
                         {order.orderStatus}
                       </span>

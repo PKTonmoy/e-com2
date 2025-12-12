@@ -5,6 +5,8 @@
 
 import express from 'express';
 import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 import cloudinary from '../config/cloudinary.js';
 import { protect, requireRole } from '../middleware/auth.js';
 
@@ -37,6 +39,7 @@ const upload = multer({
  */
 const uploadToCloudinary = (buffer, options = {}) => {
     return new Promise((resolve, reject) => {
+        console.log('[Cloudinary] Starting upload to Cloudinary...');
         const uploadStream = cloudinary.uploader.upload_stream(
             {
                 folder: 'prelux',
@@ -44,12 +47,45 @@ const uploadToCloudinary = (buffer, options = {}) => {
                 ...options
             },
             (error, result) => {
-                if (error) reject(error);
-                else resolve(result);
+                if (error) {
+                    console.error('[Cloudinary] Upload stream error:', error);
+                    reject(error);
+                } else {
+                    console.log('[Cloudinary] Upload successful:', result.public_id);
+                    resolve(result);
+                }
             }
         );
         uploadStream.end(buffer);
     });
+};
+
+/**
+ * Save buffer to local storage
+ */
+const saveLocally = async (buffer, mimetype) => {
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    // Determine extension
+    let ext = 'jpg';
+    if (mimetype === 'image/png') ext = 'png';
+    else if (mimetype === 'image/gif') ext = 'gif';
+    else if (mimetype === 'image/webp') ext = 'webp';
+    else if (mimetype === 'image/jpeg') ext = 'jpg';
+
+    const filename = `local-${Date.now()}-${Math.round(Math.random() * 1E9)}.${ext}`;
+    const filepath = path.join(uploadsDir, filename);
+
+    await fs.promises.writeFile(filepath, buffer);
+
+    // Return relative URL that server.js serves
+    return {
+        secure_url: `/uploads/${filename}`,
+        public_id: filename
+    };
 };
 
 /**
@@ -63,18 +99,19 @@ router.post('/', protect, requireRole('staff', 'manager', 'admin'), upload.singl
             return res.status(400).json({ message: 'No image file provided' });
         }
 
-        // Check if Cloudinary is configured
-        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-            console.error('[Upload] Cloudinary credentials not configured');
-            return res.status(500).json({
-                message: 'Image upload service not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables.'
-            });
+        let result;
+        const hasCloudinary = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
+
+        if (hasCloudinary) {
+            // Upload to Cloudinary
+            result = await uploadToCloudinary(req.file.buffer);
+            console.log(`[Upload] Image uploaded to Cloudinary: ${result.public_id}`);
+        } else {
+            // Fallback to local
+            console.log('[Upload] Cloudinary not configured, saving locally');
+            result = await saveLocally(req.file.buffer, req.file.mimetype);
+            console.log(`[Upload] Image saved locally: ${result.public_id}`);
         }
-
-        // Upload to Cloudinary
-        const result = await uploadToCloudinary(req.file.buffer);
-
-        console.log(`[Upload] Image uploaded to Cloudinary: ${result.public_id}`);
 
         res.json({
             success: true,
@@ -84,9 +121,17 @@ router.post('/', protect, requireRole('staff', 'manager', 'admin'), upload.singl
             mimetype: req.file.mimetype
         });
     } catch (error) {
-        console.error('[Upload] Cloudinary upload error:', error.message);
-        console.error('[Upload] Full error:', error);
-        res.status(500).json({ message: 'Failed to upload image', error: error.message });
+        console.error('[Upload] Upload error:', {
+            message: error.message,
+            name: error.name,
+            http_code: error.http_code,
+            error: error.error
+        });
+        res.status(500).json({
+            message: 'Failed to upload image',
+            error: error.message,
+            details: error.http_code ? `Cloudinary error (${error.http_code})` : undefined
+        });
     }
 });
 
@@ -100,8 +145,14 @@ router.post('/multiple', protect, requireRole('staff', 'manager', 'admin'), uplo
             return res.status(400).json({ message: 'No image files provided' });
         }
 
-        // Upload all files to Cloudinary
-        const uploadPromises = req.files.map(file => uploadToCloudinary(file.buffer));
+        const hasCloudinary = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
+
+        // Upload all files
+        const uploadPromises = req.files.map(file => {
+            if (hasCloudinary) return uploadToCloudinary(file.buffer);
+            return saveLocally(file.buffer, file.mimetype);
+        });
+
         const results = await Promise.all(uploadPromises);
 
         const uploadedFiles = results.map((result, index) => ({
@@ -110,7 +161,7 @@ router.post('/multiple', protect, requireRole('staff', 'manager', 'admin'), uplo
             size: req.files[index].size
         }));
 
-        console.log(`[Upload] ${uploadedFiles.length} images uploaded to Cloudinary`);
+        console.log(`[Upload] ${uploadedFiles.length} images uploaded (${hasCloudinary ? 'Cloudinary' : 'Local'})`);
 
         res.json({
             success: true,

@@ -52,7 +52,7 @@ const TrustBadgeIcon = ({ icon }) => {
         </div>
       );
     case 'currency':
-      return <CurrencyDollarIcon className="w-8 h-8 text-gold" />;
+      return <span className="text-3xl font-bold text-gold">৳</span>;
     case 'shield':
       return <ShieldCheckIcon className="w-8 h-8 text-gold" />;
     case 'truck':
@@ -280,7 +280,7 @@ const Home = () => {
                 </span>
                 <h3 className="font-display text-xl leading-tight group-hover:text-gold transition-colors duration-300">{product.title}</h3>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-semibold text-matte dark:text-ivory">${product.salePrice || product.price}</span>
+                  <span className="text-lg font-semibold text-matte dark:text-ivory">৳{product.salePrice || product.price}</span>
                   <span className="text-sm text-neutral-400">• {product.category}</span>
                 </div>
               </div>

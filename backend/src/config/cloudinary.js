@@ -17,6 +17,7 @@ if (!cloudName || !apiKey || !apiSecret) {
     console.warn('[Cloudinary] CLOUDINARY_API_SECRET:', apiSecret ? 'SET' : 'MISSING');
 } else {
     console.log('[Cloudinary] Configured with cloud name:', cloudName);
+    console.log('[Cloudinary] API Key (first 6 chars):', apiKey.substring(0, 6) + '...');
 }
 
 cloudinary.config({

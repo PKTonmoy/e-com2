@@ -32,6 +32,8 @@ const orderSchema = new mongoose.Schema(
     },
     notes: [{ message: String, createdAt: { type: Date, default: Date.now } }],
     total: Number,
+    discount: { type: Number, default: 0 },
+    couponCode: String,
     currency: { type: String, default: 'USD' },
   },
   { timestamps: true }

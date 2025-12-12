@@ -13,12 +13,10 @@ const DEFAULT_CONTENT = {
 };
 
 const Cart = () => {
-  const { items, removeItem, updateQty, updateStock } = useCart();
+  const { items, removeItem, updateQty, updateStock, coupon, applyCoupon: applyCouponToStore, removeCoupon: removeCouponFromStore } = useCart();
   const { addToast } = useToast();
   const [couponCode, setCouponCode] = useState('');
-  const [discount, setDiscount] = useState(0);
   const [couponError, setCouponError] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [stockData, setStockData] = useState({});
 
   const { data: cmsContent } = useQuery({
@@ -67,20 +65,38 @@ const Cart = () => {
   });
 
   const subtotal = availableItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  // Calculate discount based on global coupon state
+  let discount = 0;
+  if (coupon) {
+    if (coupon.type === 'percentage') {
+      discount = subtotal ? (subtotal * coupon.value) / 100 : coupon.value;
+    } else {
+      discount = coupon.value;
+    }
+  }
+
   const total = subtotal - discount;
 
   const applyCoupon = async () => {
     try {
       setCouponError('');
       const res = await api.post('/coupons/validate', { code: couponCode, cartTotal: subtotal });
-      const coupon = res.data;
-      setDiscount(coupon.discount || 0);
-      setAppliedCoupon(coupon);
-      addToast(coupon.message || 'Coupon applied!');
+      const validCoupon = res.data;
+
+      // Calculate discount for display immediately
+      let calculatedDiscount = 0;
+      if (validCoupon.type === 'percentage') {
+        calculatedDiscount = subtotal ? (subtotal * validCoupon.value) / 100 : validCoupon.value;
+      } else {
+        calculatedDiscount = validCoupon.value;
+      }
+
+      applyCouponToStore(validCoupon);
+      addToast(validCoupon.message || 'Coupon applied!');
     } catch (err) {
       setCouponError(err.response?.data?.message || 'Invalid coupon code');
-      setDiscount(0);
-      setAppliedCoupon(null);
+      removeCouponFromStore();
     }
   };
 
@@ -167,7 +183,7 @@ const Cart = () => {
                           </button>
                         </div>
                         <p className="text-xs text-neutral-400">{item.sku}</p>
-                        <p className="text-sm font-bold mt-1">${item.price}</p>
+                        <p className="text-sm font-bold mt-1"><span className="text-base">৳</span> {item.price}</p>
                       </div>
                     </div>
                     {!isOutOfStock && (
@@ -181,7 +197,7 @@ const Cart = () => {
                             <PlusIcon className="h-3 w-3" />
                           </button>
                         </div>
-                        <span className="font-bold text-gold">${(item.price * item.qty).toFixed(0)}</span>
+                        <span className="font-bold text-gold"><span className="text-base">৳</span> {(item.price * item.qty).toFixed(0)}</span>
                       </div>
                     )}
                     {isOutOfStock && <p className="text-xs text-red-500 mt-2">Out of stock</p>}
@@ -197,7 +213,7 @@ const Cart = () => {
                     <div className="flex-1 min-w-0">
                       <p className="font-display text-lg truncate">{item.title}</p>
                       <p className="text-xs text-neutral-500">SKU {item.sku}</p>
-                      <p className="text-sm font-semibold mt-1">${item.price}</p>
+                      <p className="text-sm font-semibold mt-1"><span className="text-base">৳</span> {item.price}</p>
                     </div>
                     {!isOutOfStock && (
                       <div className="flex items-center gap-2 border border-gold/30 rounded-lg p-1">
@@ -238,7 +254,7 @@ const Cart = () => {
               <>
                 <div className="flex justify-between text-sm mb-3">
                   <span className="text-neutral-500">{availableItems.length} item(s)</span>
-                  <span className="font-semibold">${subtotal.toFixed(0)}</span>
+                  <span className="font-semibold"><span className="text-base">৳</span> {subtotal.toFixed(0)}</span>
                 </div>
 
                 <div className="border-t border-neutral-100 dark:border-neutral-800 pt-3 mb-3">
@@ -256,20 +272,20 @@ const Cart = () => {
                     </button>
                   </div>
                   {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
-                  {appliedCoupon && <p className="text-xs text-green-600 mt-1">✓ {appliedCoupon.code} applied!</p>}
+                  {coupon && <p className="text-xs text-green-600 mt-1">✓ {coupon.code} applied!</p>}
                 </div>
 
                 {discount > 0 && (
                   <div className="flex justify-between text-sm text-green-600 mb-3">
                     <span>Discount</span>
-                    <span>-${discount.toFixed(0)}</span>
+                    <span>-<span className="text-base">৳</span> {discount.toFixed(0)}</span>
                   </div>
                 )}
 
                 <div className="border-t border-neutral-100 dark:border-neutral-800 pt-3 mb-4">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">Total</span>
-                    <span className="text-xl font-bold text-gold">${total.toFixed(0)}</span>
+                    <span className="text-xl font-bold text-gold"><span className="text-2xl">৳</span> {total.toFixed(0)}</span>
                   </div>
                 </div>
 

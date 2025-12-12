@@ -242,10 +242,10 @@ const Shop = () => {
                   <div className="p-3 space-y-1">
                     <h3 className="font-display text-sm leading-tight line-clamp-1">{product.title}</h3>
                     <p className="text-[11px] font-body text-neutral-400 line-clamp-1">{product.category}</p>
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-baseline gap-1">
-                        <span className="font-body font-semibold text-matte dark:text-ivory">${product.salePrice || product.price}</span>
-                        {product.salePrice && <span className="text-[10px] font-body text-neutral-400 line-through">${product.price}</span>}
+                    <div className="flex items-end justify-between pt-1">
+                      <div className="flex flex-col">
+                        {product.salePrice && <span className="text-[10px] font-body text-neutral-400 line-through">৳ {product.price}</span>}
+                        <span className="font-body font-semibold text-matte dark:text-ivory leading-none"><span className="text-sm">৳</span> {product.salePrice || product.price}</span>
                       </div>
                       <button
                         onClick={(e) => handleAddToCart(e, product)}
@@ -437,14 +437,14 @@ const Shop = () => {
                         <h3 className="font-display text-base leading-tight group-hover:text-gold transition-colors line-clamp-2">
                           {product.title}
                         </h3>
-                        <div className="flex items-center justify-between pt-2">
-                          <div className="flex items-baseline gap-2">
-                            <span className="font-body font-semibold text-lg text-matte dark:text-ivory">
-                              ${product.salePrice || product.price}
-                            </span>
+                        <div className="flex items-end justify-between pt-2">
+                          <div className="flex flex-col">
                             {product.salePrice && (
-                              <span className="text-sm font-body text-neutral-400 line-through">${product.price}</span>
+                              <span className="text-xs font-body text-neutral-400 line-through">৳ {product.price}</span>
                             )}
+                            <span className="font-body font-semibold text-lg text-matte dark:text-ivory leading-none">
+                              <span className="text-lg">৳</span> {product.salePrice || product.price}
+                            </span>
                           </div>
                           <span className={`text-xs font-body ${product.stock > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                             {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}

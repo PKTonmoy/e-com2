@@ -18,7 +18,7 @@ const Dashboard = () => {
       <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Admin Dashboard</h1>
       <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Revenue 30d', value: `$${tiles?.totalRevenue || 0}`, to: '/admin/analytics' },
+          { label: 'Revenue 30d', value: `৳${tiles?.totalRevenue || 0}`, to: '/admin/analytics' },
           { label: 'Orders Received', value: tiles?.ordersReceived || 0, to: '/admin/orders' },
           { label: 'Orders Completed', value: tiles?.ordersCompleted || 0, to: '/admin/orders' },
           { label: 'Active Carts', value: tiles?.activeCarts || 0, to: '/admin/analytics' },

@@ -78,6 +78,9 @@ export const useCart = create(
           console.warn('Cart sync failed', err.message);
         }
       },
+      coupon: null,
+      applyCoupon: (coupon) => set({ coupon }),
+      removeCoupon: () => set({ coupon: null }),
     }),
     {
       name: 'prelux-cart', // localStorage key

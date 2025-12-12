@@ -21,7 +21,7 @@ const Search = () => {
         {products.map((p) => (
           <Link key={p._id} to={`/product/${p.slug}`} className="lux-card p-4 space-y-2">
             <p className="font-display">{p.title}</p>
-            <p className="text-sm text-neutral-600">${p.salePrice || p.price}</p>
+            <p className="text-sm text-neutral-600">৳{p.salePrice || p.price}</p>
           </Link>
         ))}
       </div>

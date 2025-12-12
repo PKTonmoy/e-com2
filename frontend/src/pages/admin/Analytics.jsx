@@ -21,7 +21,7 @@ const AdminAnalytics = () => {
         <ul className="space-y-2 text-sm">
           {top.map((item) => (
             <li key={item._id?._id || item._id}>
-              {item._id?.title || 'Product'} — {item.sold} sold (${item.revenue})
+              {item._id?.title || 'Product'} — {item.sold} sold (৳{item.revenue})
             </li>
           ))}
         </ul>

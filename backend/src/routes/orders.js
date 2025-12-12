@@ -1,6 +1,7 @@
 import express from 'express';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
+import Coupon from '../models/Coupon.js';
 import { protect, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -21,14 +22,43 @@ async function restoreOrderStock(items) {
 }
 
 router.post('/', protect, async (req, res) => {
-  const { items, shipping, paymentStatus = 'pending' } = req.body;
-  const total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const { items, shipping, paymentStatus = 'pending', couponCode } = req.body;
+  let total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
+  let discount = 0;
+
+  if (couponCode) {
+    const coupon = await Coupon.findOne({ code: couponCode, active: true });
+    if (coupon) {
+      // Check if user already used this coupon
+      if (coupon.usedBy.includes(req.user._id)) {
+        return res.status(400).json({ message: 'You have already used this coupon' });
+      }
+
+      // Validate expiry
+      if (!coupon.expiresAt || new Date(coupon.expiresAt) > new Date()) {
+        // Validate min purchase
+        if (!coupon.minPurchase || total >= coupon.minPurchase) {
+          if (coupon.type === 'percentage') {
+            discount = total * (coupon.value / 100);
+          } else {
+            discount = coupon.value;
+          }
+          total = Math.max(0, total - discount);
+        }
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid coupon code' });
+    }
+  }
+
   const order = await Order.create({
     userId: req.user._id,
     items,
     shipping,
     paymentStatus,
     total,
+    discount,
+    couponCode
   });
 
   // decrease stock
@@ -43,6 +73,14 @@ router.post('/', protect, async (req, res) => {
       }
     })
   );
+
+  // Mark coupon as used
+  if (couponCode) {
+    await Coupon.updateOne(
+      { code: couponCode },
+      { $addToSet: { usedBy: req.user._id } }
+    );
+  }
 
   req.io.emit('order:new', order);
   res.status(201).json(order);
@@ -82,6 +120,14 @@ router.put('/:id/cancel', protect, async (req, res) => {
   // Restore stock
   await restoreOrderStock(order.items);
 
+  // Restore coupon usage if applicable
+  if (order.couponCode) {
+    await Coupon.updateOne(
+      { code: order.couponCode },
+      { $pull: { usedBy: order.userId } }
+    );
+  }
+
   // Update order status
   order.orderStatus = 'cancelled';
   order.notes.push({ message: 'Order cancelled by customer' });
@@ -101,6 +147,14 @@ router.put('/:id/status', protect, requireRole('staff', 'manager', 'admin'), asy
   // Restore stock if changing to cancelled and wasn't already cancelled
   if (newStatus === 'cancelled' && previousStatus !== 'cancelled') {
     await restoreOrderStock(order.items);
+
+    // Restore coupon usage
+    if (order.couponCode) {
+      await Coupon.updateOne(
+        { code: order.couponCode },
+        { $pull: { usedBy: order.userId } }
+      );
+    }
   }
 
   order.orderStatus = newStatus;
@@ -121,6 +175,14 @@ router.delete('/:id', protect, async (req, res) => {
   // Check if user owns this order
   if (order.userId.toString() !== req.user._id.toString()) {
     return res.status(403).json({ message: 'You can only delete your own orders' });
+  }
+
+  // Restore coupon usage if order deleted (optional but good for consistency)
+  if (order.couponCode) {
+    await Coupon.updateOne(
+      { code: order.couponCode },
+      { $pull: { usedBy: order.userId } }
+    );
   }
 
   await Order.findByIdAndDelete(req.params.id);

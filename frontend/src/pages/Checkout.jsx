@@ -5,7 +5,8 @@ import { useCart } from '../store/useCart.js';
 import { useState, useEffect } from 'react';
 
 const Checkout = () => {
-  const { items, setItems } = useCart();
+  const { items, setItems, coupon, clearCart } = useCart();
+
   const [shipping, setShipping] = useState({
     name: '',
     phone: '',
@@ -44,16 +45,26 @@ const Checkout = () => {
     }
   }, [user]);
 
-  const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const totalBeforeDiscount = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  let discount = 0;
+  if (coupon) {
+    if (coupon.type === 'percentage') {
+      discount = totalBeforeDiscount ? (totalBeforeDiscount * coupon.value) / 100 : coupon.value;
+    } else {
+      discount = coupon.value;
+    }
+  }
+
+  const total = totalBeforeDiscount - discount;
 
   const placeOrder = async () => {
     if (!shipping.name || !shipping.phone || !shipping.address || !shipping.city || !shipping.country || !shipping.postalCode) {
       alert('Please fill in all shipping details');
       return;
     }
-    await api.post('/orders', { items, shipping, paymentStatus: 'paid' });
-    setItems([]);
-    localStorage.removeItem('cart');
+    await api.post('/orders', { items, shipping, paymentStatus: 'paid', couponCode: coupon?.code });
+    clearCart(); // Use clearCart instead of setItems([])
     navigate('/order/thank-you');
   };
 
@@ -154,7 +165,7 @@ const Checkout = () => {
                 <span className="text-neutral-600 dark:text-neutral-400 break-words flex-1 min-w-0 text-xs sm:text-sm">
                   {item.title} × {item.qty}
                 </span>
-                <span className="font-medium text-sm whitespace-nowrap">${(item.price * item.qty).toFixed(0)}</span>
+                <span className="font-medium text-sm whitespace-nowrap"><span className="text-base">৳</span> {(item.price * item.qty).toFixed(0)}</span>
               </div>
             ))}
           </div>
@@ -168,9 +179,16 @@ const Checkout = () => {
             <span className="text-green-600">Free</span>
           </div>
 
+          {discount > 0 && (
+            <div className="flex justify-between text-sm mb-3 sm:mb-4 text-green-600">
+              <span>Discount ({coupon.code})</span>
+              <span>-<span className="text-base">৳</span> {discount.toFixed(0)}</span>
+            </div>
+          )}
+
           <div className="flex justify-between items-center pt-3 sm:pt-4 border-t border-neutral-100 dark:border-neutral-800 mb-4 sm:mb-6">
             <span className="font-semibold">Total</span>
-            <span className="text-lg sm:text-xl font-bold text-gold">${total.toFixed(0)}</span>
+            <span className="text-lg sm:text-xl font-bold text-gold"><span className="text-xl sm:text-2xl">৳</span> {total.toFixed(0)}</span>
           </div>
 
           <button

@@ -50,7 +50,7 @@ const AdminOrders = () => {
                     </span>
                   </div>
                   <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                    #{order._id.slice(-8)} • {order.items.length} items • ${order.total.toFixed(2)}
+                    #{order._id.slice(-8)} • {order.items.length} items • ৳{order.total.toFixed(2)}
                   </p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     {new Date(order.createdAt).toLocaleString()}
@@ -127,7 +127,7 @@ const AdminOrders = () => {
                             )}
                             <span className="text-neutral-500">× {item.qty}</span>
                           </span>
-                          <span>${(item.price * item.qty).toFixed(2)}</span>
+                          <span>৳{(item.price * item.qty).toFixed(2)}</span>
                         </div>
                       ))}
                     </div>
