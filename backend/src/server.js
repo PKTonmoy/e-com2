@@ -25,6 +25,7 @@ import reviewRoutes from './routes/reviews.js';
 import validateEmailRoutes from './routes/validateEmail.js';
 import googleAuthRoutes from './routes/googleAuth.js';
 import uploadRoutes from './routes/upload.js';
+import settingsRoutes from './routes/settings.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import ensureAdmin from './utils/ensureAdmin.js';
 
@@ -115,6 +116,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/validate-email', validateEmailRoutes);
 app.use('/api/auth', googleAuthRoutes); // Google OAuth routes
 app.use('/api/upload', uploadRoutes); // Image upload routes
+app.use('/api/settings', settingsRoutes); // Settings routes
 
 // Friendly root response
 const __filename = fileURLToPath(import.meta.url);

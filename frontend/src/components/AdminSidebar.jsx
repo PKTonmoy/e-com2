@@ -10,6 +10,7 @@ import {
     TicketIcon,
     StarIcon,
     NewspaperIcon,
+    Cog6ToothIcon,
     Bars3Icon,
     XMarkIcon,
 } from '@heroicons/react/24/outline';
@@ -24,6 +25,7 @@ const adminLinks = [
     { to: '/admin/blog', label: 'Blog', icon: NewspaperIcon },
     { to: '/admin/analytics', label: 'Analytics', icon: ChartBarIcon },
     { to: '/admin/content', label: 'Content', icon: DocumentTextIcon },
+    { to: '/admin/settings', label: 'Settings', icon: Cog6ToothIcon },
 ];
 
 const AdminSidebar = () => {

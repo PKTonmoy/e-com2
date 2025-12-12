@@ -27,6 +27,7 @@ import AdminContent from './pages/admin/Content.jsx';
 import AdminAnalytics from './pages/admin/Analytics.jsx';
 import AdminReviews from './pages/admin/Reviews.jsx';
 import AdminBlog from './pages/admin/BlogAdmin.jsx';
+import AdminSettings from './pages/admin/Settings.jsx';
 import QuickView from './pages/QuickView.jsx';
 import { ToastProvider } from './components/ToastProvider.jsx';
 import { BottomNavProvider } from './context/BottomNavContext.jsx';
@@ -74,6 +75,7 @@ const App = () => {
               <Route path="/admin/analytics" element={<AdminAnalytics />} />
               <Route path="/admin/reviews" element={<AdminReviews />} />
               <Route path="/admin/blog" element={<AdminBlog />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -3,6 +3,7 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Coupon from '../models/Coupon.js';
 import { protect, requireRole } from '../middleware/auth.js';
+import { notifyOrderEvent } from '../services/notifications.js';
 
 const router = express.Router();
 
@@ -83,6 +84,10 @@ router.post('/', protect, async (req, res) => {
   }
 
   req.io.emit('order:new', order);
+
+  // Send notifications (async, don't wait)
+  notifyOrderEvent(order, 'new').catch(err => console.error('Notification error:', err));
+
   res.status(201).json(order);
 });
 
@@ -134,6 +139,10 @@ router.put('/:id/cancel', protect, async (req, res) => {
   await order.save();
 
   req.io.emit('order:update', order);
+
+  // Send notifications (async, don't wait)
+  notifyOrderEvent(order, 'cancelled').catch(err => console.error('Notification error:', err));
+
   res.json(order);
 });
 
@@ -164,6 +173,10 @@ router.put('/:id/status', protect, requireRole('staff', 'manager', 'admin'), asy
   }
   await order.save();
   req.io.emit('order:update', order);
+
+  // Send notifications for status changes (async, don't wait)
+  notifyOrderEvent(order, 'status_update').catch(err => console.error('Notification error:', err));
+
   res.json(order);
 });
 
