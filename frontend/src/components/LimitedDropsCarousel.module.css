@@ -1,0 +1,86 @@
+/* LimitedDropsCarousel - Premium indicator styling */
+
+/* Premium gold CSS variable */
+:root {
+  --premium-gold: #C9A94F;
+  --premium-gold-light: #E5D9A3;
+  --premium-gold-dark: #A68A3C;
+}
+
+/* Indicator dot base */
+.indicatorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #d4d4d4 0%, #a3a3a3 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.indicatorDot:hover {
+  background: linear-gradient(145deg, #e5e5e5 0%, #b0b0b0 100%);
+  transform: scale(1.15);
+}
+
+/* Active indicator dot with premium styling */
+.indicatorDotActive {
+  width: 28px;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--premium-gold-light) 0%, var(--premium-gold) 50%, var(--premium-gold-dark) 100%);
+  box-shadow: 
+    0 2px 8px rgba(201, 169, 79, 0.4),
+    0 0 16px rgba(201, 169, 79, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+.indicatorDotActive:hover {
+  transform: scale(1.05);
+}
+
+/* Counter badge */
+.counterBadge {
+  background: linear-gradient(135deg, rgba(11, 11, 11, 0.85) 0%, rgba(30, 30, 30, 0.9) 100%);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(201, 169, 79, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Card styling */
+.card {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--premium-gold);
+  outline-offset: 3px;
+}
+
+/* Badge shimmer effect */
+.badgeShimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.badgeShimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: badgeShimmerAnim 3s infinite;
+}
+
+@keyframes badgeShimmerAnim {
+  0% { left: -100%; }
+  50%, 100% { left: 100%; }
+}

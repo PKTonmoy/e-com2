@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { SparklesIcon, TruckIcon, ShieldCheckIcon, CurrencyDollarIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 import { getImageUrl } from '../utils/imageUrl.js';
 import MobileHeader from '../components/MobileHeader';
+import LimitedDropsCarousel from '../components/LimitedDropsCarousel';
 
 const DEFAULT_HERO = {
   promoBanner: {
@@ -126,6 +128,19 @@ const Home = () => {
   // Get hero images with fallbacks
   const heroImages = hero.heroImages?.length >= 4 ? hero.heroImages : DEFAULT_HERO.heroImages;
   const trustBadges = hero.trustBadges?.length ? hero.trustBadges : DEFAULT_HERO.trustBadges;
+
+  // Prepare items for LimitedDropsCarousel
+  const carouselItems = products.slice(0, 6).map(p => ({
+    id: p._id,
+    slug: p.slug,
+    imageUrl: getImageUrl(p.images?.[0]),
+    title: p.title,
+    subtitle: p.category,
+    price: `৳${p.salePrice || p.price}`,
+    badgeText: 'LIMITED'
+  }));
+
+
 
   return (
     <div>
@@ -263,29 +278,36 @@ const Home = () => {
           </Link>
         </div>
 
-        <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+
+        {/* Mobile Carousel - Hidden on md+ */}
+        <LimitedDropsCarousel items={carouselItems} />
+
+        {/* Desktop Grid (Hidden on Mobile) */}
+        <div className="hidden md:grid gap-8 grid-cols-2 lg:grid-cols-3">
           {products.slice(0, 3).map((product) => (
             <Link
               key={product._id}
               to={`/product/${product.slug}`}
-              className="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+              className="group relative bg-white dark:bg-neutral-900 rounded-lg overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
             >
-              <div className="aspect-[4/5] overflow-hidden bg-neutral-50 dark:bg-neutral-800">
+              <div className="aspect-[4/5] relative overflow-hidden bg-neutral-50 dark:bg-neutral-800">
                 <img
                   src={getImageUrl(product.images?.[0])}
                   alt={product.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
+                <div className="absolute top-3 left-3">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-widest bg-white/90 dark:bg-matte/90 backdrop-blur-sm text-gold font-medium rounded-sm border border-gold/10 shadow-sm">
+                    <SparklesIcon className="h-3 w-3" />
+                    Limited
+                  </span>
+                </div>
               </div>
-              <div className="p-5 space-y-3">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] uppercase tracking-widest bg-gold/10 text-gold rounded-full">
-                  <SparklesIcon className="h-3.5 w-3.5" />
-                  Limited Edition
-                </span>
+              <div className="p-5 space-y-2">
                 <h3 className="font-display text-xl leading-tight group-hover:text-gold transition-colors duration-300">{product.title}</h3>
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-semibold text-matte dark:text-ivory">৳{product.salePrice || product.price}</span>
-                  <span className="text-sm text-neutral-400">• {product.category}</span>
+                  <span className="text-sm text-neutral-400 font-light">• {product.category}</span>
                 </div>
               </div>
             </Link>
