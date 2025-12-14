@@ -9,6 +9,7 @@ import { useWishlist } from '../store/useWishlist.js';
 import { socket, connectSocket, disconnectSocket } from '../lib/socket.js';
 import { useToast } from '../components/ToastProvider.jsx';
 import { getImageUrl } from '../utils/imageUrl.js';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const Product = () => {
   const { slug } = useParams();
@@ -19,11 +20,17 @@ const Product = () => {
   const [liveStock, setLiveStock] = useState(null);
   const { addToast } = useToast();
   const [selectedSize, setSelectedSize] = useState(null);
-  const [activeTab, setActiveTab] = useState('description');
-  const [showSizeGuide, setShowSizeGuide] = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
-  const [canReview, setCanReview] = useState(null);
+const [activeTab, setActiveTab] = useState('description');
+const [showSizeGuide, setShowSizeGuide] = useState(false);
+const [showReviewModal, setShowReviewModal] = useState(false);
+const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+const [canReview, setCanReview] = useState(null);
+const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+ 
+
+
+
+
 
   const { data: product } = useQuery({
     queryKey: ['product', slug],
@@ -56,7 +63,9 @@ const Product = () => {
     }
 
     // Connect socket
-    connectSocket();
+      connectSocket();
+  setLiveStock(null);
+  setSelectedImageIndex(0);
 
     // Reset live stock when product changes
     setLiveStock(null);
@@ -182,6 +191,19 @@ const Product = () => {
 
   const stats = reviewsData?.stats || { totalReviews: 0, averageRating: 0, ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
   const reviews = reviewsData?.reviews || [];
+const images = product.images || [];
+const mainImage = images[selectedImageIndex] || images[0];
+
+// ADD THESE TWO FUNCTIONS:
+const nextImage = () => {
+  setSelectedImageIndex((prev) => (prev + 1) % images.length);
+};
+
+const prevImage = () => {
+  setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
+};
+
+  
 
   return (
     <div className="lux-container py-10 space-y-10">
@@ -189,14 +211,65 @@ const Product = () => {
       <div className="grid gap-10 lg:grid-cols-2">
         {/* Images */}
         <div className="space-y-3">
-          <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-200">
-            <img src={getImageUrl(product.images?.[0])} alt={product.title} className="h-full w-full object-cover" />
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {product.images?.slice(0, 4).map((img, idx) => (
-              <img key={idx} src={getImageUrl(img)} alt={product.title} className="h-20 w-full rounded-md object-cover cursor-pointer hover:ring-2 hover:ring-gold transition" />
-            ))}
-          </div>
+         <div className="space-y-3">
+  {/* Main Image with Navigation */}
+  <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-200">
+    <img 
+      src={getImageUrl(mainImage)} 
+      alt={product.title} 
+      className="h-full w-full object-cover transition-all duration-300" 
+    />
+    
+    {/* Navigation Arrows - Only show if multiple images */}
+    {images.length > 1 && (
+      <>
+        <button
+          onClick={prevImage}
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition"
+          aria-label="Previous image"
+        >
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+        <button
+          onClick={nextImage}
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition"
+          aria-label="Next image"
+        >
+          <ChevronRightIcon className="w-5 h-5" />
+        </button>
+        
+        {/* Image Counter */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-xs">
+          {selectedImageIndex + 1} / {images.length}
+        </div>
+      </>
+    )}
+  </div>
+
+  {/* Thumbnail Gallery - Only show if multiple images */}
+  {images.length > 1 && (
+    <div className="grid grid-cols-4 gap-2 overflow-x-auto pb-2">
+      {images.map((img, idx) => (
+        <button
+          key={idx}
+          onClick={() => setSelectedImageIndex(idx)}
+          className={`h-20 rounded-md overflow-hidden transition-all flex-shrink-0 ${
+            idx === selectedImageIndex
+              ? 'ring-2 ring-gold border border-gold'
+              : 'border border-gold/20 hover:ring-1 hover:ring-gold/50'
+          }`}
+        >
+          <img 
+            src={getImageUrl(img)} 
+            alt={`Product ${idx + 1}`} 
+            className="h-full w-full object-cover" 
+          />
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+         
         </div>
 
         {/* Details */}

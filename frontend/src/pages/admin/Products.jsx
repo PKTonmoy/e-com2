@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
-import { PencilIcon, TrashIcon, PlusIcon, MagnifyingGlassIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, PlusIcon, MagnifyingGlassIcon, ArrowUpTrayIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import api from '../../lib/api.js';
 import { useToast } from '../../components/ToastProvider.jsx';
 import { getImageUrl } from '../../utils/imageUrl.js';
@@ -28,32 +28,87 @@ const AdminProducts = () => {
   const [uploading, setUploading] = useState(false);
 
   // Handle image upload
-  const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+ const handleImageUpload = async (e) => {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
 
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
+  setUploading(true);
+  const uploadedUrls = [];
+  const totalFiles = files.length;
+  let uploadedCount = 0;
 
-    try {
-      const res = await api.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      // Debug: Log the full response
-      console.log('[ImageUpload] Full response:', res.data);
-      console.log('[ImageUpload] URL received:', res.data.url);
-      console.log('[ImageUpload] URL length:', res.data.url?.length);
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        addToast(`${file.name} is too large (max 5MB)`, 'error');
+        continue;
+      }
 
-      // Use the returned URL
-      setForm(prev => ({ ...prev, images: [res.data.url] }));
-      addToast('Image uploaded successfully!');
-    } catch (err) {
-      addToast(err.response?.data?.message || 'Upload failed', 'error');
-    } finally {
-      setUploading(false);
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        if (res.data.url) {
+          uploadedUrls.push(res.data.url);
+          uploadedCount++;
+        }
+      } catch (err) {
+        console.error(`Failed to upload ${file.name}:`, err);
+      }
     }
-  };
+
+    if (uploadedUrls.length > 0) {
+      setForm(prev => ({ 
+        ...prev, 
+        images: [...(prev.images || []), ...uploadedUrls] 
+      }));
+      addToast(`${uploadedCount} image(s) uploaded successfully!`);
+    } else {
+      addToast('No images were uploaded', 'error');
+    }
+  } catch (err) {
+    addToast('Upload failed', 'error');
+  } finally {
+    setUploading(false);
+    // Reset file input
+    e.target.value = '';
+  }
+};
+
+// Remove image from array
+const removeImage = (index) => {
+  setForm(prev => ({
+    ...prev,
+    images: prev.images.filter((_, i) => i !== index)
+  }));
+};
+
+// Move image up
+const moveImageUp = (index) => {
+  if (index === 0) return;
+  setForm(prev => {
+    const newImages = [...prev.images];
+    [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
+    return { ...prev, images: newImages };
+  });
+};
+
+// Move image down
+const moveImageDown = (index) => {
+  if (index === form.images.length - 1) return;
+  setForm(prev => {
+    const newImages = [...prev.images];
+    [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+    return { ...prev, images: newImages };
+  });
+};
 
   const { data: products = [] } = useQuery({
     queryKey: ['admin-products'],
@@ -100,22 +155,23 @@ const AdminProducts = () => {
     },
   });
 
-  const resetForm = () => {
-    setForm({
-      title: '',
-      slug: '',
-      sku: '',
-      price: '',
-      stock: '',
-      category: '',
-      descriptionHTML: '',
-      images: [''],
-      limitedEdition: false,
-      hasSizes: true,
-      sizes: ALL_SIZES,
-    });
-    setEditingProduct(null);
-  };
+ const resetForm = () => {
+  setForm({
+    title: '',
+    slug: '',
+    sku: '',
+    price: '',
+    stock: '',
+    category: '',
+    descriptionHTML: '',
+    images: [],
+    limitedEdition: false,
+    hasSizes: true,
+    sizes: ALL_SIZES,
+  });
+  setEditingProduct(null);
+};
+
 
   const handleEdit = (product) => {
     setEditingProduct(product);
@@ -127,7 +183,7 @@ const AdminProducts = () => {
       stock: product.stock,
       category: product.category || '',
       descriptionHTML: product.descriptionHTML || '',
-      images: product.images || [''],
+      images: product.images || [],
       limitedEdition: product.limitedEdition || false,
       hasSizes: product.hasSizes !== false,
       sizes: product.sizes || ALL_SIZES,
@@ -146,6 +202,13 @@ const AdminProducts = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+        // Validate that at least one image is uploaded
+  if (!form.images || form.images.length === 0) {
+    addToast('Please upload at least one image', 'error');
+    return;
+  }
+
     const data = {
       ...form,
       price: parseFloat(form.price),
@@ -297,44 +360,83 @@ const AdminProducts = () => {
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
                 />
               </div>
-              <textarea
-                className="w-full border p-3 rounded-lg min-h-[100px]"
-                placeholder="Description HTML"
-                value={form.descriptionHTML}
-                onChange={(e) => setForm({ ...form, descriptionHTML: e.target.value })}
-              />
-              {/* Image Upload Section */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">Product Image</label>
-                <div className="flex gap-3 items-start">
-                  <div className="flex-1">
-                    <input
-                      className="w-full border p-3 rounded-lg"
-                      placeholder="Image URL (or upload below)"
-                      value={form.images[0]}
-                      onChange={(e) => setForm({ ...form, images: [e.target.value] })}
-                    />
-                  </div>
-                  <label className="lux-btn border border-gold/40 flex items-center gap-2 cursor-pointer">
-                    <ArrowUpTrayIcon className="h-4 w-4" />
-                    {uploading ? 'Uploading...' : 'Upload'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                      disabled={uploading}
-                    />
-                  </label>
-                </div>
-                {form.images[0] && (
-                  <img
-                    src={getImageUrl(form.images[0])}
-                    alt="Preview"
-                    className="mt-2 h-32 w-auto object-cover rounded-lg border border-gold/20"
-                  />
-                )}
-              </div>
+
+                <textarea
+  className="w-full border p-3 rounded-lg min-h-[100px]"
+  placeholder="Description HTML"
+  value={form.descriptionHTML}
+  onChange={(e) => setForm({ ...form, descriptionHTML: e.target.value })}
+/>
+
+{/* Multiple Images Upload Section */}
+<div className="space-y-2 border border-gold/30 rounded-lg p-4 bg-gold/5">
+  <label className="block text-sm font-medium">Product Images (Multiple)</label>
+  <p className="text-xs text-neutral-500 mb-3">Upload multiple images. The first image will be the main product image.</p>
+  
+  <label className="lux-btn border border-gold/40 flex items-center gap-2 cursor-pointer justify-center py-3 hover:bg-gold/10 transition">
+    <ArrowUpTrayIcon className="h-4 w-4" />
+    {uploading ? 'Uploading...' : 'Upload Images'}
+    <input
+      type="file"
+      multiple
+      accept="image/*"
+      className="hidden"
+      onChange={handleImageUpload}
+      disabled={uploading}
+    />
+  </label>
+
+  {/* Image Gallery */}
+  {form.images.length > 0 && (
+    <div className="mt-4 space-y-2">
+      <p className="text-xs font-medium text-neutral-600">Images ({form.images.length})</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {form.images.map((img, idx) => (
+          <div key={idx} className="relative group">
+            <img
+              src={getImageUrl(img)}
+              alt={`Product ${idx + 1}`}
+              className="w-full h-24 object-cover rounded-lg border border-gold/20"
+            />
+            {idx === 0 && (
+              <span className="absolute top-1 left-1 text-xs bg-gold text-matte px-1.5 py-0.5 rounded">Main</span>
+            )}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center gap-1">
+              {idx > 0 && (
+                <button
+                  type="button"
+                  onClick={() => moveImageUp(idx)}
+                  className="p-1.5 bg-gold/90 text-matte rounded hover:bg-gold transition text-xs"
+                  title="Move up"
+                >
+                  ↑
+                </button>
+              )}
+              {idx < form.images.length - 1 && (
+                <button
+                  type="button"
+                  onClick={() => moveImageDown(idx)}
+                  className="p-1.5 bg-gold/90 text-matte rounded hover:bg-gold transition text-xs"
+                  title="Move down"
+                >
+                  ↓
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => removeImage(idx)}
+                className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                title="Delete"
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
 
               {/* Limited Edition Toggle */}
               <div className="flex items-center gap-3 p-4 border border-gold/30 rounded-lg bg-gold/5">
