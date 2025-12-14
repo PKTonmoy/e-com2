@@ -209,7 +209,7 @@ const LimitedDropsCarousel = ({ items = [] }) => {
                             aria-hidden={isClone}
                             className={`
                 ${styles.card}
-                flex-shrink-0 snap-center
+                flex-shrink-0 snap-center snap-always
                 w-[82vw] max-w-[340px]
                 bg-white dark:bg-neutral-900 
                 rounded-xl overflow-hidden
