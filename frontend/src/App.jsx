@@ -24,12 +24,12 @@ import AdminProducts from './pages/admin/Products.jsx';
 import AdminOrders from './pages/admin/Orders.jsx';
 import AdminUsers from './pages/admin/Users.jsx';
 import AdminCoupons from './pages/admin/Coupons.jsx';
+
 import AdminContent from './pages/admin/Content.jsx';
 import AdminAnalytics from './pages/admin/Analytics.jsx';
 import AdminReviews from './pages/admin/Reviews.jsx';
 import AdminBlog from './pages/admin/BlogAdmin.jsx';
 import AdminSettings from './pages/admin/Settings.jsx';
-
 import AdminCourierTariffs from './pages/admin/CourierTariffs.jsx';
 import AdminNotifications from './pages/admin/Notifications.jsx';
 import QuickView from './pages/QuickView.jsx';
