@@ -18,6 +18,8 @@ import {
 } from '@heroicons/react/24/outline';
 import AdminSidebar from './AdminSidebar.jsx';
 import MobileBottomNav from './MobileBottomNav.jsx';
+import NotificationIcon from './Notifications/NotificationIcon.jsx';
+import NotificationDropdown from './Notifications/NotificationDropdown.jsx';
 import api from '../lib/api.js';
 
 const navLinks = [
@@ -40,6 +42,7 @@ const Layout = ({ children }) => {
     return 'light';
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -180,6 +183,14 @@ const Layout = ({ children }) => {
               >
                 {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
               </button>
+
+              <div className="relative">
+                <NotificationIcon onClick={() => setShowNotifications(!showNotifications)} />
+                {showNotifications && (
+                  <NotificationDropdown onClose={() => setShowNotifications(false)} />
+                )}
+              </div>
+
               <Link to="/cart" className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors">
                 <ShoppingBagIcon className="h-5 w-5" />
               </Link>

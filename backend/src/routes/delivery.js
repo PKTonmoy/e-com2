@@ -1,0 +1,346 @@
+import express from 'express';
+import { body, validationResult } from 'express-validator';
+import { protect, requireRole } from '../middleware/auth.js';
+import Order from '../models/Order.js';
+import ActivityLog from '../models/ActivityLog.js';
+import CourierTariff from '../models/CourierTariff.js';
+import {
+  createSteadfastOrder,
+  getSteadfastStatusByTrackingCode,
+  mapSteadfastStatus,
+  getSteadfastDestinations,
+} from '../services/steadfastClient.js';
+
+const router = express.Router();
+
+// Accept Bangladeshi numbers like 01XXXXXXXXX, +8801XXXXXXXXX, 8801XXXXXXXXX
+const BD_PHONE_REGEX = /^(?:\+?88)?01[3-9]\d{8}$/;
+
+const normalizeBdPhone = (phone) => {
+  if (!phone) return phone;
+  let digits = String(phone).replace(/\D/g, '');
+  // Strip country code 88 / 088 / +88 forms, keep local 11-digit
+  if (digits.startsWith('88') && digits.length === 13) {
+    digits = digits.slice(2);
+  }
+  if (digits.startsWith('088') && digits.length === 14) {
+    digits = digits.slice(3);
+  }
+  if (digits.length === 11 && digits.startsWith('01')) {
+    return digits;
+  }
+  return phone;
+};
+
+// Validation helpers
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: 'Validation failed', errors: errors.array() });
+  }
+  next();
+};
+
+// 1) Dynamic Delivery Charge
+router.post(
+  '/charge',
+  protect,
+  [
+    body('shipping.name').isString().trim().isLength({ min: 2, max: 100 }),
+    body('shipping.phone')
+      .isString()
+      .custom((value) => BD_PHONE_REGEX.test(String(value).trim()))
+      .withMessage('Invalid Bangladeshi mobile number'),
+    body('shipping.address').isString().trim().isLength({ min: 5, max: 250 }),
+    body('shipping.city').isString().trim().notEmpty(),
+    body('shipping.country').isString().trim().notEmpty(),
+    body('cartTotal').isNumeric().custom((v) => v >= 0),
+  ],
+  validate,
+  async (req, res, next) => {
+    try {
+      const shipping = req.body.shipping;
+      shipping.phone = normalizeBdPhone(shipping.phone);
+      const cartTotal = Number(req.body.cartTotal || 0);
+
+      // Basic availability check: only Bangladesh supported for now
+      if (shipping.country.toLowerCase() !== 'bangladesh') {
+        return res.status(400).json({
+          message: 'Delivery is available only within Bangladesh.',
+          available: false,
+        });
+      }
+
+      // Look up tariff from database (editable in admin panel)
+      // Origin is fixed as Rajshahi district for now.
+      const originDistrict = 'Rajshahi';
+      const destinationDistrict = shipping.city; // we store dropdown label here
+
+      let charge = null;
+      const tariff = await CourierTariff.findOne({
+        courier: 'steadfast',
+        originDistrict,
+        destinationDistrict,
+        active: true,
+      });
+      if (tariff) {
+        charge = tariff.price;
+      } else {
+        // Fallback basic rule if no tariff configured
+        const cityLower = destinationDistrict.toLowerCase();
+        charge = cityLower.includes('rajshahi') ? 50 : 130;
+      }
+
+      // Optional free shipping for high-value orders
+      if (cartTotal >= 5000) {
+        charge = 0;
+      }
+
+      return res.json({
+        available: true,
+        courier: 'steadfast',
+        deliveryCharge: charge,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+// 2) Create courier order for COD
+router.post(
+  '/create',
+  protect,
+  [
+    body('orderId').isMongoId(),
+    body('paymentMethod').isIn(['cod', 'online']),
+    body('expectedDeliveryCharge').isNumeric(),
+  ],
+  validate,
+  async (req, res, next) => {
+    try {
+      const orderId = req.body.orderId;
+      const paymentMethod = req.body.paymentMethod;
+      const expectedDeliveryCharge = Number(req.body.expectedDeliveryCharge);
+
+      const order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+
+      // Ownership check
+      if (order.userId.toString() !== req.user._id.toString() && req.user.role === 'customer') {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+
+      // Prevent duplicate courier order
+      if (order.courier?.trackingId) {
+        return res.status(400).json({ message: 'Courier order already exists for this order' });
+      }
+
+      // COD only
+      if (paymentMethod !== 'cod') {
+        return res.status(400).json({ message: 'Courier order allowed only for COD payments' });
+      }
+
+      // Fail-safe: delivery charge mismatch
+      if (typeof order.shippingCharge === 'number' && order.shippingCharge !== expectedDeliveryCharge) {
+        return res
+          .status(400)
+          .json({ message: 'Delivery charge mismatch. Please refresh checkout and try again.' });
+      }
+
+      // Compute COD amount in BDT including charges
+      const currency = order.currency || 'USD';
+      if (currency !== 'BDT' && currency !== 'Tk' && currency !== '৳') {
+        // For production-multi-currency you should convert here
+        await ActivityLog.create({
+          actorId: order.userId,
+          action: 'courier_currency_mismatch',
+          entity: 'order',
+          meta: { orderId: order._id, currency },
+        });
+      }
+
+      const codAmount = Math.max(0, Number(order.total || 0) + Number(order.shippingCharge || 0));
+
+      // Build Steadfast payload from docs:
+      // Path: /create_order, Method: POST
+      const payload = {
+        invoice: String(order._id),
+        recipient_name: order.shipping?.name || 'Guest',
+        recipient_phone: normalizeBdPhone(order.shipping?.phone),
+        recipient_address: order.shipping?.address,
+        cod_amount: codAmount,
+        note: order.notes?.[order.notes.length - 1]?.message || null,
+        item_description: `${order.items.length} item(s)`,
+        delivery_type: 0, // home delivery
+      };
+
+      const result = await createSteadfastOrder(payload);
+
+      if (!result || !result.consignment) {
+        const msg = result?.message || 'Failed to create courier order';
+        await ActivityLog.create({
+          actorId: order.userId,
+          action: 'courier_create_failed',
+          entity: 'order',
+          meta: { orderId: order._id, courier: 'steadfast', response: result },
+        });
+        return res.status(502).json({ message: msg });
+      }
+
+      const consignment = result.consignment;
+
+      const rawStatus = consignment.status || 'pending';
+      const friendlyStatus = mapSteadfastStatus(rawStatus);
+
+      order.paymentMethod = 'cod';
+      order.courier = {
+        name: 'steadfast',
+        trackingId: consignment.tracking_code,
+        statusRaw: rawStatus,
+        statusFriendly: friendlyStatus,
+        deliveryCharge: expectedDeliveryCharge,
+        lastSyncedAt: new Date(),
+        error: null,
+      };
+      order.shippingCharge = expectedDeliveryCharge;
+
+      await order.save();
+
+      await ActivityLog.create({
+        actorId: order.userId,
+        action: 'courier_create_success',
+        entity: 'order',
+        meta: {
+          orderId: order._id,
+          courier: 'steadfast',
+          trackingId: consignment.tracking_code,
+          consignmentId: consignment.consignment_id,
+        },
+      });
+
+      return res.status(201).json({
+        message: 'Courier order created successfully',
+        courier: order.courier,
+      });
+    } catch (err) {
+      // Mark order as cancelled on courier failure if it was just placed
+      if (req.body.orderId) {
+        try {
+          const order = await Order.findById(req.body.orderId);
+          if (order && order.orderStatus === 'pending') {
+            order.orderStatus = 'cancelled';
+            order.notes.push({ message: 'Order auto-cancelled due to courier error' });
+            await order.save();
+          }
+        } catch {
+          // best effort only
+        }
+      }
+      return next(err);
+    }
+  }
+);
+
+// 3) Live Order Tracking - by trackingId
+router.get('/status/:trackingId', protect, async (req, res, next) => {
+  try {
+    const trackingId = req.params.trackingId;
+    const data = await getSteadfastStatusByTrackingCode(trackingId);
+
+    const rawStatus = data?.delivery_status || 'pending';
+    const friendly = mapSteadfastStatus(rawStatus);
+
+    return res.json({
+      trackingId,
+      courier: 'steadfast',
+      statusRaw: rawStatus,
+      statusFriendly: friendly,
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Expose Steadfast destinations (police stations) for frontend dropdown
+// Rajshahi is considered the origin in our pricing rules; this endpoint only returns destinations.
+router.get('/destinations', protect, async (req, res, next) => {
+  try {
+    const data = await getSteadfastDestinations();
+
+    // Steadfast typically returns an array of police stations; normalize a bit for the frontend
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data)
+      ? data.data
+      : [];
+
+    const destinations = list.map((item) => ({
+      id: item.id || item._id || item.code || String(item.station_id || ''),
+      name: item.name || item.thana || item.police_station || '',
+      district: item.district || item.district_name || '',
+      raw: item,
+    }));
+
+    return res.json({ destinations });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// 4) Admin manual refresh per order
+router.post(
+  '/admin/refresh/:orderId',
+  protect,
+  requireRole('staff', 'manager', 'admin'),
+  async (req, res, next) => {
+    try {
+      const orderId = req.params.orderId;
+      const order = await Order.findById(orderId);
+      if (!order) return res.status(404).json({ message: 'Order not found' });
+
+      if (!order.courier?.trackingId) {
+        return res.status(400).json({ message: 'No courier tracking ID on this order' });
+      }
+
+      const data = await getSteadfastStatusByTrackingCode(order.courier.trackingId);
+      const rawStatus = data?.delivery_status || order.courier.statusRaw || 'pending';
+      const friendly = mapSteadfastStatus(rawStatus);
+
+      order.courier.statusRaw = rawStatus;
+      order.courier.statusFriendly = friendly;
+      order.courier.lastSyncedAt = new Date();
+      order.courier.error = null;
+
+      // Optionally sync main orderStatus for user visibility
+      if (friendly === 'Delivered') {
+        order.orderStatus = 'delivered';
+        order.paymentStatus = 'paid';
+      } else if (friendly === 'Cancelled') {
+        order.orderStatus = 'cancelled';
+      }
+
+      await order.save();
+
+      await ActivityLog.create({
+        actorId: req.user._id,
+        action: 'courier_status_manual_refresh',
+        entity: 'order',
+        meta: { orderId: order._id, courier: 'steadfast', statusRaw: rawStatus },
+      });
+
+      return res.json({
+        message: 'Courier status refreshed',
+        courier: order.courier,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+export default router;
+
+

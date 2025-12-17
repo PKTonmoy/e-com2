@@ -111,6 +111,11 @@ const Orders = () => {
                       <p className="text-sm text-neutral-600 dark:text-neutral-300">
                         {order.items.length} item{order.items.length > 1 ? 's' : ''} • Total: ৳{order.total?.toFixed(2)}
                       </p>
+                      {order.courier?.trackingId && (
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                          Courier: {order.courier.name || 'Steadfast'} • Status: {order.courier.statusFriendly || 'Pending'} • Tracking: {order.courier.trackingId}
+                        </p>
+                      )}
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                         Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -205,9 +210,23 @@ const Orders = () => {
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center pt-2 border-t border-gold/10">
-                        <span className="font-semibold">Total</span>
-                        <span className="font-bold text-lg text-gold">৳{order.total?.toFixed(2)}</span>
+                      <div className="space-y-1 pt-2 border-t border-gold/10">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-neutral-600 dark:text-neutral-300">Items Total</span>
+                          <span className="font-semibold text-sm">৳{order.total?.toFixed(2)}</span>
+                        </div>
+                        {typeof order.shippingCharge === 'number' && (
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-neutral-600 dark:text-neutral-300">Shipping</span>
+                            <span>৳{order.shippingCharge.toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="font-semibold">Grand Total</span>
+                          <span className="font-bold text-lg text-gold">
+                            ৳{((order.total || 0) + (order.shippingCharge || 0)).toFixed(2)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )}

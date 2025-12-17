@@ -28,6 +28,7 @@ const orderSchema = new mongoose.Schema(
       country: String,
       postalCode: String,
     },
+    paymentMethod: { type: String, enum: ['cod', 'online'], default: 'cod' },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'refunded'], default: 'pending' },
     orderStatus: {
       type: String,
@@ -36,9 +37,19 @@ const orderSchema = new mongoose.Schema(
     },
     notes: [{ message: String, createdAt: { type: Date, default: Date.now } }],
     total: Number,
+    shippingCharge: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
     couponCode: String,
     currency: { type: String, default: 'USD' },
+    courier: {
+      name: String,
+      trackingId: String,
+      statusRaw: String,
+      statusFriendly: String,
+      deliveryCharge: Number,
+      lastSyncedAt: Date,
+      error: String,
+    },
   },
   { timestamps: true }
 );

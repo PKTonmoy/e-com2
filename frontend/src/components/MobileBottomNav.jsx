@@ -7,6 +7,7 @@ import {
     HeartIcon,
     UserIcon,
     Cog6ToothIcon,
+    BellIcon,
 } from '@heroicons/react/24/outline';
 import {
     HomeIcon as HomeIconSolid,
@@ -15,6 +16,7 @@ import {
     HeartIcon as HeartIconSolid,
     UserIcon as UserIconSolid,
     Cog6ToothIcon as Cog6ToothIconSolid,
+    BellIcon as BellIconSolid,
 } from '@heroicons/react/24/solid';
 import { useBottomNav } from '../context/BottomNavContext.jsx';
 import api from '../lib/api.js';
@@ -23,6 +25,7 @@ const baseNavItems = [
     { to: '/', label: 'Home', icon: HomeIcon, iconActive: HomeIconSolid },
     { to: '/shop', label: 'Category', icon: Squares2X2Icon, iconActive: Squares2X2IconSolid },
     { to: '/cart', label: 'Cart', icon: ShoppingBagIcon, iconActive: ShoppingBagIconSolid },
+    { to: '/notifications', label: 'Alerts', icon: BellIcon, iconActive: BellIconSolid },
     { to: '/wishlist', label: 'Save', icon: HeartIcon, iconActive: HeartIconSolid },
     { to: '/profile', label: 'Profile', icon: UserIcon, iconActive: UserIconSolid },
 ];
@@ -75,9 +78,9 @@ const MobileBottomNav = () => {
                             >
                                 {isActive ? (
                                     // Active state - pill with label
-                                    <div className="flex items-center gap-2 bg-white/15 px-4 py-2.5 rounded-full transition-all duration-300">
+                                    <div className="flex items-center gap-2 bg-white/15 px-3 py-2.5 rounded-full transition-all duration-300">
                                         <Icon className="h-5 w-5 text-white" />
-                                        <span className="text-xs font-medium text-white tracking-wide">
+                                        <span className="text-xs font-medium text-white tracking-wide hidden min-[380px]:block">
                                             {item.label}
                                         </span>
                                     </div>

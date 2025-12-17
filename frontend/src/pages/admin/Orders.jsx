@@ -23,6 +23,17 @@ const AdminOrders = () => {
     },
   });
 
+  const refreshCourierMutation = useMutation({
+    mutationFn: (orderId) => api.post(`/delivery/admin/refresh/${orderId}`),
+    onSuccess: () => {
+      qc.invalidateQueries(['admin-orders']);
+      addToast('Courier status refreshed.', 'success');
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to refresh courier status', 'error');
+    },
+  });
+
   const deleteOrderMutation = useMutation({
     mutationFn: (orderId) => api.delete(`/admin/orders/${orderId}`),
     onSuccess: () => {
@@ -76,6 +87,11 @@ const AdminOrders = () => {
                   <p className="text-xs text-neutral-600 dark:text-neutral-300">
                     #{order._id.slice(-8)} • {order.items.length} items • ৳{order.total.toFixed(2)}
                   </p>
+                  {order.courier?.trackingId && (
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+                      Courier: {order.courier.name || 'Steadfast'} • Status: {order.courier.statusFriendly || 'Pending'} • Tracking: {order.courier.trackingId}
+                    </p>
+                  )}
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     {new Date(order.createdAt).toLocaleString()}
                   </p>
@@ -201,13 +217,70 @@ const AdminOrders = () => {
                             <span className="font-medium text-red-500">-৳{order.discount.toFixed(0)}</span>
                           </p>
                         )}
+                        <p className="flex justify-between">
+                          <span className="text-neutral-500 dark:text-neutral-400">Items Total:</span>
+                          <span className="font-medium">৳{order.total.toFixed(0)}</span>
+                        </p>
+                        {typeof order.shippingCharge === 'number' && (
+                          <p className="flex justify-between">
+                            <span className="text-neutral-500 dark:text-neutral-400">Shipping:</span>
+                            <span className="font-medium">৳{order.shippingCharge.toFixed(0)}</span>
+                          </p>
+                        )}
                         <p className="flex justify-between border-t border-green-200 dark:border-green-800 pt-2 mt-2">
-                          <span className="font-semibold">Total:</span>
-                          <span className="font-bold text-gold">৳{order.total.toFixed(0)}</span>
+                          <span className="font-semibold">Grand Total:</span>
+                          <span className="font-bold text-gold">
+                            ৳{(order.total + (order.shippingCharge || 0)).toFixed(0)}
+                          </span>
                         </p>
                       </div>
                     </div>
                   </div>
+
+                  {order.courier && (
+                    <div className="mt-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">
+                          Courier Details
+                        </p>
+                        <button
+                          onClick={() => refreshCourierMutation.mutate(order._id)}
+                          className="text-xs px-3 py-1 rounded-full bg-slate-800 text-ivory hover:bg-slate-700 disabled:opacity-50"
+                          disabled={refreshCourierMutation.isLoading}
+                        >
+                          {refreshCourierMutation.isLoading ? 'Refreshing...' : 'Refresh Status'}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200">
+                        <p>
+                          <span className="font-medium">Courier:</span> {order.courier.name || 'Steadfast'}
+                        </p>
+                        <p>
+                          <span className="font-medium">Status:</span> {order.courier.statusFriendly || 'Pending'} ({order.courier.statusRaw || 'n/a'})
+                        </p>
+                        <p>
+                          <span className="font-medium">Tracking ID:</span> {order.courier.trackingId || 'N/A'}
+                        </p>
+                        <p>
+                          <span className="font-medium">Delivery Charge:</span>{' '}
+                          {typeof order.courier.deliveryCharge === 'number'
+                            ? `৳${order.courier.deliveryCharge.toFixed(0)}`
+                            : 'N/A'}
+                        </p>
+                        <p>
+                          <span className="font-medium">Last Synced:</span>{' '}
+                          {order.courier.lastSyncedAt
+                            ? new Date(order.courier.lastSyncedAt).toLocaleString()
+                            : 'Never'}
+                        </p>
+                        {order.courier.error && (
+                          <p className="text-red-500 col-span-full">
+                            <span className="font-medium">Last Error:</span> {order.courier.error}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <p className="font-semibold text-sm mb-2">Order Items</p>
                   <div className="space-y-3">

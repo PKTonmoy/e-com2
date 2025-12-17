@@ -13,6 +13,8 @@ import {
     Cog6ToothIcon,
     Bars3Icon,
     XMarkIcon,
+    TruckIcon,
+    BellIcon,
 } from '@heroicons/react/24/outline';
 
 const adminLinks = [
@@ -24,6 +26,8 @@ const adminLinks = [
     { to: '/admin/coupons', label: 'Coupons', icon: TicketIcon },
     { to: '/admin/blog', label: 'Blog', icon: NewspaperIcon },
     { to: '/admin/analytics', label: 'Analytics', icon: ChartBarIcon },
+    { to: '/admin/courier-tariffs', label: 'Courier Tariffs', icon: TruckIcon },
+    { to: '/admin/notifications', label: 'Notifications', icon: BellIcon },
     { to: '/admin/content', label: 'Content', icon: DocumentTextIcon },
     { to: '/admin/settings', label: 'Settings', icon: Cog6ToothIcon },
 ];

@@ -45,6 +45,7 @@ const AdminUsers = () => {
           <table className="w-full text-sm">
             <thead className="bg-gold/10">
               <tr className="text-left">
+                <th className="p-3">User ID</th>
                 <th className="p-3">Name</th>
                 <th className="p-3">Email</th>
                 <th className="p-3">Phone</th>
@@ -57,6 +58,7 @@ const AdminUsers = () => {
             <tbody>
               {users.map((u) => (
                 <tr key={u._id} className="border-t border-gold/20">
+                  <td className="p-3 font-mono text-xs">{u.customId || '-'}</td>
                   <td className="p-3 font-medium">{u.name}</td>
                   <td className="p-3 text-neutral-600 dark:text-neutral-400">{u.email}</td>
                   <td className="p-3 text-neutral-600 dark:text-neutral-400">{u.phone || '-'}</td>
@@ -102,6 +104,7 @@ const AdminUsers = () => {
             <div key={u._id} className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
+                  <p className="text-xs font-mono text-neutral-400 mb-0.5">{u.customId}</p>
                   <p className="font-medium truncate">{u.name}</p>
                   <p className="text-sm text-neutral-500 truncate">{u.email}</p>
                 </div>

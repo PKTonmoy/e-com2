@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import twilio from 'twilio';
 import Settings from '../models/Settings.js';
+import User from '../models/User.js'; // Import User model
 
 // Lazy-initialized services (will be initialized on first use)
 let resend = null;
@@ -199,6 +200,7 @@ function formatOrderDetails(order, eventType) {
     return {
         orderId: order._id.toString().slice(-8),
         fullOrderId: order._id.toString(),
+        userId: order.user?.customId || 'N/A', // Add customId
         customerName: order.shipping?.name || 'Unknown',
         customerPhone: order.shipping?.phone || 'Not provided',
         customerEmail: order.shipping?.email || 'Not provided',
@@ -224,6 +226,11 @@ function formatOrderDetails(order, eventType) {
 export async function notifyOrderEvent(order, eventType) {
     // Initialize services on first call (after dotenv has loaded)
     initServices();
+
+    // Populate user info if not already populated
+    if (!order.user && order.userId) {
+        order.user = await User.findById(order.userId);
+    }
 
     const details = formatOrderDetails(order, eventType);
 
@@ -261,6 +268,7 @@ ${details.couponCode ? `🎟️ Coupon: ${details.couponCode}` : ''}
 ━━━━━━━━━━━━━━━━━━━━
 👤 <b>CUSTOMER INFO</b>
 ━━━━━━━━━━━━━━━━━━━━
+🆔 <b>User ID: ${details.userId}</b>
 👤 Name: ${details.customerName}
 📞 Phone: ${details.customerPhone}
 ✉️ Email: ${details.customerEmail}
@@ -323,6 +331,7 @@ ${details.fullAddress}
     <div class="content">
       <div class="section">
         <div class="section-title">Customer Information</div>
+        <div class="row"><span class="label">User ID</span><span class="value"><b>${details.userId}</b></span></div>
         <div class="row"><span class="label">Name</span><span class="value">${details.customerName}</span></div>
         <div class="row"><span class="label">Phone</span><span class="value">${details.customerPhone}</span></div>
         <div class="row"><span class="label">Email</span><span class="value">${details.customerEmail}</span></div>
@@ -374,6 +383,7 @@ ${details.fullAddress}
 
 ━━━━━━━━━━━━━━
 👤 *CUSTOMER INFO*
+User ID: *${details.userId}*
 Name: ${details.customerName}
 Phone: ${details.customerPhone}
 Email: ${details.customerEmail}

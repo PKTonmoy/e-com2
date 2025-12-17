@@ -35,9 +35,35 @@ const userSchema = new mongoose.Schema(
     provider: { type: String, enum: ['local', 'google'], default: 'local' },
     avatarUrl: { type: String }, // Profile picture URL from Google
     lastLogin: { type: Date }, // Track last login time
+
+    // Custom Human-Readable ID
+    customId: { type: String, unique: true, sparse: true },
   },
   { timestamps: true }
 );
+
+// Generate customId before saving
+userSchema.pre('save', async function (next) {
+  if (this.isNew && !this.customId) {
+    // Generate an 8-character uppercase alphanumeric ID
+    // e.g., A7B2X9Y1
+    let unique = false;
+    while (!unique) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let id = '';
+      for (let i = 0; i < 8; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      const existing = await mongoose.models.User.findOne({ customId: id });
+      if (!existing) {
+        this.customId = id;
+        unique = true;
+      }
+    }
+  }
+  next();
+});
 
 userSchema.methods.matchPassword = async function (entered) {
   if (!this.passwordHash) return false; // OAuth users have no password

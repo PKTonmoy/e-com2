@@ -26,8 +26,12 @@ import validateEmailRoutes from './routes/validateEmail.js';
 import googleAuthRoutes from './routes/googleAuth.js';
 import uploadRoutes from './routes/upload.js';
 import settingsRoutes from './routes/settings.js';
+import deliveryRoutes from './routes/delivery.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import adminNotificationRoutes from './routes/adminNotificationRoutes.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import ensureAdmin from './utils/ensureAdmin.js';
+import syncCourierStatuses from './cron/courierSync.js';
 
 dotenv.config();
 
@@ -37,6 +41,19 @@ const io = new SocketIOServer(server, {
   cors: {
     origin: process.env.CLIENT_URL || '*',
   },
+});
+
+io.on('connection', (socket) => {
+  // console.log('Socket connected:', socket.id);
+
+  socket.on('join', (room) => {
+    socket.join(room);
+    // console.log(`Socket ${socket.id} joined room ${room}`);
+  });
+
+  socket.on('disconnect', () => {
+    // console.log('Socket disconnected:', socket.id);
+  });
 });
 
 // Connect to database and ensure admin user exists
@@ -117,6 +134,9 @@ app.use('/api/validate-email', validateEmailRoutes);
 app.use('/api/auth', googleAuthRoutes); // Google OAuth routes
 app.use('/api/upload', uploadRoutes); // Image upload routes
 app.use('/api/settings', settingsRoutes); // Settings routes
+app.use('/api/delivery', deliveryRoutes); // Courier & delivery routes
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin/notifications', adminNotificationRoutes);
 
 // Friendly root response
 const __filename = fileURLToPath(import.meta.url);
@@ -160,6 +180,19 @@ process.on('unhandledRejection', (reason, promise) => {
 if (process.env.NODE_ENV !== 'test') {
   server.listen(PORT, () => {
     console.log(`PRELUX API running on port ${PORT}`);
+
+    // Schedule courier sync every 3 hours (production-safe, idempotent)
+    const intervalMs = Number(process.env.COURIER_SYNC_INTERVAL_MS || 3 * 60 * 60 * 1000);
+
+    setInterval(() => {
+      syncCourierStatuses()
+        .then(() => {
+          console.log('[Courier Sync] Completed');
+        })
+        .catch((err) => {
+          console.error('[Courier Sync] Error', err.message);
+        });
+    }, intervalMs);
   });
 }
 

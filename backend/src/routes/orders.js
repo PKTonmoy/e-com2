@@ -23,7 +23,7 @@ async function restoreOrderStock(items) {
 }
 
 router.post('/', protect, async (req, res) => {
-  const { items, shipping, paymentStatus = 'pending', couponCode } = req.body;
+  const { items, shipping, paymentStatus = 'pending', paymentMethod = 'cod', shippingCharge = 0, couponCode } = req.body;
   let total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
   let discount = 0;
 
@@ -56,8 +56,10 @@ router.post('/', protect, async (req, res) => {
     userId: req.user._id,
     items,
     shipping,
+    paymentMethod,
     paymentStatus,
     total,
+    shippingCharge,
     discount,
     couponCode
   });
