@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import {
     HomeIcon,
     Squares2X2Icon,
@@ -51,8 +52,6 @@ const MobileBottomNav = () => {
     });
 
     const isAdmin = user?.role === 'admin';
-
-    // Build nav items - add admin item if user is admin
     const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems;
 
     // Don't show on admin pages
@@ -61,41 +60,47 @@ const MobileBottomNav = () => {
     }
 
     return (
-        <nav className={`fixed bottom-4 left-4 right-4 z-50 md:hidden transition-all duration-300 ${isBottomNavVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
-            {/* Glass morphism container */}
-            <div className="bg-matte/95 dark:bg-matte/98 backdrop-blur-xl rounded-full shadow-2xl shadow-black/30 border border-white/10">
-                <div className="flex items-center justify-between px-2 py-2">
+        <motion.nav
+            initial={{ y: 100 }}
+            animate={{ y: isBottomNavVisible ? 0 : 150 }}
+            transition={{ type: "spring", damping: 20, stiffness: 100 }}
+            className="fixed bottom-4 left-4 right-4 z-50 md:hidden"
+        >
+            <div className="bg-white/40 dark:bg-matte/40 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/5 shadow-2xl shadow-black/10 dark:shadow-black/30">
+                <ul className="flex justify-between items-center px-4 py-2">
                     {navItems.map((item) => {
-                        const isActive = location.pathname === item.to ||
-                            (item.to !== '/' && location.pathname.startsWith(item.to));
+                        const isActive = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
                         const Icon = isActive ? item.iconActive : item.icon;
 
                         return (
-                            <NavLink
-                                key={item.to}
-                                to={item.to}
-                                className="relative flex items-center justify-center"
-                            >
-                                {isActive ? (
-                                    // Active state - pill with label
-                                    <div className="flex items-center gap-2 bg-white/15 px-3 py-2.5 rounded-full transition-all duration-300">
-                                        <Icon className="h-5 w-5 text-white" />
-                                        <span className="text-xs font-medium text-white tracking-wide hidden min-[380px]:block">
-                                            {item.label}
-                                        </span>
-                                    </div>
-                                ) : (
-                                    // Inactive state - icon only
-                                    <div className="p-3 rounded-full hover:bg-white/5 transition-all duration-200">
-                                        <Icon className="h-5 w-5 text-white/60" />
-                                    </div>
-                                )}
-                            </NavLink>
+                            <li key={item.to} className="relative">
+                                <NavLink
+                                    to={item.to}
+                                    className="flex items-center justify-center w-12 h-12 relative z-20"
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activeTab"
+                                            className="absolute inset-0 rounded-full border border-gold bg-gold/10 shadow-[0_0_15px_-4px_rgba(212,175,55,0.5)] backdrop-blur-md"
+                                            transition={{
+                                                type: "spring",
+                                                bounce: 0.2,
+                                                duration: 0.6
+                                            }}
+                                        />
+                                    )}
+                                    <Icon
+                                        className={`w-6 h-6 transition-all duration-300 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] dark:drop-shadow-none ${isActive ? 'text-gray-900 dark:text-white scale-110' : 'text-gray-700 dark:text-gray-400 stroke-2 scale-90'
+                                            }`}
+                                    />
+                                </NavLink>
+                            </li>
                         );
                     })}
-                </div>
+                </ul>
             </div>
-        </nav>
+        </motion.nav>
     );
 };
 

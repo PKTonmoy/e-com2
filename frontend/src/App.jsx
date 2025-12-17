@@ -29,6 +29,7 @@ import AdminAnalytics from './pages/admin/Analytics.jsx';
 import AdminReviews from './pages/admin/Reviews.jsx';
 import AdminBlog from './pages/admin/BlogAdmin.jsx';
 import AdminSettings from './pages/admin/Settings.jsx';
+
 import AdminCourierTariffs from './pages/admin/CourierTariffs.jsx';
 import AdminNotifications from './pages/admin/Notifications.jsx';
 import QuickView from './pages/QuickView.jsx';
@@ -38,6 +39,7 @@ import { NotificationProvider } from './context/NotificationContext.jsx';
 import NotificationToast from './components/Notifications/NotificationToast.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import ScrollToTop from './components/ScrollToTop.jsx';
 
 const App = () => {
   return (
@@ -45,6 +47,7 @@ const App = () => {
       <NotificationProvider>
         <ToastProvider>
           <Layout>
+            <ScrollToTop />
             <NotificationToast />
             <Routes>
               <Route path="/" element={<Home />} />
