@@ -22,6 +22,8 @@ import {
 import { useBottomNav } from '../context/BottomNavContext.jsx';
 import api from '../lib/api.js';
 
+const MotionNavLink = motion(NavLink);
+
 const baseNavItems = [
     { to: '/', label: 'Home', icon: HomeIcon, iconActive: HomeIconSolid },
     { to: '/shop', label: 'Category', icon: Squares2X2Icon, iconActive: Squares2X2IconSolid },
@@ -54,15 +56,18 @@ const MobileBottomNav = () => {
     const isAdmin = user?.role === 'admin';
     const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems;
 
-    // Don't show on admin pages
-    if (location.pathname.startsWith('/admin')) {
+    // Routes where the bottom nav should be hidden
+    const hideOnRoutes = ['/admin', '/blog', '/product', '/checkout'];
+    const shouldHide = hideOnRoutes.some(route => location.pathname.startsWith(route));
+
+    if (shouldHide) {
         return null;
     }
 
     return (
         <motion.nav
             initial={{ y: 100 }}
-            animate={{ y: isBottomNavVisible ? 0 : 150 }}
+            animate={{ y: 0 }}
             transition={{ type: "spring", damping: 20, stiffness: 100 }}
             className="fixed bottom-4 left-4 right-4 z-50 md:hidden"
         >
@@ -74,7 +79,7 @@ const MobileBottomNav = () => {
 
                         return (
                             <li key={item.to} className="relative">
-                                <NavLink
+                                <MotionNavLink
                                     to={item.to}
                                     className="flex items-center justify-center w-12 h-12 relative z-20"
                                     whileTap={{ scale: 0.9 }}
@@ -94,7 +99,7 @@ const MobileBottomNav = () => {
                                         className={`w-6 h-6 transition-all duration-300 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] dark:drop-shadow-none ${isActive ? 'text-gray-900 dark:text-white scale-110' : 'text-gray-700 dark:text-gray-400 stroke-2 scale-90'
                                             }`}
                                     />
-                                </NavLink>
+                                </MotionNavLink>
                             </li>
                         );
                     })}

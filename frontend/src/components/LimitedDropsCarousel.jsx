@@ -19,6 +19,7 @@
  * />
  */
 import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import styles from './LimitedDropsCarousel.module.css';
@@ -314,19 +315,40 @@ const LimitedDropsCarousel = ({ items = [] }) => {
                             visibleIndices.push(i);
                         }
 
-                        return visibleIndices.map((idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => goToIndex(idx)}
-                                className={`
-                                    ${styles.indicatorDot}
-                                    ${idx === activeIndex ? styles.indicatorDotActive : ''}
-                                `}
-                                role="tab"
-                                aria-selected={idx === activeIndex}
-                                aria-label={`Go to slide ${idx + 1} of ${totalItems}`}
-                            />
-                        ));
+                        return visibleIndices.map((idx) => {
+                            const isActive = idx === activeIndex;
+                            return (
+                                <button
+                                    key={idx}
+                                    onClick={() => goToIndex(idx)}
+                                    className="relative flex items-center justify-center h-4 w-6 focus:outline-none group"
+                                    role="tab"
+                                    aria-selected={isActive}
+                                    aria-label={`Go to slide ${idx + 1} of ${totalItems}`}
+                                >
+                                    {/* Inactive Dot (Base) */}
+                                    {!isActive && (
+                                        <motion.div
+                                            layoutId={`dot-base-${idx}`}
+                                            className={`${styles.indicatorDot} opacity-40 group-hover:opacity-70`}
+                                        />
+                                    )}
+
+                                    {/* Active "Butter" Pill */}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activePill"
+                                            className={styles.indicatorDotActive}
+                                            transition={{
+                                                type: "spring",
+                                                stiffness: 300,
+                                                damping: 30
+                                            }}
+                                        />
+                                    )}
+                                </button>
+                            );
+                        });
                     })()}
                 </div>
             )}

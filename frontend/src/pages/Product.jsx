@@ -10,6 +10,7 @@ import { socket, connectSocket, disconnectSocket } from '../lib/socket.js';
 import { useToast } from '../components/ToastProvider.jsx';
 import { getImageUrl } from '../utils/imageUrl.js';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import ProductSelectionModal from '../components/ProductSelectionModal.jsx';
 
 const Product = () => {
   const { slug } = useParams();
@@ -20,13 +21,14 @@ const Product = () => {
   const [liveStock, setLiveStock] = useState(null);
   const { addToast } = useToast();
   const [selectedSize, setSelectedSize] = useState(null);
-const [activeTab, setActiveTab] = useState('description');
-const [showSizeGuide, setShowSizeGuide] = useState(false);
-const [showReviewModal, setShowReviewModal] = useState(false);
-const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
-const [canReview, setCanReview] = useState(null);
-const [selectedImageIndex, setSelectedImageIndex] = useState(0);
- 
+  const [activeTab, setActiveTab] = useState('description');
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [canReview, setCanReview] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
+  const [selectionMode, setSelectionMode] = useState('checkout');
 
 
 
@@ -63,9 +65,9 @@ const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     }
 
     // Connect socket
-      connectSocket();
-  setLiveStock(null);
-  setSelectedImageIndex(0);
+    connectSocket();
+    setLiveStock(null);
+    setSelectedImageIndex(0);
 
     // Reset live stock when product changes
     setLiveStock(null);
@@ -120,34 +122,38 @@ const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   };
 
   const handleAddToCart = () => {
-    if (hasSizes && !selectedSize) {
-      addToast('Please select a size');
-      return;
-    }
-    const result = addItem(product, product.variants?.[0]?.id, currentStock, selectedSize || null);
-    if (result.success) {
-      const sizeText = selectedSize ? ` (${selectedSize})` : '';
-      addToast(`${product.title}${sizeText} added to cart!`);
-    } else {
-      addToast(result.message || 'Could not add to cart');
-    }
+    setSelectionMode('cart');
+    setIsBuyNowOpen(true);
   };
 
   const handleBuyNow = () => {
-    if (hasSizes && !selectedSize) {
-      addToast('Please select a size');
+    setSelectionMode('checkout');
+    setIsBuyNowOpen(true);
+  };
+
+  const onConfirmSelection = (data) => {
+    if (data.mode === 'cart') {
+      const result = addItem(product, product.variants?.[0]?.id, currentStock, data.size);
+      if (result.success) {
+        setIsBuyNowOpen(false);
+        const sizeText = data.size ? ` (${data.size})` : '';
+        addToast(`${product.title}${sizeText} added to bag!`);
+      } else {
+        addToast(result.message || 'Could not add to bag');
+      }
       return;
     }
-    // Clear cart and add only this item, then navigate to checkout
+
+    // Default to checkout mode
     const newItem = {
       productId: product._id,
       variantId: product.variants?.[0]?.id,
-      qty: 1,
+      qty: data.quantity,
       price: product.salePrice || product.price,
       title: product.title,
       sku: product.sku,
       stock: currentStock,
-      selectedSize,
+      selectedSize: data.size,
       image: getImageUrl(product.images?.[0]),
     };
     setItems([newItem]);
@@ -191,19 +197,19 @@ const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const stats = reviewsData?.stats || { totalReviews: 0, averageRating: 0, ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
   const reviews = reviewsData?.reviews || [];
-const images = product.images || [];
-const mainImage = images[selectedImageIndex] || images[0];
+  const images = product.images || [];
+  const mainImage = images[selectedImageIndex] || images[0];
 
-// ADD THESE TWO FUNCTIONS:
-const nextImage = () => {
-  setSelectedImageIndex((prev) => (prev + 1) % images.length);
-};
+  // ADD THESE TWO FUNCTIONS:
+  const nextImage = () => {
+    setSelectedImageIndex((prev) => (prev + 1) % images.length);
+  };
 
-const prevImage = () => {
-  setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
-};
+  const prevImage = () => {
+    setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
 
-  
+
 
   return (
     <div className="lux-container py-10 space-y-10">
@@ -211,65 +217,64 @@ const prevImage = () => {
       <div className="grid gap-10 lg:grid-cols-2">
         {/* Images */}
         <div className="space-y-3">
-         <div className="space-y-3">
-  {/* Main Image with Navigation */}
-  <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-200">
-    <img 
-      src={getImageUrl(mainImage)} 
-      alt={product.title} 
-      className="h-full w-full object-cover transition-all duration-300" 
-    />
-    
-    {/* Navigation Arrows - Only show if multiple images */}
-    {images.length > 1 && (
-      <>
-        <button
-          onClick={prevImage}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition"
-          aria-label="Previous image"
-        >
-          <ChevronLeftIcon className="w-5 h-5" />
-        </button>
-        <button
-          onClick={nextImage}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition"
-          aria-label="Next image"
-        >
-          <ChevronRightIcon className="w-5 h-5" />
-        </button>
-        
-        {/* Image Counter */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-xs">
-          {selectedImageIndex + 1} / {images.length}
-        </div>
-      </>
-    )}
-  </div>
+          <div className="space-y-3">
+            {/* Main Image with Navigation */}
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-200">
+              <img
+                src={getImageUrl(mainImage)}
+                alt={product.title}
+                className="h-full w-full object-cover transition-all duration-300"
+              />
 
-  {/* Thumbnail Gallery - Only show if multiple images */}
-  {images.length > 1 && (
-    <div className="grid grid-cols-4 gap-2 overflow-x-auto pb-2">
-      {images.map((img, idx) => (
-        <button
-          key={idx}
-          onClick={() => setSelectedImageIndex(idx)}
-          className={`h-20 rounded-md overflow-hidden transition-all flex-shrink-0 ${
-            idx === selectedImageIndex
-              ? 'ring-2 ring-gold border border-gold'
-              : 'border border-gold/20 hover:ring-1 hover:ring-gold/50'
-          }`}
-        >
-          <img 
-            src={getImageUrl(img)} 
-            alt={`Product ${idx + 1}`} 
-            className="h-full w-full object-cover" 
-          />
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-         
+              {/* Navigation Arrows - Only show if multiple images */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeftIcon className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition"
+                    aria-label="Next image"
+                  >
+                    <ChevronRightIcon className="w-5 h-5" />
+                  </button>
+
+                  {/* Image Counter */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-xs">
+                    {selectedImageIndex + 1} / {images.length}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Thumbnail Gallery - Only show if multiple images */}
+            {images.length > 1 && (
+              <div className="grid grid-cols-4 gap-2 overflow-x-auto pb-2">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImageIndex(idx)}
+                    className={`h-20 rounded-md overflow-hidden transition-all flex-shrink-0 ${idx === selectedImageIndex
+                      ? 'ring-2 ring-gold border border-gold'
+                      : 'border border-gold/20 hover:ring-1 hover:ring-gold/50'
+                      }`}
+                  >
+                    <img
+                      src={getImageUrl(img)}
+                      alt={`Product ${idx + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* Details */}
@@ -292,30 +297,32 @@ const prevImage = () => {
             )}
           </p>
 
-          {/* Size Selector - Only shown if product has sizes */}
+          {/* Available Sizes - Refined Premium UI */}
           {hasSizes && (
-            <div className="space-y-2">
+            <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold">Select Size</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 bg-gold rounded-full" />
+                  <p className="text-sm font-display tracking-wider uppercase text-neutral-500 dark:text-neutral-400">Available Sizes</p>
+                </div>
                 <button
                   onClick={() => setShowSizeGuide(true)}
-                  className="text-sm text-gold hover:underline"
+                  className="text-xs font-body font-medium text-gold/80 hover:text-gold transition-colors hover:underline"
                 >
                   Size Guide
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {sizes.map((size) => (
-                  <button
+                  <div
                     key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 rounded-lg border-2 font-semibold text-sm transition-all ${selectedSize === size
-                      ? 'bg-gold text-matte border-gold'
-                      : 'border-gold/40 hover:border-gold/70 bg-transparent'
-                      }`}
+                    className="relative group"
                   >
-                    {size}
-                  </button>
+                    <div className="absolute -inset-1 bg-gold/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
+                    <div className="relative px-5 py-2.5 rounded-xl border border-gold/20 bg-white/50 dark:bg-black/20 backdrop-blur-sm text-sm font-display font-medium text-matte dark:text-ivory shadow-sm transition-all duration-300">
+                      {size}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -565,6 +572,15 @@ const prevImage = () => {
           </div>
         </div>
       )}
+
+      {/* Selection Modal */}
+      <ProductSelectionModal
+        isOpen={isBuyNowOpen}
+        onClose={() => setIsBuyNowOpen(false)}
+        product={product}
+        onConfirm={onConfirmSelection}
+        mode={selectionMode}
+      />
     </div>
   );
 };

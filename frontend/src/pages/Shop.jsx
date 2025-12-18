@@ -1,13 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { SparklesIcon, XMarkIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, PlusIcon, HeartIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, XMarkIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, PlusIcon, HeartIcon, ChevronDownIcon, CheckIcon, ShoppingBagIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 import { useCart } from '../store/useCart.js';
 import { useToast } from '../components/ToastProvider.jsx';
 import { useBottomNav } from '../context/BottomNavContext.jsx';
 import { getImageUrl } from '../utils/imageUrl.js';
 import MobileHeader from '../components/MobileHeader';
+import ProductSelectionModal from '../components/ProductSelectionModal.jsx';
+import { useNavigate } from 'react-router-dom';
 
 const DEFAULT_CONTENT = {
   title: 'The Collection',
@@ -55,6 +57,11 @@ const Shop = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [addedProducts, setAddedProducts] = useState({});
+  const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
+  const [activeProduct, setActiveProduct] = useState(null);
+  const [selectionMode, setSelectionMode] = useState('checkout');
+  const navigate = useNavigate();
+  const setItems = useCart((s) => s.setItems);
 
   // Cart and Toast
   const addItem = useCart((s) => s.addItem);
@@ -76,17 +83,51 @@ const Shop = () => {
   const handleAddToCart = (e, product) => {
     e.preventDefault();
     e.stopPropagation();
+    setActiveProduct(product);
+    setSelectionMode('cart');
+    setIsBuyNowOpen(true);
+  };
 
-    const result = addItem(product, product.variants?.[0]?.id, product.stock, null);
-    if (result.success) {
-      addToast(`${product.title} added to cart!`);
-      setAddedProducts(prev => ({ ...prev, [product._id]: true }));
-      setTimeout(() => {
-        setAddedProducts(prev => ({ ...prev, [product._id]: false }));
-      }, 2000);
-    } else {
-      addToast(result.message || 'Could not add to cart');
+  const handleBuyNowClick = (e, product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveProduct(product);
+    setSelectionMode('checkout');
+    setIsBuyNowOpen(true);
+  };
+
+  const onConfirmSelection = (data) => {
+    if (!activeProduct) return;
+
+    if (data.mode === 'cart') {
+      const result = addItem(activeProduct, activeProduct.variants?.[0]?.id, activeProduct.stock, data.size);
+      if (result.success) {
+        setIsBuyNowOpen(false);
+        addToast(`${activeProduct.title} added to bag!`);
+        setAddedProducts(prev => ({ ...prev, [activeProduct._id]: true }));
+        setTimeout(() => {
+          setAddedProducts(prev => ({ ...prev, [activeProduct._id]: false }));
+        }, 2000);
+      } else {
+        addToast(result.message || 'Could not add to bag');
+      }
+      return;
     }
+
+    // Default to checkout mode
+    const newItem = {
+      productId: activeProduct._id,
+      variantId: activeProduct.variants?.[0]?.id,
+      qty: data.quantity,
+      price: activeProduct.salePrice || activeProduct.price,
+      title: activeProduct.title,
+      sku: activeProduct.sku,
+      stock: activeProduct.stock,
+      selectedSize: data.size,
+      image: getImageUrl(activeProduct.images?.[0]),
+    };
+    setItems([newItem]);
+    navigate('/checkout');
   };
 
   // Debounce search query for API calls (300ms delay)
@@ -254,18 +295,28 @@ const Shop = () => {
                         {product.salePrice && <span className="text-[10px] font-body text-neutral-400 line-through">৳ {product.price}</span>}
                         <span className="font-body font-semibold text-matte dark:text-ivory leading-none"><span className="text-sm">৳</span> {product.salePrice || product.price}</span>
                       </div>
-                      <button
-                        onClick={(e) => handleAddToCart(e, product)}
-                        disabled={product.stock <= 0}
-                        className={`p-1.5 rounded-full transition-colors ${addedProducts[product._id]
-                          ? 'bg-emerald-500 text-white'
-                          : product.stock <= 0
-                            ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400'
-                            : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-gold hover:text-white'
-                          }`}
-                      >
-                        {addedProducts[product._id] ? <CheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => handleBuyNowClick(e, product)}
+                          disabled={product.stock <= 0}
+                          className="p-1.5 rounded-full bg-gold text-white hover:scale-110 shadow-lg shadow-gold/20 transition-transform active:scale-95 disabled:opacity-40"
+                          title="Buy Now"
+                        >
+                          <ShoppingCartIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={(e) => handleAddToCart(e, product)}
+                          disabled={product.stock <= 0}
+                          className={`p-1.5 rounded-full transition-colors ${addedProducts[product._id]
+                            ? 'bg-emerald-500 text-white'
+                            : product.stock <= 0
+                              ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400'
+                              : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-gold hover:text-white shadow-sm'
+                            }`}
+                        >
+                          {addedProducts[product._id] ? <CheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -458,6 +509,24 @@ const Shop = () => {
                           </span>
                         </div>
                       </div>
+
+                      {/* Premium Small Buttons for Rare Case */}
+                      <div className="px-4 pb-4 flex gap-2">
+                        <button
+                          onClick={(e) => { e.preventDefault(); handleAddToCart(e, product); }}
+                          disabled={product.stock <= 0}
+                          className="flex-1 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-[10px] font-display uppercase tracking-wider hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-40"
+                        >
+                          {addedProducts[product._id] ? 'In Bag' : 'Add to Bag'}
+                        </button>
+                        <button
+                          onClick={(e) => { e.preventDefault(); handleBuyNowClick(e, product); }}
+                          disabled={product.stock <= 0}
+                          className="flex-1 py-1.5 rounded-lg bg-gold/10 text-gold border border-gold/20 text-[10px] font-display uppercase tracking-wider hover:bg-gold hover:text-white transition-all disabled:opacity-40"
+                        >
+                          Buy Now
+                        </button>
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -557,6 +626,15 @@ const Shop = () => {
           </div>
         </div>
       </div>
+
+      {/* Selection Modal */}
+      <ProductSelectionModal
+        isOpen={isBuyNowOpen}
+        onClose={() => setIsBuyNowOpen(false)}
+        product={activeProduct}
+        onConfirm={onConfirmSelection}
+        mode={selectionMode}
+      />
     </div>
   );
 };

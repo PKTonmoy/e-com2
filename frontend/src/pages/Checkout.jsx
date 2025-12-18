@@ -459,7 +459,7 @@ const Checkout = () => {
 
       {/* Fixed Mobile Bottom Bar */}
       {/* Fixed Mobile Bottom Bar - Elevated to clear BottomNav */}
-      <div className="fixed bottom-24 left-4 right-4 lg:hidden bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 p-3 rounded-xl shadow-xl z-40">
+      <div className="fixed bottom-5 left-4 right-4 lg:hidden bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 p-3 rounded-xl shadow-xl z-40">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs text-neutral-500">Total Amount</p>
