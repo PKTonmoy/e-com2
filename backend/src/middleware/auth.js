@@ -26,3 +26,21 @@ export const requireRole = (...roles) => (req, res, next) => {
   next();
 };
 
+// Optional auth - allows both authenticated and guest users
+export const optionalProtect = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-passwordHash');
+    } catch {
+      // Token invalid, continue as guest
+      req.user = null;
+    }
+  } else {
+    req.user = null;
+  }
+  next();
+};
+

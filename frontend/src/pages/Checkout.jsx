@@ -14,6 +14,7 @@ const Checkout = () => {
   const [shipping, setShipping] = useState({
     name: '',
     phone: '',
+    email: '',
     address: '',
     city: '',
     country: 'Bangladesh',
@@ -81,6 +82,7 @@ const Checkout = () => {
         ...prev,
         name: user.name || prev.name,
         phone: user.phone || prev.phone,
+        email: user.email || prev.email,
         address: user.address || prev.address,
         city: user.city || prev.city,
         country: user.country || prev.country,
@@ -168,8 +170,9 @@ const Checkout = () => {
     }
 
     try {
-      // 1) Create local order first
-      const orderRes = await api.post('/orders', {
+      // Use guest endpoint if user is not logged in
+      const endpoint = user ? '/orders' : '/orders/guest';
+      const orderRes = await api.post(endpoint, {
         items,
         shipping,
         paymentStatus: paymentMethod === 'cod' ? 'pending' : 'paid',
@@ -244,6 +247,18 @@ const Checkout = () => {
                     placeholder="+1 234 567 8900"
                     value={shipping.phone}
                     onChange={(e) => setShipping({ ...shipping, phone: e.target.value })}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+                    Email {!user && <span className="text-neutral-400">(for order updates)</span>}
+                  </label>
+                  <input
+                    type="email"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-transparent text-base focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    placeholder="your@email.com"
+                    value={shipping.email || ''}
+                    onChange={(e) => setShipping({ ...shipping, email: e.target.value })}
                   />
                 </div>
               </div>

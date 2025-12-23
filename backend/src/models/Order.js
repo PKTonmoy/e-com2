@@ -17,7 +17,8 @@ const orderItemSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    isGuest: { type: Boolean, default: false },
     items: [orderItemSchema],
     shipping: {
       name: String,

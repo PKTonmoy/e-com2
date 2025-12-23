@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
-import { protect, requireRole } from '../middleware/auth.js';
+import { protect, requireRole, optionalProtect } from '../middleware/auth.js';
 import Order from '../models/Order.js';
 import ActivityLog from '../models/ActivityLog.js';
 import CourierTariff from '../models/CourierTariff.js';
@@ -44,7 +44,7 @@ const validate = (req, res, next) => {
 // 1) Dynamic Delivery Charge
 router.post(
   '/charge',
-  protect,
+  optionalProtect,
   [
     body('shipping.name').isString().trim().isLength({ min: 2, max: 100 }),
     body('shipping.phone')
@@ -110,7 +110,7 @@ router.post(
 // 2) Create courier order for COD
 router.post(
   '/create',
-  protect,
+  optionalProtect,
   [
     body('orderId').isMongoId(),
     body('paymentMethod').isIn(['cod', 'online']),
@@ -128,9 +128,17 @@ router.post(
         return res.status(404).json({ message: 'Order not found' });
       }
 
-      // Ownership check
-      if (order.userId.toString() !== req.user._id.toString() && req.user.role === 'customer') {
-        return res.status(403).json({ message: 'Forbidden' });
+      // Ownership check - handle both authenticated and guest orders
+      if (req.user) {
+        // Logged-in user: check ownership
+        if (order.userId && order.userId.toString() !== req.user._id.toString() && req.user.role === 'customer') {
+          return res.status(403).json({ message: 'Forbidden' });
+        }
+      } else {
+        // Guest: allow only if order is a guest order
+        if (!order.isGuest) {
+          return res.status(403).json({ message: 'Forbidden' });
+        }
       }
 
       // Prevent duplicate courier order
@@ -266,7 +274,7 @@ router.get('/status/:trackingId', protect, async (req, res, next) => {
 
 // Expose Steadfast destinations (police stations) for frontend dropdown
 // Rajshahi is considered the origin in our pricing rules; this endpoint only returns destinations.
-router.get('/destinations', protect, async (req, res, next) => {
+router.get('/destinations', optionalProtect, async (req, res, next) => {
   try {
     const data = await getSteadfastDestinations();
 
@@ -274,8 +282,8 @@ router.get('/destinations', protect, async (req, res, next) => {
     const list = Array.isArray(data)
       ? data
       : Array.isArray(data?.data)
-      ? data.data
-      : [];
+        ? data.data
+        : [];
 
     const destinations = list.map((item) => ({
       id: item.id || item._id || item.code || String(item.station_id || ''),

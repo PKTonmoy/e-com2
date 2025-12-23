@@ -55,9 +55,9 @@ const App = () => {
               <Route path="/product/:slug" element={<Product />} />
               <Route path="/quick/:slug" element={<QuickView />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
 
               <Route element={<ProtectedRoute />}>
-                <Route path="/checkout" element={<Checkout />} />
               </Route>
 
               <Route path="/order/thank-you" element={<OrderThankYou />} />
