@@ -233,7 +233,7 @@ const Checkout = () => {
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Full Name *</label>
                   <input
                     type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-transparent text-base focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="John Doe"
                     value={shipping.name}
                     onChange={(e) => setShipping({ ...shipping, name: e.target.value })}
@@ -243,7 +243,7 @@ const Checkout = () => {
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Mobile Number *</label>
                   <input
                     type="tel"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-transparent text-base focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="+1 234 567 8900"
                     value={shipping.phone}
                     onChange={(e) => setShipping({ ...shipping, phone: e.target.value })}
@@ -255,7 +255,7 @@ const Checkout = () => {
                   </label>
                   <input
                     type="email"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-transparent text-base focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="your@email.com"
                     value={shipping.email || ''}
                     onChange={(e) => setShipping({ ...shipping, email: e.target.value })}
@@ -275,7 +275,7 @@ const Checkout = () => {
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Address *</label>
                   <input
                     type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-transparent text-base focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="123 Main Street, Apt 4B"
                     value={shipping.address}
                     onChange={(e) => setShipping({ ...shipping, address: e.target.value })}
@@ -284,18 +284,18 @@ const Checkout = () => {
                 <div>
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Destination City / Thana *</label>
                   <select
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-transparent text-base focus:outline-none focus:ring-2 focus:ring-gold/30"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30"
                     value={shipping.city}
                     onChange={(e) => setShipping({ ...shipping, city: e.target.value })}
                     disabled={destinationsLoading || !destinations.length}
                   >
-                    <option value="">
+                    <option value="" className="bg-white dark:bg-neutral-800 text-matte dark:text-ivory">
                       {destinationsLoading
                         ? 'Loading destinations...'
                         : 'Select destination'}
                     </option>
                     {destinations.map((d) => (
-                      <option key={d.id} value={d.name}>
+                      <option key={d.id} value={d.name} className="bg-white dark:bg-neutral-800 text-matte dark:text-ivory">
                         {d.name}{d.district ? `, ${d.district}` : ''}
                       </option>
                     ))}
@@ -305,7 +305,7 @@ const Checkout = () => {
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Country *</label>
                   <input
                     type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-transparent text-base focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="Bangladesh"
                     value={shipping.country}
                     onChange={(e) => setShipping({ ...shipping, country: e.target.value })}
@@ -315,7 +315,7 @@ const Checkout = () => {
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Postal Code *</label>
                   <input
                     type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-transparent text-base focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="10001"
                     value={shipping.postalCode}
                     onChange={(e) => setShipping({ ...shipping, postalCode: e.target.value })}
