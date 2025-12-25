@@ -11,6 +11,7 @@ import { useToast } from '../components/ToastProvider.jsx';
 import { getImageUrl } from '../utils/imageUrl.js';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import ProductSelectionModal from '../components/ProductSelectionModal.jsx';
+import AnimatedButton from '../components/AnimatedButton.jsx';
 
 const Product = () => {
   const { slug } = useParams();
@@ -330,23 +331,20 @@ const Product = () => {
 
           {/* Buy Now & Add to Cart Buttons */}
           <div className="flex gap-3 pt-2">
-            <button
-              className="lux-btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-40"
-              disabled={currentStock === 0}
+            <AnimatedButton
+              text={currentStock === 0 ? 'Out of Stock' : 'Buy this Item'}
               onClick={handleBuyNow}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              {currentStock === 0 ? 'Out of Stock' : 'Buy this Item'}
-            </button>
-            <button
-              className="lux-btn border-2 border-gold/60 flex-1 hover:bg-gold/10 transition disabled:opacity-40"
               disabled={currentStock === 0}
+              variant="primary"
+              fullWidth
+            />
+            <AnimatedButton
+              text="Add to Cart"
               onClick={handleAddToCart}
-            >
-              Add to Cart
-            </button>
+              disabled={currentStock === 0}
+              variant="secondary"
+              fullWidth
+            />
           </div>
 
           {/* Wishlist */}

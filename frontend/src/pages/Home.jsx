@@ -6,6 +6,7 @@ import api from '../lib/api.js';
 import { getImageUrl } from '../utils/imageUrl.js';
 import MobileHeader from '../components/MobileHeader';
 import LimitedDropsCarousel from '../components/LimitedDropsCarousel';
+import LimitedDropCard from '../components/LimitedDropCard';
 
 const DEFAULT_HERO = {
   promoBanner: {
@@ -285,32 +286,17 @@ const Home = () => {
         {/* Desktop Grid (Hidden on Mobile) */}
         <div className="hidden md:grid gap-8 grid-cols-2 lg:grid-cols-3">
           {products.slice(0, 3).map((product) => (
-            <Link
+            <LimitedDropCard
               key={product._id}
-              to={`/product/${product.slug}`}
-              className="group relative bg-white dark:bg-neutral-900 rounded-lg overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:border-gold/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-            >
-              <div className="aspect-[4/5] relative overflow-hidden bg-neutral-50 dark:bg-neutral-800">
-                <img
-                  src={getImageUrl(product.images?.[0])}
-                  alt={product.title}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute top-3 left-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-widest bg-white/90 dark:bg-matte/90 backdrop-blur-sm text-gold font-medium rounded-sm border border-gold/10 shadow-sm">
-                    <SparklesIcon className="h-3 w-3" />
-                    Limited
-                  </span>
-                </div>
-              </div>
-              <div className="p-5 space-y-2">
-                <h3 className="font-display text-xl leading-tight group-hover:text-gold transition-colors duration-300">{product.title}</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-semibold text-matte dark:text-ivory">৳{product.salePrice || product.price}</span>
-                  <span className="text-sm text-neutral-400 font-light">• {product.category}</span>
-                </div>
-              </div>
-            </Link>
+              id={product._id}
+              slug={product.slug}
+              imageUrl={getImageUrl(product.images?.[0])}
+              title={product.title}
+              subtitle={product.category}
+              price={`৳${product.salePrice || product.price}`}
+              badgeText="LIMITED"
+              className="aspect-[3/4]"
+            />
           ))}
         </div>
       </section>

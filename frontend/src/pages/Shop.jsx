@@ -10,6 +10,7 @@ import { getImageUrl } from '../utils/imageUrl.js';
 import MobileHeader from '../components/MobileHeader';
 import ProductSelectionModal from '../components/ProductSelectionModal.jsx';
 import { useNavigate } from 'react-router-dom';
+import AnimatedButton from '../components/AnimatedButton.jsx';
 
 const DEFAULT_CONTENT = {
   title: 'The Collection',
@@ -510,22 +511,24 @@ const Shop = () => {
                         </div>
                       </div>
 
-                      {/* Premium Small Buttons for Rare Case */}
+                      {/* Premium Animated Buttons */}
                       <div className="px-4 pb-4 flex gap-2">
-                        <button
+                        <AnimatedButton
+                          text={addedProducts[product._id] ? 'In Bag' : 'Add to Bag'}
                           onClick={(e) => { e.preventDefault(); handleAddToCart(e, product); }}
                           disabled={product.stock <= 0}
-                          className="flex-1 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-[10px] font-display uppercase tracking-wider hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-40"
-                        >
-                          {addedProducts[product._id] ? 'In Bag' : 'Add to Bag'}
-                        </button>
-                        <button
+                          variant="secondary"
+                          size="compact"
+                          fullWidth
+                        />
+                        <AnimatedButton
+                          text="Buy Now"
                           onClick={(e) => { e.preventDefault(); handleBuyNowClick(e, product); }}
                           disabled={product.stock <= 0}
-                          className="flex-1 py-1.5 rounded-lg bg-gold/10 text-gold border border-gold/20 text-[10px] font-display uppercase tracking-wider hover:bg-gold hover:text-white transition-all disabled:opacity-40"
-                        >
-                          Buy Now
-                        </button>
+                          variant="primary"
+                          size="compact"
+                          fullWidth
+                        />
                       </div>
                     </Link>
                   ))}

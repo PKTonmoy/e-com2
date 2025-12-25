@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import styles from './LimitedDropsCarousel.module.css';
+import LimitedDropCard from './LimitedDropCard';
 
 const LimitedDropsCarousel = ({ items = [] }) => {
     const scrollRef = useRef(null);
@@ -203,69 +204,20 @@ const LimitedDropsCarousel = ({ items = [] }) => {
                     const uniqueKey = `${item.id}-${isClone ? 'clone' : 'orig'}-${index}`;
 
                     return (
-                        <Link
+                        <LimitedDropCard
                             key={uniqueKey}
-                            to={`/product/${item.slug || item.id}`}
-                            tabIndex={isClone ? -1 : 0}
-                            aria-hidden={isClone}
-                            className={`
-                ${styles.card}
-                flex-shrink-0 snap-center snap-always
-                w-[82vw] max-w-[340px]
-                bg-white dark:bg-neutral-900 
-                rounded-xl overflow-hidden
-                border border-neutral-100 dark:border-neutral-800
-                focus:outline-none
-              `}
-                            role="group"
-                            aria-roledescription="slide"
-                            aria-label={`${item.title}, ${item.price}`}
-                        >
-                            {/* Image */}
-                            <div className="aspect-[4/5] relative overflow-hidden bg-neutral-50 dark:bg-neutral-800">
-                                <img
-                                    src={item.imageUrl}
-                                    alt={item.title}
-                                    className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-                                    loading={index < 3 ? 'eager' : 'lazy'}
-                                />
-
-                                {/* Badge */}
-                                {item.badgeText && (
-                                    <div className="absolute top-3 left-3">
-                                        <span className={`
-                      ${styles.badgeShimmer}
-                      inline-flex items-center gap-1.5 
-                      px-3 py-1.5 
-                      text-[10px] uppercase tracking-widest 
-                      bg-white/90 dark:bg-matte/90 backdrop-blur-sm 
-                      text-gold font-medium 
-                      rounded-sm border border-gold/10 shadow-sm
-                    `}>
-                                            <SparklesIcon className="h-3 w-3" />
-                                            {item.badgeText}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-4 space-y-1.5">
-                                <h3 className="font-display text-lg leading-tight text-matte dark:text-ivory line-clamp-1">
-                                    {item.title}
-                                </h3>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-base font-semibold text-matte dark:text-ivory">
-                                        {item.price}
-                                    </span>
-                                    {item.subtitle && (
-                                        <span className="text-xs text-neutral-400 font-light">
-                                            • {item.subtitle}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </Link>
+                            id={item.id}
+                            slug={item.slug}
+                            imageUrl={item.imageUrl}
+                            title={item.title}
+                            subtitle={item.subtitle}
+                            price={item.price}
+                            badgeText={item.badgeText}
+                            className="
+                              flex-shrink-0 snap-center snap-always
+                              w-[82vw] max-w-[340px] aspect-[3/4]
+                            "
+                        />
                     );
                 })}
             </div>

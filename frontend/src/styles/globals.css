@@ -43,6 +43,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -54,20 +55,58 @@ body {
 }
 
 /* Staggered delays for sequential animations */
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}
+
+.delay-500 {
+  animation-delay: 500ms;
+}
 
 /* Fade In - simple opacity fade */
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-fade-in {
   animation: fade-in 1s ease-out forwards;
+}
+
+/* Slide Up Fade - for card product details */
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slide-up-fade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
 }
 
 /* Slide In Right */
@@ -76,6 +115,7 @@ body {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -92,6 +132,7 @@ body {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -107,6 +148,7 @@ body {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -120,9 +162,12 @@ body {
 
 /* Gold Glow Pulse */
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
   }
+
   50% {
     box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
   }
@@ -134,9 +179,12 @@ body {
 
 /* Float - subtle floating effect */
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -151,6 +199,7 @@ body {
   from {
     width: 0;
   }
+
   to {
     width: 100%;
   }
@@ -166,10 +215,13 @@ body {
 
 /* Sparkle - for limited edition items */
 @keyframes sparkle {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.5;
     transform: scale(1.2);
@@ -235,8 +287,8 @@ body {
 .scroll-animate {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
-              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scroll-animate.in-view {
@@ -269,6 +321,164 @@ html {
 
 /* Focus styles - accessibility */
 :focus-visible {
-  outline: 2px solid #d4af37;
+  outline: 2px solid #C9A94F;
   outline-offset: 2px;
+}
+
+/* ===== ANIMATED BUTTON STYLES ===== */
+.animated-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  min-height: 42px;
+  border: 2px solid #C9A94F;
+}
+
+/* Primary Button - Gold background */
+.animated-btn-primary {
+  background-color: #C9A94F;
+  color: #0B0B0B;
+}
+
+.animated-btn-primary .animated-btn-bg {
+  position: absolute;
+  inset: 0;
+  background: #0B0B0B;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.animated-btn-primary:hover .animated-btn-bg {
+  transform: translateY(0);
+}
+
+.animated-btn-primary .animated-btn-text {
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.animated-btn-primary:hover .animated-btn-text {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.animated-btn-primary .animated-btn-letters {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.animated-btn-primary .animated-btn-letters span {
+  display: inline-block;
+  color: #C9A94F;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.animated-btn-primary .animated-btn-letters span:nth-child(odd) {
+  transform: translateY(20px);
+}
+
+.animated-btn-primary:hover .animated-btn-letters span {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Secondary Button - Outlined */
+.animated-btn-secondary {
+  background-color: transparent;
+  color: #C9A94F;
+}
+
+.animated-btn-secondary .animated-btn-bg {
+  position: absolute;
+  inset: 0;
+  background: #C9A94F;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.animated-btn-secondary:hover .animated-btn-bg {
+  transform: translateY(0);
+}
+
+.animated-btn-secondary .animated-btn-text {
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.animated-btn-secondary:hover .animated-btn-text {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.animated-btn-secondary .animated-btn-letters {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.animated-btn-secondary .animated-btn-letters span {
+  display: inline-block;
+  color: #0B0B0B;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.animated-btn-secondary .animated-btn-letters span:nth-child(odd) {
+  transform: translateY(20px);
+}
+
+.animated-btn-secondary:hover .animated-btn-letters span {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Compact variant for product cards */
+.animated-btn-compact {
+  padding: 0.4rem 0.875rem;
+  font-size: 0.7rem;
+  min-height: 32px;
+  letter-spacing: 0.05em;
+  border-width: 1.5px;
+}
+
+/* Disabled state */
+.animated-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.animated-btn:disabled:hover .animated-btn-bg {
+  transform: translateY(100%);
+}
+
+.animated-btn:disabled:hover .animated-btn-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.animated-btn:disabled:hover .animated-btn-letters span {
+  opacity: 0;
 }
