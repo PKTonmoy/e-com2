@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
-import { BellIcon, EnvelopeIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { BellIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, TruckIcon } from '@heroicons/react/24/outline';
 import api from '../../lib/api.js';
 import { useToast } from '../../components/ToastProvider.jsx';
 
@@ -8,14 +8,21 @@ const Settings = () => {
     const qc = useQueryClient();
     const { addToast } = useToast();
 
-    // Local state for toggles
+    // Local state for notification toggles
     const [emailEnabled, setEmailEnabled] = useState(true);
     const [telegramEnabled, setTelegramEnabled] = useState(true);
     const [whatsappEnabled, setWhatsappEnabled] = useState(false);
+
+    // Local state for shipping settings
+    const [freeShippingEnabled, setFreeShippingEnabled] = useState(true);
+    const [freeShippingThreshold, setFreeShippingThreshold] = useState(5000);
+    const [defaultLocalCharge, setDefaultLocalCharge] = useState(50);
+    const [defaultOutsideCharge, setDefaultOutsideCharge] = useState(130);
+
     const [hasChanges, setHasChanges] = useState(false);
 
-    // Fetch current settings
-    const { data: settings, isLoading } = useQuery({
+    // Fetch notification settings
+    const { data: notificationSettings, isLoading: isLoadingNotifications } = useQuery({
         queryKey: ['notification-settings'],
         queryFn: async () => {
             const res = await api.get('/settings/notifications');
@@ -23,26 +30,54 @@ const Settings = () => {
         },
     });
 
+    // Fetch shipping settings
+    const { data: shippingSettings, isLoading: isLoadingShipping } = useQuery({
+        queryKey: ['shipping-settings'],
+        queryFn: async () => {
+            const res = await api.get('/settings/shipping');
+            return res.data;
+        },
+    });
+
     // Update local state when settings load
     useEffect(() => {
-        if (settings) {
-            setEmailEnabled(settings.emailEnabled ?? true);
-            setTelegramEnabled(settings.telegramEnabled ?? true);
-            setWhatsappEnabled(settings.whatsappEnabled ?? false);
-            setHasChanges(false);
+        if (notificationSettings) {
+            setEmailEnabled(notificationSettings.emailEnabled ?? true);
+            setTelegramEnabled(notificationSettings.telegramEnabled ?? true);
+            setWhatsappEnabled(notificationSettings.whatsappEnabled ?? false);
         }
-    }, [settings]);
+    }, [notificationSettings]);
 
-    // Save mutation
-    const saveMutation = useMutation({
+    useEffect(() => {
+        if (shippingSettings) {
+            setFreeShippingEnabled(shippingSettings.freeShippingEnabled ?? true);
+            setFreeShippingThreshold(shippingSettings.freeShippingThreshold ?? 5000);
+            setDefaultLocalCharge(shippingSettings.defaultLocalCharge ?? 50);
+            setDefaultOutsideCharge(shippingSettings.defaultOutsideCharge ?? 130);
+        }
+    }, [shippingSettings]);
+
+    // Save notification settings
+    const saveNotificationsMutation = useMutation({
         mutationFn: (data) => api.put('/settings/notifications', data),
         onSuccess: () => {
             qc.invalidateQueries(['notification-settings']);
             addToast('Notification settings saved!', 'success');
-            setHasChanges(false);
         },
         onError: (err) => {
-            addToast(err.response?.data?.message || 'Failed to save settings', 'error');
+            addToast(err.response?.data?.message || 'Failed to save notification settings', 'error');
+        },
+    });
+
+    // Save shipping settings
+    const saveShippingMutation = useMutation({
+        mutationFn: (data) => api.put('/settings/shipping', data),
+        onSuccess: () => {
+            qc.invalidateQueries(['shipping-settings']);
+            addToast('Shipping settings saved!', 'success');
+        },
+        onError: (err) => {
+            addToast(err.response?.data?.message || 'Failed to save shipping settings', 'error');
         },
     });
 
@@ -51,28 +86,56 @@ const Settings = () => {
         setHasChanges(true);
     };
 
-    const handleSave = () => {
-        saveMutation.mutate({
-            emailEnabled,
-            telegramEnabled,
-            whatsappEnabled,
-        });
+    const handleChange = (setter, value) => {
+        setter(value);
+        setHasChanges(true);
+    };
+
+    const handleSave = async () => {
+        try {
+            await Promise.all([
+                saveNotificationsMutation.mutateAsync({
+                    emailEnabled,
+                    telegramEnabled,
+                    whatsappEnabled,
+                }),
+                saveShippingMutation.mutateAsync({
+                    freeShippingEnabled,
+                    freeShippingThreshold: Number(freeShippingThreshold),
+                    defaultLocalCharge: Number(defaultLocalCharge),
+                    defaultOutsideCharge: Number(defaultOutsideCharge),
+                })
+            ]);
+            setHasChanges(false);
+        } catch (error) {
+            // Error handling done in mutation callbacks
+        }
     };
 
     const handleReset = () => {
-        if (settings) {
-            setEmailEnabled(settings.emailEnabled ?? true);
-            setTelegramEnabled(settings.telegramEnabled ?? true);
-            setWhatsappEnabled(settings.whatsappEnabled ?? false);
-            setHasChanges(false);
+        if (notificationSettings) {
+            setEmailEnabled(notificationSettings.emailEnabled ?? true);
+            setTelegramEnabled(notificationSettings.telegramEnabled ?? true);
+            setWhatsappEnabled(notificationSettings.whatsappEnabled ?? false);
         }
+        if (shippingSettings) {
+            setFreeShippingEnabled(shippingSettings.freeShippingEnabled ?? true);
+            setFreeShippingThreshold(shippingSettings.freeShippingThreshold ?? 5000);
+            setDefaultLocalCharge(shippingSettings.defaultLocalCharge ?? 50);
+            setDefaultOutsideCharge(shippingSettings.defaultOutsideCharge ?? 130);
+        }
+        setHasChanges(false);
     };
+
+    const isLoading = isLoadingNotifications || isLoadingShipping;
+    const isSaving = saveNotificationsMutation.isPending || saveShippingMutation.isPending;
 
     if (isLoading) {
         return (
             <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 max-w-4xl mx-auto">
                 <div className="animate-pulse space-y-4">
                     <div className="h-8 bg-neutral-200 dark:bg-neutral-700 rounded w-48"></div>
+                    <div className="h-32 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
                     <div className="h-32 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
                 </div>
             </div>
@@ -87,17 +150,36 @@ const Settings = () => {
                 </div>
                 <div>
                     <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Settings</h1>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">Manage notification preferences</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">Manage application preferences</p>
                 </div>
             </div>
+
+            {hasChanges && (
+                <div className="sticky top-20 z-10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border border-gold/30 rounded-xl p-4 flex items-center justify-between shadow-lg">
+                    <span className="text-sm font-medium text-gold">You have unsaved changes</span>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleReset}
+                            className="px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        >
+                            Reset
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="px-4 py-2 text-xs font-medium bg-gold text-white rounded-lg hover:bg-gold/90 shadow-md transition-all"
+                        >
+                            {isSaving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Notification Channels */}
             <div className="lux-card p-6 space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-gold/20">
                     <h2 className="font-display text-lg text-matte dark:text-ivory">Notification Channels</h2>
-                    {hasChanges && (
-                        <span className="text-xs text-gold animate-pulse">Unsaved changes</span>
-                    )}
+                    {/* Removed duplicate unsaved changes indicator since we have the sticky header now */}
                 </div>
 
                 {/* Email Toggle */}
@@ -178,36 +260,94 @@ const Settings = () => {
                 </div>
             </div>
 
-            {/* Active Channels Summary */}
-            <div className="lux-card p-4">
-                <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                    <span className="font-semibold">Active channels:</span>{' '}
-                    {[emailEnabled && 'Email', telegramEnabled && 'Telegram', whatsappEnabled && 'WhatsApp']
-                        .filter(Boolean)
-                        .join(', ') || 'None'}
-                </p>
-            </div>
+            {/* Shipping Settings */}
+            <div className="lux-card p-6 space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-gold/20">
+                    <div className="flex items-center gap-3">
+                        <TruckIcon className="h-6 w-6 text-gold" />
+                        <h2 className="font-display text-lg text-matte dark:text-ivory">Shipping Configuration</h2>
+                    </div>
+                </div>
 
-            {/* Save Button */}
-            <div className="flex gap-3 justify-end">
-                {hasChanges && (
+                {/* Free Shipping Toggle */}
+                <div className="flex items-center justify-between py-4 border-b border-neutral-200 dark:border-neutral-700">
+                    <div>
+                        <h3 className="font-semibold text-matte dark:text-ivory">Free Shipping</h3>
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                            Enable automatic free shipping for high-value orders
+                        </p>
+                    </div>
                     <button
-                        onClick={handleReset}
-                        className="px-6 py-2.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        onClick={() => handleToggle(setFreeShippingEnabled, freeShippingEnabled)}
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 ${freeShippingEnabled ? 'bg-gold' : 'bg-neutral-300 dark:bg-neutral-600'
+                            }`}
                     >
-                        Reset
+                        <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${freeShippingEnabled ? 'translate-x-8' : 'translate-x-1'
+                                }`}
+                        />
                     </button>
-                )}
-                <button
-                    onClick={handleSave}
-                    disabled={!hasChanges || saveMutation.isPending}
-                    className={`px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${hasChanges
-                            ? 'bg-gold text-white hover:bg-gold/90 shadow-lg shadow-gold/25'
-                            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                        }`}
-                >
-                    {saveMutation.isPending ? 'Saving...' : 'Save Settings'}
-                </button>
+                </div>
+
+                {/* Threshold & Charges Inputs */}
+                <div className="grid gap-6 sm:grid-cols-2 pt-4">
+                    {/* Free Shipping Threshold */}
+                    <div className={`space-y-2 transition-opacity duration-200 ${!freeShippingEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <label className="block text-sm font-medium text-matte dark:text-ivory">
+                            Free Shipping Threshold (BDT)
+                        </label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">৳</span>
+                            <input
+                                type="number"
+                                value={freeShippingThreshold}
+                                onChange={(e) => handleChange(setFreeShippingThreshold, e.target.value)}
+                                className="w-full pl-8 pr-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-gold/50"
+                                placeholder="5000"
+                            />
+                        </div>
+                        <p className="text-xs text-neutral-500">Cart total to qualify for free shipping</p>
+                    </div>
+
+                    {/* Spacer for grid placement if needed, or just allow flow */}
+                    <div className="hidden sm:block"></div>
+
+                    {/* Default Local Charge */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-matte dark:text-ivory">
+                            Default Local Delivery Charge
+                        </label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">৳</span>
+                            <input
+                                type="number"
+                                value={defaultLocalCharge}
+                                onChange={(e) => handleChange(setDefaultLocalCharge, e.target.value)}
+                                className="w-full pl-8 pr-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-gold/50"
+                                placeholder="50"
+                            />
+                        </div>
+                        <p className="text-xs text-neutral-500">Fallback charge for Rajshahi area</p>
+                    </div>
+
+                    {/* Default Outside Charge */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-matte dark:text-ivory">
+                            Default Outside Delivery Charge
+                        </label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">৳</span>
+                            <input
+                                type="number"
+                                value={defaultOutsideCharge}
+                                onChange={(e) => handleChange(setDefaultOutsideCharge, e.target.value)}
+                                className="w-full pl-8 pr-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-gold/50"
+                                placeholder="130"
+                            />
+                        </div>
+                        <p className="text-xs text-neutral-500">Fallback charge for other areas</p>
+                    </div>
+                </div>
             </div>
 
             {/* Info Note */}

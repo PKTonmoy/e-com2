@@ -67,9 +67,9 @@ const MobileBottomNav = () => {
     return (
         <motion.nav
             initial={{ y: 100 }}
-            animate={{ y: 0 }}
+            animate={{ y: isBottomNavVisible ? 0 : 100 }}
             transition={{ type: "spring", damping: 20, stiffness: 100 }}
-            className="fixed bottom-4 left-4 right-4 z-50 md:hidden"
+            className={`fixed bottom-4 left-4 right-4 z-50 md:hidden ${!isBottomNavVisible ? 'pointer-events-none' : ''}`}
         >
             <div className="bg-white/40 dark:bg-matte/40 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/5 shadow-2xl shadow-black/10 dark:shadow-black/30">
                 <ul className="flex justify-between items-center px-4 py-2">

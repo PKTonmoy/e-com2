@@ -34,6 +34,43 @@ router.put('/notifications', protect, requireRole('admin'), async (req, res) => 
     }
 });
 
+// Get shipping settings
+router.get('/shipping', protect, requireRole('admin'), async (req, res) => {
+    try {
+        const defaults = {
+            freeShippingEnabled: true,
+            freeShippingThreshold: 5000,
+            defaultLocalCharge: 50,
+            defaultOutsideCharge: 130,
+        };
+        const saved = await Settings.get('shipping');
+        res.json(saved ? { ...defaults, ...saved } : defaults);
+    } catch (error) {
+        console.error('Error getting shipping settings:', error);
+        res.status(500).json({ message: 'Failed to get shipping settings' });
+    }
+});
+
+// Update shipping settings
+router.put('/shipping', protect, requireRole('admin'), async (req, res) => {
+    try {
+        const { freeShippingEnabled, freeShippingThreshold, defaultLocalCharge, defaultOutsideCharge } = req.body;
+
+        const settings = {
+            freeShippingEnabled: Boolean(freeShippingEnabled),
+            freeShippingThreshold: Number(freeShippingThreshold) || 5000,
+            defaultLocalCharge: Number(defaultLocalCharge) || 50,
+            defaultOutsideCharge: Number(defaultOutsideCharge) || 130,
+        };
+
+        await Settings.set('shipping', settings);
+        res.json({ message: 'Shipping settings updated', settings });
+    } catch (error) {
+        console.error('Error updating shipping settings:', error);
+        res.status(500).json({ message: 'Failed to update shipping settings' });
+    }
+});
+
 // Get all settings (generic)
 router.get('/:key', protect, requireRole('admin'), async (req, res) => {
     try {

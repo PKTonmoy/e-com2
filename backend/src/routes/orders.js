@@ -191,7 +191,10 @@ router.post('/guest', async (req, res, next) => {
 });
 
 router.get('/mine', protect, async (req, res) => {
-  const orders = await Order.find({ userId: req.user._id }).sort('-createdAt');
+  const orders = await Order.find({
+    userId: req.user._id,
+    hiddenFromUser: { $ne: true }  // Exclude soft-deleted orders
+  }).sort('-createdAt');
   res.json(orders);
 });
 
@@ -280,6 +283,7 @@ router.put('/:id/status', protect, requireRole('staff', 'manager', 'admin'), asy
 });
 
 // Delete order from history (user can only delete their own orders)
+// This is a SOFT DELETE - order is only hidden from user, still visible to admin
 router.delete('/:id', protect, async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'Order not found' });
@@ -289,17 +293,12 @@ router.delete('/:id', protect, async (req, res) => {
     return res.status(403).json({ message: 'You can only delete your own orders' });
   }
 
-  // Restore coupon usage if order deleted (optional but good for consistency)
-  if (order.couponCode) {
-    await Coupon.updateOne(
-      { code: order.couponCode },
-      { $pull: { usedBy: order.userId } }
-    );
-  }
+  // Soft delete - hide from user only, admin can still see it
+  order.hiddenFromUser = true;
+  await order.save();
 
-  await Order.findByIdAndDelete(req.params.id);
-  req.io.emit('order:delete', { orderId: req.params.id });
-  res.json({ message: 'Order deleted from history' });
+  req.io.emit('order:userDelete', { orderId: req.params.id });
+  res.json({ message: 'Order removed from your history' });
 });
 
 export default router;

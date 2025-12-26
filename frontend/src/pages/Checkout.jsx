@@ -18,12 +18,13 @@ const Checkout = () => {
     email: '',
     address: '',
     city: '',
+    country: 'Bangladesh',
   });
   const [deliveryCharge, setDeliveryCharge] = useState(0);
   const [deliveryError, setDeliveryError] = useState('');
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [deliveryAvailable, setDeliveryAvailable] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState(''); // user must choose (currently only COD)
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [destinations, setDestinations] = useState([]);
   const [destinationsLoading, setDestinationsLoading] = useState(false);
 
@@ -84,8 +85,6 @@ const Checkout = () => {
         email: user.email || prev.email,
         address: user.address || prev.address,
         city: user.city || prev.city,
-        country: user.country || prev.country,
-        postalCode: user.postalCode || prev.postalCode,
       }));
     }
   }, [user]);
@@ -104,7 +103,7 @@ const Checkout = () => {
   const total = totalBeforeDiscount - discount + deliveryCharge;
 
   const fetchDeliveryCharge = async () => {
-    if (!shipping.address || !shipping.city || !shipping.country || !shipping.phone || !shipping.name) {
+    if (!shipping.address || !shipping.city || !shipping.phone || !shipping.name) {
       return;
     }
     setDeliveryLoading(true);
@@ -131,7 +130,7 @@ const Checkout = () => {
     }
   };
 
-  // Load destination list (Steadfast police stations) once
+  // Load destination list
   useEffect(() => {
     const loadDestinations = async () => {
       setDestinationsLoading(true);
@@ -169,7 +168,6 @@ const Checkout = () => {
     }
 
     try {
-      // Use guest endpoint if user is not logged in
       const endpoint = user ? '/orders' : '/orders/guest';
       const orderRes = await api.post(endpoint, {
         items,
@@ -180,8 +178,6 @@ const Checkout = () => {
         couponCode: coupon?.code,
       });
 
-      const createdOrder = orderRes.data;
-
       clearCart();
       navigate('/order/thank-you');
     } catch (err) {
@@ -191,269 +187,292 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-ivory dark:bg-matte overflow-x-hidden">
-      {/* Compact Mobile Header */}
+      {/* Mobile Header */}
       <MobileHeader title="Checkout" subtitle="Secure" />
 
-      {/* Main Container - responsive with proper overflow handling */}
-      <div className="px-2 sm:px-6 lg:px-8 w-full sm:max-w-3xl lg:max-w-7xl mx-auto py-4 sm:py-12 pb-56 sm:pb-16 overflow-x-hidden">
+      {/* Main Container */}
+      <div className="w-full px-3 sm:px-6 lg:px-8 max-w-6xl mx-auto py-4 sm:py-10 pb-44 sm:pb-52 lg:pb-16 box-border">
+
         {/* Desktop Header */}
-        <div className="hidden sm:block mb-6 sm:mb-8">
-          <h1 className="font-display text-2xl sm:text-4xl text-matte dark:text-ivory">Checkout</h1>
-          <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-2 sm:mt-3" />
+        <div className="hidden sm:block mb-8">
+          <h1 className="font-display text-3xl lg:text-4xl text-matte dark:text-ivory">Checkout</h1>
+          <div className="h-0.5 w-16 bg-gradient-to-r from-gold to-transparent mt-3" />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Shipping Form */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        {/* Two Column Layout */}
+        <div className="grid gap-4 sm:gap-6 lg:gap-8 lg:grid-cols-5 w-full min-w-0">
+
+          {/* Left Column - Forms (3 cols on lg) */}
+          <div className="lg:col-span-3 space-y-4 sm:space-y-5 w-full min-w-0">
+
             {/* Contact Information */}
-            <div className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-100 dark:border-neutral-800 shadow-sm overflow-hidden">
-              <h2 className="font-display text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gold/10 text-gold text-xs">1</span>
+            <section className="w-full bg-white dark:bg-neutral-900 rounded-2xl p-4 sm:p-6 border border-neutral-100 dark:border-neutral-800 shadow-sm box-border">
+              <h2 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-matte dark:text-ivory flex items-center gap-2">
+                <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gold/10 text-gold text-xs sm:text-sm flex items-center justify-center font-medium">1</span>
                 Contact Information
               </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Full Name *</label>
-                  <input
-                    type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
-                    placeholder="John Doe"
-                    value={shipping.name}
-                    onChange={(e) => setShipping({ ...shipping, name: e.target.value })}
-                  />
+
+              <div className="space-y-4">
+                {/* Name & Phone Row */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 sm:mb-2">Full Name *</label>
+                    <input
+                      type="text"
+                      className="w-full min-w-0 border border-neutral-200 dark:border-neutral-700 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-neutral-800 text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-transparent placeholder:text-neutral-400 text-sm sm:text-base box-border"
+                      placeholder="Your full name"
+                      value={shipping.name}
+                      onChange={(e) => setShipping({ ...shipping, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 sm:mb-2">Phone Number *</label>
+                    <input
+                      type="tel"
+                      className="w-full min-w-0 border border-neutral-200 dark:border-neutral-700 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-neutral-800 text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-transparent placeholder:text-neutral-400 text-sm sm:text-base box-border"
+                      placeholder="01XXXXXXXXX"
+                      value={shipping.phone}
+                      onChange={(e) => setShipping({ ...shipping, phone: e.target.value })}
+                    />
+                  </div>
                 </div>
+
+                {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Mobile Number *</label>
-                  <input
-                    type="tel"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
-                    placeholder="+1 234 567 8900"
-                    value={shipping.phone}
-                    onChange={(e) => setShipping({ ...shipping, phone: e.target.value })}
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
-                    Email {!user && <span className="text-neutral-400">(for order updates)</span>}
+                  <label className="block text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 sm:mb-2">
+                    Email {!user && <span className="text-neutral-400 font-normal">(for order updates)</span>}
                   </label>
                   <input
                     type="email"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
-                    placeholder="your@email.com"
+                    className="w-full min-w-0 border border-neutral-200 dark:border-neutral-700 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-neutral-800 text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-transparent placeholder:text-neutral-400 text-sm sm:text-base box-border"
+                    placeholder="email@example.com"
                     value={shipping.email || ''}
                     onChange={(e) => setShipping({ ...shipping, email: e.target.value })}
                   />
                 </div>
               </div>
-            </div>
+            </section>
 
             {/* Shipping Address */}
-            <div className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-100 dark:border-neutral-800 shadow-sm overflow-hidden">
-              <h2 className="font-display text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gold/10 text-gold text-xs">2</span>
+            <section className="w-full bg-white dark:bg-neutral-900 rounded-2xl p-4 sm:p-6 border border-neutral-100 dark:border-neutral-800 shadow-sm box-border">
+              <h2 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-matte dark:text-ivory flex items-center gap-2">
+                <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gold/10 text-gold text-xs sm:text-sm flex items-center justify-center font-medium">2</span>
                 Shipping Address
               </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Address *</label>
+
+              <div className="space-y-4">
+                {/* Full Address */}
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 sm:mb-2">Street Address *</label>
                   <input
                     type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
-                    placeholder="123 Main Street, Apt 4B"
+                    className="w-full min-w-0 border border-neutral-200 dark:border-neutral-700 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-neutral-800 text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-transparent placeholder:text-neutral-400 text-sm sm:text-base box-border"
+                    placeholder="House no, Road, Area"
                     value={shipping.address}
                     onChange={(e) => setShipping({ ...shipping, address: e.target.value })}
                   />
                 </div>
+
+                {/* City/Thana */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Destination City / Thana *</label>
+                  <label className="block text-xs sm:text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 sm:mb-2">City / Thana *</label>
                   <select
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30"
+                    className="w-full min-w-0 border border-neutral-200 dark:border-neutral-700 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-neutral-800 text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-transparent text-sm sm:text-base box-border"
                     value={shipping.city}
                     onChange={(e) => setShipping({ ...shipping, city: e.target.value })}
                     disabled={destinationsLoading || !destinations.length}
                   >
-                    <option value="" className="bg-white dark:bg-neutral-800 text-matte dark:text-ivory">
-                      {destinationsLoading
-                        ? 'Loading destinations...'
-                        : 'Select destination'}
+                    <option value="">
+                      {destinationsLoading ? 'Loading...' : 'Select your area'}
                     </option>
                     {destinations.map((d) => (
-                      <option key={d.id} value={d.name} className="bg-white dark:bg-neutral-800 text-matte dark:text-ivory">
+                      <option key={d.id} value={d.name}>
                         {d.name}{d.district ? `, ${d.district}` : ''}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
-            </div>
-          </div>
+            </section>
 
-          {/* Order Summary */}
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-100 dark:border-neutral-800 h-fit lg:sticky lg:top-24 shadow-sm overflow-hidden">
-            <h2 className="font-display text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Order Summary</h2>
+            {/* Payment Method - Only on mobile (shown in summary on desktop) */}
+            <section className="w-full lg:hidden bg-white dark:bg-neutral-900 rounded-2xl p-4 sm:p-6 border border-neutral-100 dark:border-neutral-800 shadow-sm box-border">
+              <h2 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-matte dark:text-ivory flex items-center gap-2">
+                <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gold/10 text-gold text-xs sm:text-sm flex items-center justify-center font-medium">3</span>
+                Payment Method
+              </h2>
 
-            {/* Items */}
-            <div className="space-y-3 pb-4 border-b border-neutral-100 dark:border-neutral-800 mb-4">
-              {items.map((item, idx) => (
-                <div key={idx} className="flex gap-3 text-sm">
-                  {/* Thumbnail if available, or placeholder */}
-                  <div className="w-12 h-12 bg-neutral-100 rounded-md flex-shrink-0 overflow-hidden">
-                    {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : null}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-neutral-800 dark:text-neutral-200 truncate">{item.title}</p>
-                    <p className="text-xs text-neutral-500">Qty: {item.qty}</p>
-                  </div>
-                  <span className="font-medium whitespace-nowrap">৳ {(item.price * item.qty).toFixed(0)}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Coupon Code Section */}
-            <div className="py-3 border-b border-neutral-100 dark:border-neutral-800 mb-3">
-              <p className="text-sm font-medium mb-2">Coupon Code</p>
-              {coupon ? (
-                <div className="flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/30 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-gold" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm font-medium text-gold">{coupon.code} applied!</span>
-                  </div>
-                  <button
-                    onClick={handleRemoveCoupon}
-                    className="p-1.5 rounded-full hover:bg-gold/10 transition-colors group"
-                    title="Remove coupon"
-                  >
-                    <svg className="w-4 h-4 text-neutral-400 group-hover:text-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      className="flex-1 min-w-0 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gold"
-                      disabled={applyingCoupon}
-                    />
-                    <button
-                      onClick={handleApplyCoupon}
-                      disabled={applyingCoupon}
-                      className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-sm font-medium rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition disabled:opacity-50"
-                    >
-                      {applyingCoupon ? '...' : 'Apply'}
-                    </button>
-                  </div>
-                  {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
-                </>
-              )}
-            </div>
-
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-600 dark:text-neutral-400">Subtotal</span>
-                <span>৳ {totalBeforeDiscount.toFixed(0)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-600 dark:text-neutral-400">Shipping</span>
-                <span className="font-medium">
-                  {deliveryLoading ? (
-                    'Calculating...'
-                  ) : (
-                    <>৳ {deliveryCharge.toFixed(0)}</>
-                  )}
-                </span>
-              </div>
-              {deliveryError && (
-                <p className="text-xs text-red-500 text-right">{deliveryError}</p>
-              )}
-
-              {discount > 0 && (
-                <div className="flex justify-between text-sm text-gold">
-                  <span>Discount ({coupon.code})</span>
-                  <span className="font-medium">-৳ {discount.toFixed(0)}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center pt-3 border-t border-neutral-100 dark:border-neutral-800 mb-6 sm:mb-3">
-              <span className="font-semibold text-lg">Total</span>
-              <span className="text-2xl font-bold text-gold">৳ {total.toFixed(0)}</span>
-            </div>
-
-            {/* Payment Method (COD only for now) */}
-            <div className="mb-4 sm:mb-6 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-100 dark:border-neutral-800">
-              <p className="text-sm font-medium mb-2 text-neutral-500">Payment Method</p>
-              <div className="flex items-center gap-3">
+              <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-gold bg-gold/5 cursor-pointer">
                 <input
                   type="radio"
-                  id="cod"
-                  name="paymentMethod"
+                  name="paymentMethodMobile"
                   value="cod"
                   checked={paymentMethod === 'cod'}
                   onChange={() => setPaymentMethod('cod')}
-                  className="w-4 h-4 accent-gold"
+                  className="w-5 h-5 accent-gold"
                 />
-                <label htmlFor="cod" className="cursor-pointer text-sm font-medium">
-                  Cash on Delivery
+                <div>
+                  <span className="font-medium text-matte dark:text-ivory">Cash on Delivery</span>
+                  <p className="text-xs text-neutral-500 mt-0.5">Pay when you receive</p>
+                </div>
+              </label>
+            </section>
+          </div>
+
+          {/* Right Column - Order Summary (2 cols on lg) */}
+          <div className="lg:col-span-2 w-full min-w-0">
+            <div className="w-full bg-white dark:bg-neutral-900 rounded-2xl p-4 sm:p-6 border border-neutral-100 dark:border-neutral-800 shadow-sm lg:sticky lg:top-24 box-border">
+              <h2 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-matte dark:text-ivory">Order Summary</h2>
+
+              {/* Cart Items */}
+              <div className="space-y-3 sm:space-y-4 pb-3 sm:pb-4 border-b border-neutral-100 dark:border-neutral-800">
+                {items.map((item, idx) => (
+                  <div key={idx} className="flex gap-3 sm:gap-4">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-neutral-100 dark:bg-neutral-800 rounded-xl flex-shrink-0 overflow-hidden">
+                      {item.image && <img src={item.image} alt="" className="w-full h-full object-cover" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-matte dark:text-ivory text-sm leading-tight line-clamp-2">{item.title}</p>
+                      <p className="text-xs text-neutral-500 mt-1">Qty: {item.qty}</p>
+                    </div>
+                    <span className="text-sm font-semibold text-matte dark:text-ivory whitespace-nowrap">
+                      ৳{(item.price * item.qty).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Coupon Code */}
+              <div className="py-4 border-b border-neutral-100 dark:border-neutral-800">
+                <p className="text-sm font-medium text-matte dark:text-ivory mb-3">Coupon Code</p>
+                {coupon ? (
+                  <div className="flex items-center justify-between px-4 py-3 bg-gold/10 border border-gold/30 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium text-gold">{coupon.code}</span>
+                    </div>
+                    <button onClick={handleRemoveCoupon} className="text-neutral-400 hover:text-red-500 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        className="flex-1 min-w-0 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-gold/40"
+                        disabled={applyingCoupon}
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={applyingCoupon}
+                        className="px-5 py-2.5 bg-neutral-100 dark:bg-neutral-800 text-sm font-medium rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                      >
+                        {applyingCoupon ? '...' : 'Apply'}
+                      </button>
+                    </div>
+                    {couponError && <p className="text-xs text-red-500 mt-2">{couponError}</p>}
+                  </>
+                )}
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="py-4 space-y-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-500">Subtotal</span>
+                  <span className="font-medium text-matte dark:text-ivory">৳{totalBeforeDiscount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-500">Shipping</span>
+                  <span className="font-medium text-matte dark:text-ivory">
+                    {deliveryLoading ? 'Calculating...' : `৳${deliveryCharge.toLocaleString()}`}
+                  </span>
+                </div>
+                {deliveryError && <p className="text-xs text-red-500 text-right">{deliveryError}</p>}
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm text-emerald-600">
+                    <span>Discount</span>
+                    <span className="font-medium">-৳{discount.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Total */}
+              <div className="flex justify-between items-center py-4 mb-4">
+                <span className="text-lg font-semibold text-matte dark:text-ivory">Total</span>
+                <span className="text-2xl font-bold text-gold">৳{total.toLocaleString()}</span>
+              </div>
+
+              {/* Payment Method - Desktop only */}
+              <div className="hidden lg:block mb-5 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
+                <p className="text-sm font-medium text-neutral-500 mb-3">Payment Method</p>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cod"
+                    checked={paymentMethod === 'cod'}
+                    onChange={() => setPaymentMethod('cod')}
+                    className="w-5 h-5 accent-gold"
+                  />
+                  <span className="font-medium text-matte dark:text-ivory">Cash on Delivery</span>
                 </label>
               </div>
-            </div>
 
-            {/* Desktop Button - Hidden on Mobile */}
-            <div className="hidden lg:block">
-              <HoldToCheckoutButton
-                onComplete={placeOrder}
-                disabled={!items.length || !paymentMethod || !deliveryAvailable || !!deliveryError || deliveryLoading}
-                holdDuration={1800}
-              />
-            </div>
+              {/* Desktop Checkout Button */}
+              <div className="hidden lg:block">
+                <HoldToCheckoutButton
+                  onComplete={placeOrder}
+                  disabled={!items.length || !paymentMethod || !deliveryAvailable || !!deliveryError || deliveryLoading}
+                  holdDuration={1800}
+                />
+                <p className="text-xs text-center text-neutral-400 mt-3">Hold button for 1.8s to confirm</p>
+              </div>
 
-            <p className="text-xs text-center text-neutral-500 mt-4 lg:block hidden">Hold button for 1.8s to confirm order</p>
-
-            {/* Trust Badges */}
-            <div className="flex justify-center gap-4 mt-6 text-xs text-neutral-400">
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                Secure Checkout
-              </span>
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Easy Returns
-              </span>
+              {/* Trust Badges */}
+              <div className="flex justify-center gap-6 mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                <span className="flex items-center gap-1.5 text-xs text-neutral-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Secure
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-neutral-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Easy Returns
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Fixed Mobile Bottom Bar - Premium glassmorphism design */}
-      <div className="fixed bottom-4 left-3 right-3 lg:hidden z-40">
-        {/* Glassmorphism container */}
-        <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-neutral-200/50 dark:border-zinc-700/50 rounded-2xl shadow-2xl shadow-black/10 p-4">
-          {/* Total row */}
-          <div className="flex items-center justify-between mb-3 px-1">
-            <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Order Total</span>
-            <span className="text-xl font-bold text-gold">৳ {total.toFixed(0)}</span>
+      {/* Fixed Mobile Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div className="bg-white/98 dark:bg-zinc-900/98 backdrop-blur-xl border-t border-neutral-200 dark:border-zinc-800 px-3 sm:px-4 py-3 sm:py-4">
+          {/* Total */}
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs sm:text-sm text-neutral-500">Total</span>
+            <span className="text-lg sm:text-xl font-bold text-gold">৳{total.toLocaleString()}</span>
           </div>
 
-          {/* Full-width Hold Button */}
+          {/* Hold Button */}
           <HoldToCheckoutButton
             onComplete={placeOrder}
             disabled={!items.length || !paymentMethod || !deliveryAvailable || !!deliveryError || deliveryLoading}
             holdDuration={1800}
           />
 
-          {/* Hint text */}
-          <p className="text-[10px] text-center text-neutral-400 mt-2">Hold button for 1.8s to confirm</p>
+          <p className="text-[10px] text-center text-neutral-400 mt-1.5 sm:mt-2">Hold for 1.8s to place order</p>
         </div>
       </div>
     </div>

@@ -1,25 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon, MinusIcon, PlusIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MinusIcon, PlusIcon, ShoppingBagIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { getImageUrl } from '../utils/imageUrl.js';
+import { useBottomNav } from '../context/BottomNavContext.jsx';
 
 const ProductSelectionModal = ({ isOpen, onClose, product, onConfirm, mode = 'checkout' }) => {
-    const [selectedSize, setSelectedSize] = useState(
-        product?.sizes?.[2] || product?.sizes?.[0] || null
-    );
+    const [selectedSize, setSelectedSize] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const [showSizeError, setShowSizeError] = useState(false);
+    const { hideBottomNav, showBottomNav } = useBottomNav();
+
+    // Hide/show bottom nav when modal opens/closes
+    useEffect(() => {
+        if (isOpen) {
+            hideBottomNav();
+        } else {
+            showBottomNav();
+        }
+    }, [isOpen, hideBottomNav, showBottomNav]);
 
     if (!product) return null;
 
     const hasSizes = product.hasSizes !== false && product.sizes?.length > 0;
     const currentPrice = product.salePrice || product.price;
+    const needsSizeSelection = hasSizes && !selectedSize;
 
     const handleConfirm = () => {
+        if (needsSizeSelection) {
+            setShowSizeError(true);
+            return;
+        }
         onConfirm({
             size: selectedSize,
             quantity: quantity,
             mode: mode
         });
+    };
+
+    const handleSizeSelect = (size) => {
+        setSelectedSize(size);
+        setShowSizeError(false);
     };
 
     const isCheckout = mode === 'checkout';
@@ -102,10 +122,12 @@ const ProductSelectionModal = ({ isOpen, onClose, product, onConfirm, mode = 'ch
                                                 {product.sizes.map((size) => (
                                                     <button
                                                         key={size}
-                                                        onClick={() => setSelectedSize(size)}
+                                                        onClick={() => handleSizeSelect(size)}
                                                         className={`min-w-[44px] sm:min-w-[50px] h-[44px] sm:h-[50px] rounded-xl sm:rounded-2xl border font-body font-semibold transition-all duration-300 relative overflow-hidden group ${selectedSize === size
                                                             ? 'border-gold text-matte dark:text-ivory scale-105'
-                                                            : 'border-gold/20 hover:border-gold/40 text-neutral-500'
+                                                            : showSizeError
+                                                                ? 'border-red-400/60 hover:border-red-400 text-neutral-500'
+                                                                : 'border-gold/20 hover:border-gold/40 text-neutral-500'
                                                             }`}
                                                     >
                                                         {selectedSize === size && (
@@ -118,6 +140,20 @@ const ProductSelectionModal = ({ isOpen, onClose, product, onConfirm, mode = 'ch
                                                     </button>
                                                 ))}
                                             </div>
+                                            {/* Size Error Message */}
+                                            <AnimatePresence>
+                                                {showSizeError && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -10 }}
+                                                        className="flex items-center gap-2 text-red-500 mt-2"
+                                                    >
+                                                        <ExclamationCircleIcon className="w-4 h-4" />
+                                                        <span className="text-xs font-medium">Please select a size to continue</span>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     )}
 
@@ -149,11 +185,17 @@ const ProductSelectionModal = ({ isOpen, onClose, product, onConfirm, mode = 'ch
 
                             {/* Action Button Footer */}
                             <div className="p-4 sm:p-8 pt-0 sm:pt-0">
-                                <button
+                                <motion.button
                                     onClick={handleConfirm}
+                                    animate={showSizeError ? { x: [0, -10, 10, -10, 10, 0] } : {}}
+                                    transition={{ duration: 0.4 }}
                                     className={`w-full py-4 sm:py-5 rounded-xl sm:rounded-2xl font-display text-base sm:text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg sm:shadow-xl relative overflow-hidden group ${isCheckout
-                                        ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte'
-                                        : 'bg-gold text-white'
+                                        ? needsSizeSelection
+                                            ? 'bg-matte/50 dark:bg-ivory/50 text-ivory/70 dark:text-matte/70 cursor-not-allowed'
+                                            : 'bg-matte dark:bg-ivory text-ivory dark:text-matte'
+                                        : needsSizeSelection
+                                            ? 'bg-gold/50 text-white/70 cursor-not-allowed'
+                                            : 'bg-gold text-white'
                                         }`}
                                 >
                                     <motion.div
@@ -163,15 +205,15 @@ const ProductSelectionModal = ({ isOpen, onClose, product, onConfirm, mode = 'ch
                                     {isCheckout ? (
                                         <>
                                             <ShoppingBagIcon className="w-6 h-6" />
-                                            <span className="tracking-wide">Proceed to Checkout</span>
+                                            <span className="tracking-wide">{needsSizeSelection ? 'Select Size First' : 'Proceed to Checkout'}</span>
                                         </>
                                     ) : (
                                         <>
                                             <PlusIcon className="w-6 h-6" />
-                                            <span className="tracking-wide">Add to Bag</span>
+                                            <span className="tracking-wide">{needsSizeSelection ? 'Select Size First' : 'Add to Bag'}</span>
                                         </>
                                     )}
-                                </button>
+                                </motion.button>
                                 <div className="flex items-center justify-center gap-3 mt-6">
                                     <span className="h-[1px] flex-1 bg-gold/10" />
                                     <p className="text-[10px] text-neutral-400 uppercase tracking-[0.25em] font-bold">

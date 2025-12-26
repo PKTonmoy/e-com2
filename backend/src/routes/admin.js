@@ -27,7 +27,7 @@ router.put('/users/:id/role', requireRole('manager', 'admin'), async (req, res) 
 });
 
 router.get('/orders', async (req, res) => {
-  const orders = await Order.find()
+  const orders = await Order.find({ hiddenFromAdmin: { $ne: true } })  // Exclude admin-soft-deleted orders
     .sort('-createdAt')
     .limit(200)
     .populate('userId', 'name email');
@@ -35,6 +35,7 @@ router.get('/orders', async (req, res) => {
 });
 
 // Admin delete order - only allowed for delivered or cancelled orders
+// This is a SOFT DELETE - order is only hidden from admin, still visible to user
 router.delete('/orders/:id', async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'Order not found' });
@@ -46,8 +47,51 @@ router.delete('/orders/:id', async (req, res) => {
     });
   }
 
+  // Soft delete - hide from admin only, user can still see it
+  order.hiddenFromAdmin = true;
+  await order.save();
+
+  res.json({ message: 'Order hidden from admin view' });
+});
+
+// Get orders that are soft-deleted by BOTH user and admin (candidates for permanent deletion)
+router.get('/orders/deleted-by-both', async (req, res) => {
+  const orders = await Order.find({
+    hiddenFromUser: true,
+    hiddenFromAdmin: true
+  })
+    .sort('-createdAt')
+    .limit(100)
+    .populate('userId', 'name email');
+  res.json(orders);
+});
+
+// Permanently delete an order - ONLY allowed if both user and admin have soft-deleted it
+router.delete('/orders/:id/permanent', requireRole('admin'), async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+
+  // Only allow permanent deletion if both parties have soft-deleted
+  if (!order.hiddenFromUser || !order.hiddenFromAdmin) {
+    return res.status(400).json({
+      message: 'Order can only be permanently deleted when both user and admin have deleted it',
+    });
+  }
+
   await Order.findByIdAndDelete(req.params.id);
-  res.json({ message: 'Order deleted successfully' });
+  res.json({ message: 'Order permanently deleted from database' });
+});
+
+// Bulk permanent delete - delete all orders that both user and admin have soft-deleted
+router.delete('/orders/purge-deleted', requireRole('admin'), async (req, res) => {
+  const result = await Order.deleteMany({
+    hiddenFromUser: true,
+    hiddenFromAdmin: true
+  });
+  res.json({
+    message: `Permanently deleted ${result.deletedCount} orders from database`,
+    deletedCount: result.deletedCount
+  });
 });
 
 // Courier tariff management (Steadfast)

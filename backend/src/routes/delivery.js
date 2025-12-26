@@ -4,6 +4,7 @@ import { protect, requireRole, optionalProtect } from '../middleware/auth.js';
 import Order from '../models/Order.js';
 import ActivityLog from '../models/ActivityLog.js';
 import CourierTariff from '../models/CourierTariff.js';
+import Settings from '../models/Settings.js';
 import {
   createSteadfastOrder,
   getSteadfastStatusByTrackingCode,
@@ -91,13 +92,21 @@ router.post(
       if (tariff) {
         charge = tariff.price;
       } else {
-        // Fallback basic rule if no tariff configured
+        // Fallback basic rule if no tariff configured - use database settings
+        const shippingSettings = await Settings.get('shipping') || {};
+        const defaultLocalCharge = shippingSettings.defaultLocalCharge ?? 50;
+        const defaultOutsideCharge = shippingSettings.defaultOutsideCharge ?? 130;
+
         const cityLower = destinationDistrict.toLowerCase();
-        charge = cityLower.includes('rajshahi') ? 50 : 130;
+        charge = cityLower.includes('rajshahi') ? defaultLocalCharge : defaultOutsideCharge;
       }
 
-      // Optional free shipping for high-value orders
-      if (cartTotal >= 5000) {
+      // Optional free shipping for high-value orders - check database settings
+      const shippingConfig = await Settings.get('shipping') || {};
+      const freeShippingEnabled = shippingConfig.freeShippingEnabled ?? true;
+      const freeShippingThreshold = shippingConfig.freeShippingThreshold ?? 5000;
+
+      if (freeShippingEnabled && cartTotal >= freeShippingThreshold) {
         charge = 0;
       }
 

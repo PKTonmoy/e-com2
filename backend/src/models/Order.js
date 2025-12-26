@@ -50,6 +50,9 @@ const orderSchema = new mongoose.Schema(
       lastSyncedAt: Date,
       error: String,
     },
+    // Soft delete fields - allows independent visibility control
+    hiddenFromUser: { type: Boolean, default: false },
+    hiddenFromAdmin: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
