@@ -27,6 +27,7 @@ import googleAuthRoutes from './routes/googleAuth.js';
 import uploadRoutes from './routes/upload.js';
 import settingsRoutes from './routes/settings.js';
 import deliveryRoutes from './routes/delivery.js';
+import returnRoutes from './routes/returns.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import adminNotificationRoutes from './routes/adminNotificationRoutes.js';
 import { errorHandler, notFound } from './middleware/error.js';
@@ -135,6 +136,7 @@ app.use('/api/auth', googleAuthRoutes); // Google OAuth routes
 app.use('/api/upload', uploadRoutes); // Image upload routes
 app.use('/api/settings', settingsRoutes); // Settings routes
 app.use('/api/delivery', deliveryRoutes); // Courier & delivery routes
+app.use('/api/returns', returnRoutes); // Product returns
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin/notifications', adminNotificationRoutes);
 

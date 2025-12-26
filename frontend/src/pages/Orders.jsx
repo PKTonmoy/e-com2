@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { ChevronDownIcon, ChevronUpIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
+import { ChevronDownIcon, ChevronUpIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 import { useToast } from '../components/ToastProvider.jsx';
 import MobileHeader from '../components/MobileHeader';
@@ -9,6 +10,9 @@ const Orders = () => {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
+  const [returnModal, setReturnModal] = useState(null);
+  const [returnReason, setReturnReason] = useState('');
+  const [returnDetails, setReturnDetails] = useState('');
   const qc = useQueryClient();
   const { addToast } = useToast();
 
@@ -62,6 +66,42 @@ const Orders = () => {
 
   const canCancel = (status) => ['pending', 'confirmed'].includes(status);
   const canDelete = (status) => ['delivered', 'cancelled'].includes(status);
+
+  // Check if order is within 7-day return window
+  const canRequestReturn = (order) => {
+    if (order.orderStatus !== 'delivered') return false;
+    const deliveryDate = new Date(order.updatedAt);
+    const daysSinceDelivery = (Date.now() - deliveryDate.getTime()) / (1000 * 60 * 60 * 24);
+    return daysSinceDelivery <= 7;
+  };
+
+  // Return request mutation
+  const returnMutation = useMutation({
+    mutationFn: ({ orderId, reason, reasonDetails }) =>
+      api.post('/returns', { orderId, reason, reasonDetails }),
+    onSuccess: () => {
+      qc.invalidateQueries(['orders']);
+      addToast('Return request submitted successfully!', 'success');
+      setReturnModal(null);
+      setReturnReason('');
+      setReturnDetails('');
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to submit return request', 'error');
+    },
+  });
+
+  const handleRequestReturn = () => {
+    if (!returnReason) {
+      addToast('Please select a return reason', 'error');
+      return;
+    }
+    returnMutation.mutate({
+      orderId: returnModal._id,
+      reason: returnReason,
+      reasonDetails: returnDetails,
+    });
+  };
 
   const getStatusColor = (status) => {
     const colors = {
@@ -163,6 +203,15 @@ const Orders = () => {
                           {isDeleting ? 'Deleting...' : 'Delete'}
                         </button>
                       )}
+                      {canRequestReturn(order) && (
+                        <button
+                          onClick={() => setReturnModal(order)}
+                          className="text-xs text-gold hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1"
+                        >
+                          <ArrowPathIcon className="h-4 w-4" />
+                          Request Return
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -236,6 +285,79 @@ const Orders = () => {
           </div>
         )}
       </div>
+
+      {/* Return Request Modal */}
+      {returnModal && (
+        <div data-modal-overlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-display mb-4 text-matte dark:text-ivory">Request Return</h2>
+
+            <div className="mb-4 p-3 bg-gold/10 rounded-xl text-sm">
+              <p className="font-medium">Order #{returnModal._id.slice(-8)}</p>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                {returnModal.items.length} item(s) • ৳{returnModal.total?.toFixed(2)}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Reason for Return *</label>
+              <select
+                value={returnReason}
+                onChange={(e) => setReturnReason(e.target.value)}
+                className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
+              >
+                <option value="">Select a reason</option>
+                <option value="defective">Defective Product</option>
+                <option value="wrong_item">Wrong Item Received</option>
+                <option value="not_as_described">Not as Described</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Additional Details (optional)</label>
+              <textarea
+                value={returnDetails}
+                onChange={(e) => setReturnDetails(e.target.value)}
+                placeholder="Describe the issue..."
+                rows={3}
+                className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl resize-none"
+              />
+            </div>
+
+            <div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl mb-4 text-sm">
+              <p className="font-medium mb-1">Return Policy</p>
+              <p className="text-neutral-600 dark:text-neutral-400 text-xs">
+                Returns must be requested within 7 days of delivery. Once approved,
+                a pickup will be scheduled. After inspection, you'll receive a refund or store credit.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setReturnModal(null); setReturnReason(''); setReturnDetails(''); }}
+                className="flex-1 py-3 bg-neutral-200 dark:bg-neutral-700 rounded-xl font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRequestReturn}
+                disabled={returnMutation.isPending || !returnReason}
+                className="flex-1 py-3 bg-gold text-matte rounded-xl font-medium disabled:opacity-50"
+              >
+                {returnMutation.isPending ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+
+            <Link
+              to="/returns"
+              className="block text-center text-sm text-gold hover:underline mt-4"
+            >
+              View all return requests
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

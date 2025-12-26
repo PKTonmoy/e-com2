@@ -16,12 +16,14 @@ import {
     TruckIcon,
     BellIcon,
     WalletIcon,
+    ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 const adminLinks = [
     { to: '/admin', label: 'Dashboard', icon: Squares2X2Icon, end: true },
     { to: '/admin/products', label: 'Products', icon: ShoppingBagIcon },
     { to: '/admin/orders', label: 'Orders', icon: ClipboardDocumentListIcon },
+    { to: '/admin/returns', label: 'Returns', icon: ArrowPathIcon },
     { to: '/admin/users', label: 'Users', icon: UsersIcon },
     { to: '/admin/reviews', label: 'Reviews', icon: StarIcon },
     { to: '/admin/coupons', label: 'Coupons', icon: TicketIcon },

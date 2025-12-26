@@ -11,6 +11,7 @@ import Signup from './pages/Signup.jsx';
 import GoogleCallback from './pages/GoogleCallback.jsx';
 import Profile from './pages/Profile.jsx';
 import Orders from './pages/Orders.jsx';
+import Returns from './pages/Returns.jsx';
 import Wishlist from './pages/Wishlist.jsx';
 import Blog from './pages/Blog.jsx';
 import BlogPost from './pages/BlogPost.jsx';
@@ -33,6 +34,7 @@ import AdminSettings from './pages/admin/Settings.jsx';
 import AdminCourierTariffs from './pages/admin/CourierTariffs.jsx';
 import AdminNotifications from './pages/admin/Notifications.jsx';
 import AdminCourierManagement from './pages/admin/CourierManagement.jsx';
+import AdminReturns from './pages/admin/Returns.jsx';
 import QuickView from './pages/QuickView.jsx';
 import { ToastProvider } from './components/ToastProvider.jsx';
 import { BottomNavProvider } from './context/BottomNavContext.jsx';
@@ -67,6 +69,7 @@ const App = () => {
               <Route path="/auth/google/callback" element={<GoogleCallback />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/returns" element={<Returns />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/blog" element={<Blog />} />
@@ -91,6 +94,7 @@ const App = () => {
                 <Route path="/admin/courier-tariffs" element={<AdminCourierTariffs />} />
                 <Route path="/admin/courier-management" element={<AdminCourierManagement />} />
                 <Route path="/admin/notifications" element={<AdminNotifications />} />
+                <Route path="/admin/returns" element={<AdminReturns />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

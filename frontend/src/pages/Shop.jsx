@@ -540,7 +540,7 @@ const Shop = () => {
       </div>
 
       {/* ========== MOBILE FILTER MODAL ========== */}
-      <div className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${isFilterOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div data-modal-overlay className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${isFilterOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterOpen(false)} />
         <div className={`absolute bottom-0 left-0 right-0 bg-ivory dark:bg-neutral-900 rounded-t-3xl transform transition-transform duration-300 ${isFilterOpen ? 'translate-y-0' : 'translate-y-full'}`}>
           <div className="flex justify-center pt-3 pb-2">

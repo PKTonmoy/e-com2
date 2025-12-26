@@ -9,6 +9,8 @@ const TABS = [
   { id: 'shop', label: 'Shop Page' },
   { id: 'cart', label: 'Cart Page' },
   { id: 'profile', label: 'Profile Page' },
+  { id: 'returns', label: 'Returns Page' },
+  { id: 'thankyou', label: 'Thank You Page' },
 ];
 
 const DEFAULT_CONTENT = {
@@ -56,6 +58,30 @@ const DEFAULT_CONTENT = {
     title: 'Profile',
     welcomeTitle: 'Welcome to PRELUX',
     welcomeSubtitle: 'Sign in to view your profile, track orders, and manage your wishlist.',
+  },
+  'returns.guide': {
+    title: 'Return Policy & Guide',
+    description: 'Our return policy is designed to be simple and fair. You can request a return within 7 days of delivery...',
+    steps: [
+      { title: 'Submit Return Request', description: 'Fill out the form with your reason for return' },
+      { title: 'Admin Review', description: 'Our team will review and approve your request within 24-48 hours' },
+      { title: 'Courier Pickup', description: 'Once approved, a pickup will be scheduled at your address' },
+      { title: 'Refund or Store Credit', description: 'After inspection, you\'ll receive a refund or store credit coupon' },
+    ],
+  },
+  'thankyou.content': {
+    badge: 'Order Confirmed',
+    title: 'Merci. Your PRELUX order is confirmed.',
+    subtitle: 'A concierge will share shipping details shortly. For bespoke requests, contact maison@prelux.lux.',
+    nextStepsTitle: 'What happens next?',
+    steps: [
+      'Order confirmation email sent',
+      'Your items are being prepared',
+      'Shipping notification will arrive within 24-48 hours',
+      'White-glove delivery with signature',
+    ],
+    continueButtonText: 'Continue shopping',
+    ordersButtonText: 'View my orders',
   },
 };
 
@@ -427,6 +453,304 @@ const HeroImagesEditor = () => {
   );
 };
 
+// Return Guide Editor - Custom editor for return workflow steps
+const ReturnGuideEditor = () => {
+  const qc = useQueryClient();
+  const [saved, setSaved] = useState(false);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['content', 'returns.guide'],
+    queryFn: async () => {
+      const res = await api.get('/content/returns.guide');
+      return res.data?.content || DEFAULT_CONTENT['returns.guide'];
+    },
+  });
+
+  const [formData, setFormData] = useState(DEFAULT_CONTENT['returns.guide']);
+
+  useEffect(() => {
+    if (data) {
+      setFormData({ ...DEFAULT_CONTENT['returns.guide'], ...data });
+    }
+  }, [data]);
+
+  const mutation = useMutation({
+    mutationFn: () => api.post('/content/returns.guide', { content: formData }),
+    onSuccess: () => {
+      qc.invalidateQueries(['content', 'returns.guide']);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    },
+  });
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleStepChange = (index, field, value) => {
+    setFormData(prev => {
+      const steps = [...(prev.steps || [])];
+      steps[index] = { ...steps[index], [field]: value };
+      return { ...prev, steps };
+    });
+  };
+
+  const stepColors = [
+    { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-600', dot: 'bg-blue-500' },
+    { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-600', dot: 'bg-amber-500' },
+    { bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800', text: 'text-purple-600', dot: 'bg-purple-500' },
+    { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-600', dot: 'bg-green-500' },
+  ];
+
+  if (isLoading) return <div className="animate-pulse h-64 bg-neutral-100 rounded-lg" />;
+
+  return (
+    <div className="space-y-6">
+      {/* Main Title & Description */}
+      <div className="lux-card p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="font-semibold text-lg">Return Guide Content</p>
+          {saved && (
+            <span className="flex items-center gap-1 text-green-600 text-sm">
+              <CheckCircleIcon className="h-4 w-4" /> Saved
+            </span>
+          )}
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">Guide Title</label>
+            <input
+              type="text"
+              value={formData.title || ''}
+              onChange={(e) => handleChange('title', e.target.value)}
+              className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30"
+              placeholder="Return Policy & Guide"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Policy Description</label>
+            <textarea
+              value={formData.description || ''}
+              onChange={(e) => handleChange('description', e.target.value)}
+              className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30 min-h-[80px]"
+              placeholder="Enter the return policy text..."
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Workflow Steps */}
+      <div className="lux-card p-5 space-y-4">
+        <p className="font-semibold text-lg">Workflow Steps (Visible to Users)</p>
+        <p className="text-sm text-neutral-500">Customize the 4-step return process displayed to users</p>
+
+        <div className="space-y-4">
+          {[0, 1, 2, 3].map((index) => {
+            const color = stepColors[index];
+            return (
+              <div key={index} className={`p-4 rounded-xl ${color.bg} border ${color.border}`}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-8 h-8 rounded-full ${color.dot} text-white flex items-center justify-center font-bold text-sm`}>
+                    {index + 1}
+                  </div>
+                  <p className={`font-semibold ${color.text}`}>Step {index + 1}</p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-neutral-600">Step Title</label>
+                    <input
+                      type="text"
+                      value={formData.steps?.[index]?.title || ''}
+                      onChange={(e) => handleStepChange(index, 'title', e.target.value)}
+                      className="w-full border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-800"
+                      placeholder={`Step ${index + 1} title`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-neutral-600">Step Description</label>
+                    <input
+                      type="text"
+                      value={formData.steps?.[index]?.description || ''}
+                      onChange={(e) => handleStepChange(index, 'description', e.target.value)}
+                      className="w-full border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-800"
+                      placeholder={`Step ${index + 1} description`}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <button
+        onClick={() => mutation.mutate()}
+        disabled={mutation.isPending}
+        className="lux-btn-primary w-full"
+      >
+        {mutation.isPending ? 'Saving Return Guide...' : 'Save All Changes'}
+      </button>
+    </div>
+  );
+};
+
+// Thank You Page Editor
+const ThankYouEditor = () => {
+  const qc = useQueryClient();
+  const [saved, setSaved] = useState(false);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['content', 'thankyou.content'],
+    queryFn: async () => {
+      const res = await api.get('/content/thankyou.content');
+      return res.data?.content || DEFAULT_CONTENT['thankyou.content'];
+    },
+  });
+
+  const [formData, setFormData] = useState(DEFAULT_CONTENT['thankyou.content']);
+
+  useEffect(() => {
+    if (data) {
+      setFormData({ ...DEFAULT_CONTENT['thankyou.content'], ...data });
+    }
+  }, [data]);
+
+  const mutation = useMutation({
+    mutationFn: () => api.post('/content/thankyou.content', { content: formData }),
+    onSuccess: () => {
+      qc.invalidateQueries(['content', 'thankyou.content']);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    },
+  });
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleStepChange = (index, value) => {
+    setFormData(prev => {
+      const steps = [...(prev.steps || [])];
+      steps[index] = value;
+      return { ...prev, steps };
+    });
+  };
+
+  if (isLoading) return <div className="animate-pulse h-64 bg-neutral-100 rounded-lg" />;
+
+  return (
+    <div className="space-y-6">
+      {/* Main Content */}
+      <div className="lux-card p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="font-semibold text-lg">Thank You Page Content</p>
+          {saved && (
+            <span className="flex items-center gap-1 text-green-600 text-sm">
+              <CheckCircleIcon className="h-4 w-4" /> Saved
+            </span>
+          )}
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">Badge Text</label>
+            <input
+              type="text"
+              value={formData.badge || ''}
+              onChange={(e) => handleChange('badge', e.target.value)}
+              className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30"
+              placeholder="Order Confirmed"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Main Title</label>
+            <input
+              type="text"
+              value={formData.title || ''}
+              onChange={(e) => handleChange('title', e.target.value)}
+              className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30"
+              placeholder="Merci. Your PRELUX order is confirmed."
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Subtitle</label>
+            <textarea
+              value={formData.subtitle || ''}
+              onChange={(e) => handleChange('subtitle', e.target.value)}
+              className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30 min-h-[60px]"
+              placeholder="A concierge will share shipping details shortly..."
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Next Steps Section */}
+      <div className="lux-card p-5 space-y-4">
+        <p className="font-semibold text-lg">Next Steps Section</p>
+        <div>
+          <label className="block text-sm font-medium mb-1">Section Title</label>
+          <input
+            type="text"
+            value={formData.nextStepsTitle || ''}
+            onChange={(e) => handleChange('nextStepsTitle', e.target.value)}
+            className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30"
+            placeholder="What happens next?"
+          />
+        </div>
+        <div className="space-y-3">
+          <p className="text-sm text-neutral-500">Checklist Items (4 steps)</p>
+          {[0, 1, 2, 3].map((index) => (
+            <div key={index} className="flex items-center gap-3">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</span>
+              <input
+                type="text"
+                value={formData.steps?.[index] || ''}
+                onChange={(e) => handleStepChange(index, e.target.value)}
+                className="flex-1 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-neutral-800"
+                placeholder={`Step ${index + 1}`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Button Texts */}
+      <div className="lux-card p-5 space-y-4">
+        <p className="font-semibold text-lg">Button Texts</p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">Continue Shopping Button</label>
+            <input
+              type="text"
+              value={formData.continueButtonText || ''}
+              onChange={(e) => handleChange('continueButtonText', e.target.value)}
+              className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30"
+              placeholder="Continue shopping"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">View Orders Button</label>
+            <input
+              type="text"
+              value={formData.ordersButtonText || ''}
+              onChange={(e) => handleChange('ordersButtonText', e.target.value)}
+              className="w-full border border-gold/30 rounded-lg px-4 py-2.5 text-sm bg-white dark:bg-matte/30"
+              placeholder="View my orders"
+            />
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={() => mutation.mutate()}
+        disabled={mutation.isPending}
+        className="lux-btn-primary w-full"
+      >
+        {mutation.isPending ? 'Saving...' : 'Save All Changes'}
+      </button>
+    </div>
+  );
+};
+
 const AdminContent = () => {
   const [activeTab, setActiveTab] = useState('home');
 
@@ -513,6 +837,14 @@ const AdminContent = () => {
               { name: 'welcomeSubtitle', label: 'Welcome Subtitle', type: 'textarea', fullWidth: true },
             ]}
           />
+        )}
+
+        {activeTab === 'returns' && (
+          <ReturnGuideEditor />
+        )}
+
+        {activeTab === 'thankyou' && (
+          <ThankYouEditor />
         )}
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import {
     HomeIcon,
     Squares2X2Icon,
@@ -38,6 +39,41 @@ const adminNavItem = { to: '/admin', label: 'Admin', icon: Cog6ToothIcon, iconAc
 const MobileBottomNav = () => {
     const location = useLocation();
     const { isBottomNavVisible } = useBottomNav();
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+    // Auto-detect popups/modals in the DOM
+    useEffect(() => {
+        const checkForPopups = () => {
+            // Look for modal overlays that are actually visible (not pointer-events-none)
+            const modalOverlays = document.querySelectorAll('[data-modal-overlay]');
+
+            // Filter to only include visible overlays (not hidden with pointer-events-none or opacity-0)
+            const visibleOverlays = Array.from(modalOverlays).filter(overlay => {
+                const classes = overlay.className;
+                // Skip if it has pointer-events-none (meaning it's hidden)
+                if (classes.includes('pointer-events-none')) return false;
+                // Skip if it has opacity-0 (meaning it's hidden)
+                if (classes.includes('opacity-0')) return false;
+                return true;
+            });
+
+            setIsPopupOpen(visibleOverlays.length > 0);
+        };
+
+        // Check immediately
+        checkForPopups();
+
+        // Set up mutation observer to detect DOM changes
+        const observer = new MutationObserver(checkForPopups);
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class'],
+        });
+
+        return () => observer.disconnect();
+    }, []);
 
     // Fetch current user to check admin role
     const { data: user } = useQuery({
@@ -64,12 +100,15 @@ const MobileBottomNav = () => {
         return null;
     }
 
+    // Combine context visibility with auto-detected popup visibility
+    const shouldShowNav = isBottomNavVisible && !isPopupOpen;
+
     return (
         <motion.nav
             initial={{ y: 100 }}
-            animate={{ y: isBottomNavVisible ? 0 : 100 }}
+            animate={{ y: shouldShowNav ? 0 : 100 }}
             transition={{ type: "spring", damping: 20, stiffness: 100 }}
-            className={`fixed bottom-4 left-4 right-4 z-50 md:hidden ${!isBottomNavVisible ? 'pointer-events-none' : ''}`}
+            className={`fixed bottom-4 left-4 right-4 z-40 md:hidden ${!shouldShowNav ? 'pointer-events-none' : ''}`}
         >
             <div className="bg-white/40 dark:bg-matte/40 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/5 shadow-2xl shadow-black/10 dark:shadow-black/30">
                 <ul className="flex justify-between items-center px-4 py-2">

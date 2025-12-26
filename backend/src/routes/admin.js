@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
+import ReturnRequest from '../models/ReturnRequest.js';
 import ActivityLog from '../models/ActivityLog.js';
 import CourierTariff from '../models/CourierTariff.js';
 import { protect, requireRole } from '../middleware/auth.js';
@@ -52,6 +53,26 @@ router.delete('/orders/:id', async (req, res) => {
   await order.save();
 
   res.json({ message: 'Order hidden from admin view' });
+});
+
+
+
+// Admin delete return - only allowed for completed or rejected
+router.delete('/returns/:id', async (req, res) => {
+  const returnReq = await ReturnRequest.findById(req.params.id);
+  if (!returnReq) return res.status(404).json({ message: 'Return request not found' });
+
+  // Only allow deletion for completed or rejected requests
+  if (!['completed', 'rejected'].includes(returnReq.status)) {
+    return res.status(400).json({
+      message: 'Return requests can only be deleted when status is completed or rejected',
+    });
+  }
+
+  returnReq.hiddenFromAdmin = true;
+  await returnReq.save();
+
+  res.json({ message: 'Return request hidden from admin view' });
 });
 
 // Get orders that are soft-deleted by BOTH user and admin (candidates for permanent deletion)

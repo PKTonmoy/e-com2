@@ -337,7 +337,7 @@ router.post(
         recipient_name: order.shipping?.name || 'Guest',
         recipient_phone: normalizeBdPhone(order.shipping?.phone),
         recipient_address: order.shipping?.address,
-        recipient_email: order.shipping?.email || null,
+        recipient_email: (order.shipping?.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(order.shipping.email)) ? order.shipping.email : null,
         cod_amount: codAmount,
         note: order.notes?.[order.notes.length - 1]?.message || null,
         item_description: `${order.items.length} item(s)`,
