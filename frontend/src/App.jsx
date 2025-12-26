@@ -32,6 +32,7 @@ import AdminBlog from './pages/admin/BlogAdmin.jsx';
 import AdminSettings from './pages/admin/Settings.jsx';
 import AdminCourierTariffs from './pages/admin/CourierTariffs.jsx';
 import AdminNotifications from './pages/admin/Notifications.jsx';
+import AdminCourierManagement from './pages/admin/CourierManagement.jsx';
 import QuickView from './pages/QuickView.jsx';
 import { ToastProvider } from './components/ToastProvider.jsx';
 import { BottomNavProvider } from './context/BottomNavContext.jsx';
@@ -88,6 +89,7 @@ const App = () => {
                 <Route path="/admin/blog" element={<AdminBlog />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
                 <Route path="/admin/courier-tariffs" element={<AdminCourierTariffs />} />
+                <Route path="/admin/courier-management" element={<AdminCourierManagement />} />
                 <Route path="/admin/notifications" element={<AdminNotifications />} />
               </Route>
 

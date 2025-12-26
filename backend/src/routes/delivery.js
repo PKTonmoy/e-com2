@@ -9,6 +9,11 @@ import {
   getSteadfastStatusByTrackingCode,
   mapSteadfastStatus,
   getSteadfastDestinations,
+  getSteadfastBalance,
+  createSteadfastReturnRequest,
+  getSteadfastReturnRequests,
+  getSteadfastPayments,
+  getSteadfastPaymentDetails,
 } from '../services/steadfastClient.js';
 
 const router = express.Router();
@@ -298,6 +303,89 @@ router.get('/destinations', optionalProtect, async (req, res, next) => {
   }
 });
 
+// 5) Admin manual approve & send to courier
+router.post(
+  '/admin/approve/:orderId',
+  protect,
+  requireRole('staff', 'manager', 'admin'),
+  async (req, res, next) => {
+    try {
+      const orderId = req.params.orderId;
+      const order = await Order.findById(orderId);
+      if (!order) return res.status(404).json({ message: 'Order not found' });
+
+      // Prevent duplicate courier order
+      if (order.courier?.trackingId) {
+        return res.status(400).json({ message: 'Courier order already exists for this order' });
+      }
+
+      // Compute COD amount
+      const codAmount = Math.max(0, Number(order.total || 0) + Number(order.shippingCharge || 0));
+
+      // Build Steadfast payload
+      const payload = {
+        invoice: String(order._id),
+        recipient_name: order.shipping?.name || 'Guest',
+        recipient_phone: normalizeBdPhone(order.shipping?.phone),
+        recipient_address: order.shipping?.address,
+        recipient_email: order.shipping?.email || null,
+        cod_amount: codAmount,
+        note: order.notes?.[order.notes.length - 1]?.message || null,
+        item_description: `${order.items.length} item(s)`,
+        delivery_type: 0,
+      };
+
+      const result = await createSteadfastOrder(payload);
+
+      if (!result || !result.consignment) {
+        const msg = result?.message || 'Failed to create courier order';
+        await ActivityLog.create({
+          actorId: req.user._id,
+          action: 'courier_approve_failed',
+          entity: 'order',
+          meta: { orderId: order._id, courier: 'steadfast', response: result },
+        });
+        return res.status(502).json({ message: msg });
+      }
+
+      const consignment = result.consignment;
+      const rawStatus = consignment.status || 'pending';
+      const friendlyStatus = mapSteadfastStatus(rawStatus);
+
+      order.orderStatus = 'confirmed'; // Auto-confirm on courier approval
+      order.courier = {
+        name: 'steadfast',
+        trackingId: consignment.tracking_code,
+        statusRaw: rawStatus,
+        statusFriendly: friendlyStatus,
+        deliveryCharge: order.shippingCharge || 0,
+        lastSyncedAt: new Date(),
+        error: null,
+      };
+
+      await order.save();
+
+      await ActivityLog.create({
+        actorId: req.user._id,
+        action: 'courier_approve_success',
+        entity: 'order',
+        meta: {
+          orderId: order._id,
+          courier: 'steadfast',
+          trackingId: consignment.tracking_code,
+        },
+      });
+
+      return res.json({
+        message: 'Order approved and sent to courier',
+        courier: order.courier,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
 // 4) Admin manual refresh per order
 router.post(
   '/admin/refresh/:orderId',
@@ -345,6 +433,81 @@ router.post(
       });
     } catch (err) {
       return next(err);
+    }
+  }
+);
+
+// 6) Courier Management Routes
+router.get(
+  '/admin/balance',
+  protect,
+  requireRole('manager', 'admin'),
+  async (req, res, next) => {
+    try {
+      const data = await getSteadfastBalance();
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  '/admin/returns',
+  protect,
+  requireRole('staff', 'manager', 'admin'),
+  async (req, res, next) => {
+    try {
+      const data = await getSteadfastReturnRequests();
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  '/admin/payments',
+  protect,
+  requireRole('manager', 'admin'),
+  async (req, res, next) => {
+    try {
+      const data = await getSteadfastPayments();
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  '/admin/payments/:id',
+  protect,
+  requireRole('manager', 'admin'),
+  async (req, res, next) => {
+    try {
+      const data = await getSteadfastPaymentDetails(req.params.id);
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  '/admin/returns',
+  protect,
+  requireRole('staff', 'manager', 'admin'),
+  async (req, res, next) => {
+    try {
+      const { consignmentId, reason } = req.body;
+      const data = await createSteadfastReturnRequest({
+        consignment_id: consignmentId,
+        reason
+      });
+      res.json(data);
+    } catch (err) {
+      next(err);
     }
   }
 );

@@ -42,7 +42,7 @@ instance.interceptors.request.use((config) => {
       courier: 'steadfast',
       payloadPreview: config.data ? JSON.stringify(config.data).slice(0, 500) : null,
     },
-  }).catch(() => {});
+  }).catch(() => { });
 
   return config;
 });
@@ -74,7 +74,7 @@ const handleError = async (error, context = {}) => {
       context,
       response: responseData,
     },
-  }).catch(() => {});
+  }).catch(() => { });
 
   const err = new Error(message);
   err.statusCode = status;
@@ -105,11 +105,89 @@ export const createSteadfastOrder = async (payload) => {
     throw err;
   }
 
+  // Supporting new fields from latest docs
+  const cleanedPayload = {
+    invoice: payload.invoice,
+    recipient_name: payload.recipient_name,
+    recipient_phone: payload.recipient_phone,
+    recipient_address: payload.recipient_address,
+    cod_amount: payload.cod_amount,
+    alternative_phone: payload.alternative_phone || null,
+    recipient_email: payload.recipient_email || null,
+    note: payload.note || null,
+    item_description: payload.item_description || null,
+    total_lot: payload.total_lot || 1,
+    delivery_type: payload.delivery_type || 0,
+  };
+
   try {
-    const res = await instance.post('/create_order', payload);
+    const res = await instance.post('/create_order', cleanedPayload);
     return res.data;
   } catch (error) {
     await handleError(error, { entity: 'steadfast_create_order' });
+  }
+};
+
+// Bulk order create
+export const bulkCreateSteadfastOrders = async (data) => {
+  if (!STEADFAST_API_KEY || !STEADFAST_SECRET_KEY) {
+    const err = new Error('Courier service not configured');
+    err.statusCode = 503;
+    throw err;
+  }
+
+  try {
+    const res = await instance.post('/create_order/bulk-order', { data });
+    return res.data;
+  } catch (error) {
+    await handleError(error, { entity: 'steadfast_bulk_create' });
+  }
+};
+
+// Return Requests
+export const createSteadfastReturnRequest = async (payload) => {
+  try {
+    const res = await instance.post('/create_return_request', payload);
+    return res.data;
+  } catch (error) {
+    await handleError(error, { entity: 'steadfast_create_return' });
+  }
+};
+
+export const getSteadfastReturnRequests = async () => {
+  try {
+    const res = await instance.get('/get_return_requests');
+    return res.data;
+  } catch (error) {
+    await handleError(error, { entity: 'steadfast_get_returns' });
+  }
+};
+
+export const getSteadfastReturnRequestDetails = async (id) => {
+  try {
+    const res = await instance.get(`/get_return_request/${id}`);
+    return res.data;
+  } catch (error) {
+    await handleError(error, { entity: 'steadfast_get_return_details', id });
+  }
+};
+
+// Payments
+export const getSteadfastPayments = async () => {
+  try {
+    const res = await instance.get('/payments');
+    return res.data;
+  } catch (error) {
+    await handleError(error, { entity: 'steadfast_get_payments' });
+  }
+};
+
+export const getSteadfastPaymentDetails = async (payment_id) => {
+  try {
+    const res = await instance.get(`/payments/${payment_id}`);
+    return res.data;
+  } catch (error) {
+    await handleError(error, { entity: 'steadfast_get_payment_details', payment_id });
   }
 };
 
@@ -129,7 +207,7 @@ export const getSteadfastStatusByTrackingCode = async (trackingCode) => {
   }
 };
 
-// Check current balance - useful for dynamic charge or availability checks
+// Check current balance
 export const getSteadfastBalance = async () => {
   if (!STEADFAST_API_KEY || !STEADFAST_SECRET_KEY) {
     const err = new Error('Courier service not configured');
@@ -145,7 +223,7 @@ export const getSteadfastBalance = async () => {
   }
 };
 
-// Get all police stations (used as destination list)
+// Get Policestations (Destinations)
 export const getSteadfastDestinations = async () => {
   if (!STEADFAST_API_KEY || !STEADFAST_SECRET_KEY) {
     const err = new Error('Courier service not configured');

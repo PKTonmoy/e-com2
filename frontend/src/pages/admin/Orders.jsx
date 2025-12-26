@@ -34,6 +34,27 @@ const AdminOrders = () => {
     },
   });
 
+  const approveOrderMutation = useMutation({
+    mutationFn: (orderId) => api.post(`/delivery/admin/approve/${orderId}`),
+    onSuccess: () => {
+      qc.invalidateQueries(['admin-orders']);
+      addToast('Order approved and sent to courier!', 'success');
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to approve order', 'error');
+    },
+  });
+
+  const createReturnMutation = useMutation({
+    mutationFn: ({ consignmentId, reason }) => api.post('/delivery/admin/returns', { consignmentId, reason }),
+    onSuccess: () => {
+      addToast('Return request created successfully!', 'success');
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to create return request', 'error');
+    },
+  });
+
   const deleteOrderMutation = useMutation({
     mutationFn: (orderId) => api.delete(`/admin/orders/${orderId}`),
     onSuccess: () => {
@@ -250,6 +271,23 @@ const AdminOrders = () => {
                         >
                           {refreshCourierMutation.isLoading ? 'Refreshing...' : 'Refresh Status'}
                         </button>
+                        {order.courier.statusFriendly === 'Delivered' && (
+                          <button
+                            onClick={() => {
+                              const reason = window.prompt('Reason for return (optional):');
+                              if (reason !== null) {
+                                createReturnMutation.mutate({
+                                  consignmentId: order.courier.trackingId,
+                                  reason
+                                });
+                              }
+                            }}
+                            className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 disabled:opacity-50"
+                            disabled={createReturnMutation.isLoading}
+                          >
+                            {createReturnMutation.isLoading ? 'Requesting...' : 'Request Return'}
+                          </button>
+                        )}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200">
                         <p>
@@ -279,6 +317,22 @@ const AdminOrders = () => {
                           </p>
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {!order.courier?.trackingId && order.orderStatus !== 'cancelled' && (
+                    <div className="mt-4 p-4 bg-gold/5 border border-gold/20 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="text-sm">
+                        <p className="font-semibold text-gold">Awaiting Courier Approval</p>
+                        <p className="text-neutral-500 text-xs">Review shipping details before sending to Steadfast</p>
+                      </div>
+                      <button
+                        onClick={() => approveOrderMutation.mutate(order._id)}
+                        disabled={approveOrderMutation.isLoading}
+                        className="w-full sm:w-auto px-6 py-2 bg-gold text-matte font-bold text-xs uppercase tracking-widest rounded-full shadow-lg shadow-gold/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                      >
+                        {approveOrderMutation.isLoading ? 'Processing...' : 'Approve & Send to Courier'}
+                      </button>
                     </div>
                   )}
 

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api.js';
 import MobileHeader from '../components/MobileHeader';
+import HoldToCheckoutButton from '../components/HoldToCheckoutButton';
 import { useCart } from '../store/useCart.js';
 import { useState, useEffect } from 'react';
 import { useToast } from '../components/ToastProvider.jsx';
@@ -17,8 +18,6 @@ const Checkout = () => {
     email: '',
     address: '',
     city: '',
-    country: 'Bangladesh',
-    postalCode: ''
   });
   const [deliveryCharge, setDeliveryCharge] = useState(0);
   const [deliveryError, setDeliveryError] = useState('');
@@ -151,10 +150,10 @@ const Checkout = () => {
   useEffect(() => {
     fetchDeliveryCharge();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shipping.address, shipping.city, shipping.country, shipping.phone, shipping.name]);
+  }, [shipping.address, shipping.city, shipping.phone, shipping.name]);
 
   const placeOrder = async () => {
-    if (!shipping.name || !shipping.phone || !shipping.address || !shipping.city || !shipping.country || !shipping.postalCode) {
+    if (!shipping.name || !shipping.phone || !shipping.address || !shipping.city) {
       alert('Please fill in all shipping details');
       return;
     }
@@ -183,22 +182,6 @@ const Checkout = () => {
 
       const createdOrder = orderRes.data;
 
-      // 2) For COD, create courier order
-      if (paymentMethod === 'cod') {
-        try {
-          await api.post('/delivery/create', {
-            orderId: createdOrder._id,
-            paymentMethod: 'cod',
-            expectedDeliveryCharge: deliveryCharge,
-          });
-        } catch (err) {
-          // Backend will rollback/cancel on failure; surface message
-          const msg = err.response?.data?.message || 'Failed to create courier order. Your order was not placed.';
-          addToast(msg, 'error');
-          return;
-        }
-      }
-
       clearCart();
       navigate('/order/thank-you');
     } catch (err) {
@@ -211,8 +194,8 @@ const Checkout = () => {
       {/* Compact Mobile Header */}
       <MobileHeader title="Checkout" subtitle="Secure" />
 
-      {/* Main Container - added padding bottom for fixed footer */}
-      <div className="px-3 sm:px-6 lg:px-8 max-w-md sm:max-w-3xl lg:max-w-7xl mx-auto py-4 sm:py-12 pb-40 sm:pb-16">
+      {/* Main Container - responsive with proper overflow handling */}
+      <div className="px-2 sm:px-6 lg:px-8 w-full sm:max-w-3xl lg:max-w-7xl mx-auto py-4 sm:py-12 pb-56 sm:pb-16 overflow-x-hidden">
         {/* Desktop Header */}
         <div className="hidden sm:block mb-6 sm:mb-8">
           <h1 className="font-display text-2xl sm:text-4xl text-matte dark:text-ivory">Checkout</h1>
@@ -223,7 +206,7 @@ const Checkout = () => {
           {/* Shipping Form */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Contact Information */}
-            <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-100 dark:border-neutral-800 shadow-sm">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-100 dark:border-neutral-800 shadow-sm overflow-hidden">
               <h2 className="font-display text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gold/10 text-gold text-xs">1</span>
                 Contact Information
@@ -233,7 +216,7 @@ const Checkout = () => {
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Full Name *</label>
                   <input
                     type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="John Doe"
                     value={shipping.name}
                     onChange={(e) => setShipping({ ...shipping, name: e.target.value })}
@@ -243,7 +226,7 @@ const Checkout = () => {
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Mobile Number *</label>
                   <input
                     type="tel"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="+1 234 567 8900"
                     value={shipping.phone}
                     onChange={(e) => setShipping({ ...shipping, phone: e.target.value })}
@@ -255,7 +238,7 @@ const Checkout = () => {
                   </label>
                   <input
                     type="email"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="your@email.com"
                     value={shipping.email || ''}
                     onChange={(e) => setShipping({ ...shipping, email: e.target.value })}
@@ -265,7 +248,7 @@ const Checkout = () => {
             </div>
 
             {/* Shipping Address */}
-            <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-100 dark:border-neutral-800 shadow-sm">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-100 dark:border-neutral-800 shadow-sm overflow-hidden">
               <h2 className="font-display text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gold/10 text-gold text-xs">2</span>
                 Shipping Address
@@ -275,7 +258,7 @@ const Checkout = () => {
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Address *</label>
                   <input
                     type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
                     placeholder="123 Main Street, Apt 4B"
                     value={shipping.address}
                     onChange={(e) => setShipping({ ...shipping, address: e.target.value })}
@@ -284,7 +267,7 @@ const Checkout = () => {
                 <div>
                   <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Destination City / Thana *</label>
                   <select
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 p-2.5 sm:p-3 rounded-lg bg-white dark:bg-neutral-800 text-sm sm:text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30"
                     value={shipping.city}
                     onChange={(e) => setShipping({ ...shipping, city: e.target.value })}
                     disabled={destinationsLoading || !destinations.length}
@@ -301,32 +284,12 @@ const Checkout = () => {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Country *</label>
-                  <input
-                    type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
-                    placeholder="Bangladesh"
-                    value={shipping.country}
-                    onChange={(e) => setShipping({ ...shipping, country: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">Postal Code *</label>
-                  <input
-                    type="text"
-                    className="w-full border border-neutral-200 dark:border-neutral-700 p-3 rounded-lg bg-white dark:bg-neutral-800 text-base text-matte dark:text-ivory focus:outline-none focus:ring-2 focus:ring-gold/30 placeholder:text-neutral-400"
-                    placeholder="10001"
-                    value={shipping.postalCode}
-                    onChange={(e) => setShipping({ ...shipping, postalCode: e.target.value })}
-                  />
-                </div>
               </div>
             </div>
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-100 dark:border-neutral-800 h-fit lg:sticky lg:top-24 shadow-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-100 dark:border-neutral-800 h-fit lg:sticky lg:top-24 shadow-sm overflow-hidden">
             <h2 className="font-display text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Order Summary</h2>
 
             {/* Items */}
@@ -443,15 +406,15 @@ const Checkout = () => {
             </div>
 
             {/* Desktop Button - Hidden on Mobile */}
-            <button
-              className="hidden lg:block w-full py-4 bg-gold text-matte font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-gold/90 transition shadow-lg shadow-gold/20 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
-              onClick={placeOrder}
-              disabled={!items.length || !paymentMethod || !deliveryAvailable || !!deliveryError || deliveryLoading}
-            >
-              {paymentMethod === 'cod' ? 'Confirm Order (COD)' : 'Confirm Order'}
-            </button>
+            <div className="hidden lg:block">
+              <HoldToCheckoutButton
+                onComplete={placeOrder}
+                disabled={!items.length || !paymentMethod || !deliveryAvailable || !!deliveryError || deliveryLoading}
+                holdDuration={1800}
+              />
+            </div>
 
-            <p className="text-xs text-center text-neutral-500 mt-4 lg:block hidden">Payment simulated (test mode)</p>
+            <p className="text-xs text-center text-neutral-500 mt-4 lg:block hidden">Hold button for 1.8s to confirm order</p>
 
             {/* Trust Badges */}
             <div className="flex justify-center gap-4 mt-6 text-xs text-neutral-400">
@@ -472,21 +435,25 @@ const Checkout = () => {
         </div>
       </div>
 
-      {/* Fixed Mobile Bottom Bar */}
-      {/* Fixed Mobile Bottom Bar - Elevated to clear BottomNav */}
-      <div className="fixed bottom-5 left-4 right-4 lg:hidden bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 p-3 rounded-xl shadow-xl z-40">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs text-neutral-500">Total Amount</p>
-            <p className="text-xl font-bold text-gold">৳ {total.toFixed(0)}</p>
+      {/* Fixed Mobile Bottom Bar - Premium glassmorphism design */}
+      <div className="fixed bottom-4 left-3 right-3 lg:hidden z-40">
+        {/* Glassmorphism container */}
+        <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-neutral-200/50 dark:border-zinc-700/50 rounded-2xl shadow-2xl shadow-black/10 p-4">
+          {/* Total row */}
+          <div className="flex items-center justify-between mb-3 px-1">
+            <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Order Total</span>
+            <span className="text-xl font-bold text-gold">৳ {total.toFixed(0)}</span>
           </div>
-          <button
-            onClick={placeOrder}
+
+          {/* Full-width Hold Button */}
+          <HoldToCheckoutButton
+            onComplete={placeOrder}
             disabled={!items.length || !paymentMethod || !deliveryAvailable || !!deliveryError || deliveryLoading}
-            className="flex-1 py-3.5 bg-gold text-matte font-bold text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-gold/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform"
-          >
-            Confirm Order
-          </button>
+            holdDuration={1800}
+          />
+
+          {/* Hint text */}
+          <p className="text-[10px] text-center text-neutral-400 mt-2">Hold button for 1.8s to confirm</p>
         </div>
       </div>
     </div>

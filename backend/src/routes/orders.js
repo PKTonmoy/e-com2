@@ -4,8 +4,16 @@ import Product from '../models/Product.js';
 import Coupon from '../models/Coupon.js';
 import { protect, requireRole } from '../middleware/auth.js';
 import { notifyOrderEvent } from '../services/notifications.js';
+import crypto from 'crypto';
 
 const router = express.Router();
+
+// Helper to generate a human-readable unique order number
+const generateOrderNumber = () => {
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const randomStr = crypto.randomBytes(3).toString('hex').toUpperCase();
+  return `ORD-${dateStr}-${randomStr}`;
+};
 
 // Helper function to restore stock when order is cancelled
 async function restoreOrderStock(items) {
@@ -22,147 +30,164 @@ async function restoreOrderStock(items) {
   );
 }
 
-router.post('/', protect, async (req, res) => {
-  const { items, shipping, paymentStatus = 'pending', paymentMethod = 'cod', shippingCharge = 0, couponCode } = req.body;
-  let total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
-  let discount = 0;
+router.post('/', protect, async (req, res, next) => {
+  try {
+    const { items, shipping, paymentStatus = 'pending', paymentMethod = 'cod', shippingCharge = 0, couponCode } = req.body;
 
-  if (couponCode) {
-    const coupon = await Coupon.findOne({ code: couponCode, active: true });
-    if (coupon) {
-      // Check if user already used this coupon
-      if (coupon.usedBy.includes(req.user._id)) {
-        return res.status(400).json({ message: 'You have already used this coupon' });
-      }
+    let total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
+    let discount = 0;
 
-      // Validate expiry
-      if (!coupon.expiresAt || new Date(coupon.expiresAt) > new Date()) {
-        // Validate min purchase
-        if (!coupon.minPurchase || total >= coupon.minPurchase) {
-          if (coupon.type === 'percentage') {
-            discount = total * (coupon.value / 100);
-          } else {
-            discount = coupon.value;
-          }
-          total = Math.max(0, total - discount);
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode, active: true });
+      if (coupon) {
+        // Check if user already used this coupon
+        if (coupon.usedBy.includes(req.user._id)) {
+          return res.status(400).json({ message: 'You have already used this coupon' });
         }
+
+        // Validate expiry
+        if (!coupon.expiresAt || new Date(coupon.expiresAt) > new Date()) {
+          // Validate min purchase
+          if (!coupon.minPurchase || total >= coupon.minPurchase) {
+            if (coupon.type === 'percentage') {
+              discount = total * (coupon.value / 100);
+            } else {
+              discount = coupon.value;
+            }
+            total = Math.max(0, total - discount);
+          }
+        }
+      } else {
+        return res.status(400).json({ message: 'Invalid coupon code' });
       }
-    } else {
-      return res.status(400).json({ message: 'Invalid coupon code' });
     }
-  }
 
-  const order = await Order.create({
-    userId: req.user._id,
-    items,
-    shipping,
-    paymentMethod,
-    paymentStatus,
-    total,
-    shippingCharge,
-    discount,
-    couponCode
-  });
+    const order = await Order.create({
+      userId: req.user._id,
+      orderNumber: generateOrderNumber(),
+      items,
+      shipping,
+      paymentMethod,
+      paymentStatus,
+      total,
+      shippingCharge,
+      discount,
+      couponCode
+    });
 
-  // decrease stock
-  await Promise.all(
-    items.map(async ({ productId, variantId, qty }) => {
-      const product = await Product.findById(productId);
-      if (product) {
-        product.stock = Math.max(0, product.stock - qty);
-        const variant = product.variants?.find((v) => v.id === variantId);
-        if (variant) variant.stock = Math.max(0, variant.stock - qty);
-        await product.save();
-      }
-    })
-  );
-
-  // Mark coupon as used
-  if (couponCode) {
-    await Coupon.updateOne(
-      { code: couponCode },
-      { $addToSet: { usedBy: req.user._id } }
+    // decrease stock
+    await Promise.all(
+      items.map(async ({ productId, variantId, qty }) => {
+        const product = await Product.findById(productId);
+        if (product) {
+          product.stock = Math.max(0, product.stock - qty);
+          const variant = product.variants?.find((v) => v.id === variantId);
+          if (variant) variant.stock = Math.max(0, variant.stock - qty);
+          await product.save();
+        }
+      })
     );
+
+    // Mark coupon as used
+    if (couponCode) {
+      await Coupon.updateOne(
+        { code: couponCode },
+        { $addToSet: { usedBy: req.user._id } }
+      );
+    }
+
+    if (req.io) {
+      req.io.emit('order:new', order);
+    }
+
+    // Send notifications (async, don't wait)
+    notifyOrderEvent(order, 'new').catch(err => console.error('Notification error:', err));
+
+    res.status(201).json(order);
+  } catch (err) {
+    console.error('Order creation error:', err);
+    next(err);
   }
-
-  req.io.emit('order:new', order);
-
-  // Send notifications (async, don't wait)
-  notifyOrderEvent(order, 'new').catch(err => console.error('Notification error:', err));
-
-  res.status(201).json(order);
 });
 
 // Guest order creation - no auth required
-router.post('/guest', async (req, res) => {
-  const { items, shipping, paymentMethod = 'cod', shippingCharge = 0, couponCode } = req.body;
+router.post('/guest', async (req, res, next) => {
+  try {
+    const { items, shipping, paymentMethod = 'cod', shippingCharge = 0, couponCode } = req.body;
 
-  // Validate required shipping fields
-  if (!shipping?.name || !shipping?.phone || !shipping?.address ||
-    !shipping?.city || !shipping?.country || !shipping?.postalCode) {
-    return res.status(400).json({ message: 'Please fill in all shipping details' });
-  }
+    // Validate required shipping fields
+    if (!shipping?.name || !shipping?.phone || !shipping?.address ||
+      !shipping?.city || !shipping?.country || !shipping?.postalCode) {
+      return res.status(400).json({ message: 'Please fill in all shipping details' });
+    }
 
-  // Validate items
-  if (!items || !items.length) {
-    return res.status(400).json({ message: 'Cart is empty' });
-  }
+    // Validate items
+    if (!items || !items.length) {
+      return res.status(400).json({ message: 'Cart is empty' });
+    }
 
-  let total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
-  let discount = 0;
+    let total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
+    let discount = 0;
 
-  // Handle coupon (guest can apply valid coupons but we can't track per-user usage)
-  if (couponCode) {
-    const coupon = await Coupon.findOne({ code: couponCode, active: true });
-    if (coupon) {
-      // Validate expiry
-      if (!coupon.expiresAt || new Date(coupon.expiresAt) > new Date()) {
-        // Validate min purchase
-        if (!coupon.minPurchase || total >= coupon.minPurchase) {
-          if (coupon.type === 'percentage') {
-            discount = total * (coupon.value / 100);
-          } else {
-            discount = coupon.value;
+    // Handle coupon (guest can apply valid coupons but we can't track per-user usage)
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode, active: true });
+      if (coupon) {
+        // Validate expiry
+        if (!coupon.expiresAt || new Date(coupon.expiresAt) > new Date()) {
+          // Validate min purchase
+          if (!coupon.minPurchase || total >= coupon.minPurchase) {
+            if (coupon.type === 'percentage') {
+              discount = total * (coupon.value / 100);
+            } else {
+              discount = coupon.value;
+            }
+            total = Math.max(0, total - discount);
           }
-          total = Math.max(0, total - discount);
         }
       }
+      // Note: For guests, we don't block on invalid coupon, just ignore it
     }
-    // Note: For guests, we don't block on invalid coupon, just ignore it
+
+    const order = await Order.create({
+      userId: null,        // Guest order - no user ID
+      isGuest: true,       // Mark as guest order
+      orderNumber: generateOrderNumber(),
+      items,
+      shipping,
+      paymentMethod,
+      paymentStatus: 'pending',
+      total,
+      shippingCharge,
+      discount,
+      couponCode: discount > 0 ? couponCode : null
+    });
+
+    // Decrease stock (same logic as authenticated orders)
+    await Promise.all(
+      items.map(async ({ productId, variantId, qty }) => {
+        const product = await Product.findById(productId);
+        if (product) {
+          product.stock = Math.max(0, product.stock - qty);
+          const variant = product.variants?.find((v) => v.id === variantId);
+          if (variant) variant.stock = Math.max(0, variant.stock - qty);
+          await product.save();
+        }
+      })
+    );
+
+    if (req.io) {
+      req.io.emit('order:new', order);
+    }
+
+    // Send notifications (async, don't wait)
+    notifyOrderEvent(order, 'new').catch(err => console.error('Notification error:', err));
+
+    res.status(201).json(order);
+  } catch (err) {
+    console.error('Guest order creation error:', err);
+    next(err);
   }
-
-  const order = await Order.create({
-    userId: null,        // Guest order - no user ID
-    isGuest: true,       // Mark as guest order
-    items,
-    shipping,
-    paymentMethod,
-    paymentStatus: 'pending',
-    total,
-    shippingCharge,
-    discount,
-    couponCode: discount > 0 ? couponCode : null
-  });
-
-  // Decrease stock (same logic as authenticated orders)
-  await Promise.all(
-    items.map(async ({ productId, variantId, qty }) => {
-      const product = await Product.findById(productId);
-      if (product) {
-        product.stock = Math.max(0, product.stock - qty);
-        const variant = product.variants?.find((v) => v.id === variantId);
-        if (variant) variant.stock = Math.max(0, variant.stock - qty);
-        await product.save();
-      }
-    })
-  );
-
-  req.io.emit('order:new', order);
-
-  // Send notifications (async, don't wait)
-  notifyOrderEvent(order, 'new').catch(err => console.error('Notification error:', err));
-
-  res.status(201).json(order);
 });
 
 router.get('/mine', protect, async (req, res) => {

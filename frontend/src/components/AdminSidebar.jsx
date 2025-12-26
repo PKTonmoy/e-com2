@@ -15,6 +15,7 @@ import {
     XMarkIcon,
     TruckIcon,
     BellIcon,
+    WalletIcon,
 } from '@heroicons/react/24/outline';
 
 const adminLinks = [
@@ -27,6 +28,7 @@ const adminLinks = [
     { to: '/admin/blog', label: 'Blog', icon: NewspaperIcon },
     { to: '/admin/analytics', label: 'Analytics', icon: ChartBarIcon },
     { to: '/admin/courier-tariffs', label: 'Courier Tariffs', icon: TruckIcon },
+    { to: '/admin/courier-management', label: 'Courier Management', icon: WalletIcon },
     { to: '/admin/notifications', label: 'Notifications', icon: BellIcon },
     { to: '/admin/content', label: 'Content', icon: DocumentTextIcon },
     { to: '/admin/settings', label: 'Settings', icon: Cog6ToothIcon },
