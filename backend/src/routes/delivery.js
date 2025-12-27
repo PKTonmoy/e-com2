@@ -224,7 +224,9 @@ router.post(
         trackingId: consignment.tracking_code,
         statusRaw: rawStatus,
         statusFriendly: friendlyStatus,
+        statusFriendly: friendlyStatus,
         deliveryCharge: expectedDeliveryCharge,
+        actualCost: null, // Reset on new creation
         lastSyncedAt: new Date(),
         error: null,
       };

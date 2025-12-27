@@ -17,6 +17,7 @@ import {
     BellIcon,
     WalletIcon,
     ArrowPathIcon,
+    CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 
 const adminLinks = [
@@ -34,6 +35,7 @@ const adminLinks = [
     { to: '/admin/notifications', label: 'Notifications', icon: BellIcon },
     { to: '/admin/content', label: 'Content', icon: DocumentTextIcon },
     { to: '/admin/settings', label: 'Settings', icon: Cog6ToothIcon },
+    { to: '/admin/expenses', label: 'Expenses', icon: CurrencyDollarIcon },
 ];
 
 const AdminSidebar = () => {

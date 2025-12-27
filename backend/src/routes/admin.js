@@ -4,6 +4,8 @@ import Order from '../models/Order.js';
 import ReturnRequest from '../models/ReturnRequest.js';
 import ActivityLog from '../models/ActivityLog.js';
 import CourierTariff from '../models/CourierTariff.js';
+import Settings from '../models/Settings.js';
+import { calculateExpenses } from '../services/expenseCalculator.js';
 import { protect, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -177,6 +179,44 @@ router.delete('/courier-tariffs/:id', async (req, res) => {
     meta: { id: req.params.id },
   });
   res.json({ message: 'Tariff deleted' });
+});
+
+// Expense Management
+router.get('/expenses', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    // Default to last 30 days if not provided
+    const end = endDate ? new Date(endDate) : new Date();
+    const start = startDate ? new Date(startDate) : new Date(new Date().setDate(end.getDate() - 30));
+
+    const data = await calculateExpenses(start, end);
+    res.json(data);
+  } catch (error) {
+    console.error('Expense calculation error:', error);
+    res.status(500).json({ message: 'Failed to calculate expenses' });
+  }
+});
+
+router.post('/expenses/settings', requireRole('admin'), async (req, res) => {
+  try {
+    const settings = await Settings.set('expense_settings', req.body);
+    res.json(settings.value);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to save settings' });
+  }
+});
+
+// Get current expense settings
+router.get('/expenses/settings', async (req, res) => {
+  const defaultSettings = {
+    smsCost: 0.50,
+    deliveryFee: 120,
+    returnFee: 60,
+    codChargePercentage: 0.01,
+  };
+  const settings = await Settings.get('expense_settings', defaultSettings);
+  res.json(settings);
 });
 
 export default router;

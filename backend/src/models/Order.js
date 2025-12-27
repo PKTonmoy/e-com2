@@ -48,7 +48,9 @@ const orderSchema = new mongoose.Schema(
       trackingId: String,
       statusRaw: String,
       statusFriendly: String,
-      deliveryCharge: Number,
+      statusFriendly: String,
+      deliveryCharge: Number, // what customer sees/paid
+      actualCost: Number, // what courier actually charged us
       lastSyncedAt: Date,
       error: String,
     },

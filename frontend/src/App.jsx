@@ -36,6 +36,7 @@ import AdminCourierTariffs from './pages/admin/CourierTariffs.jsx';
 import AdminNotifications from './pages/admin/Notifications.jsx';
 import AdminCourierManagement from './pages/admin/CourierManagement.jsx';
 import AdminReturns from './pages/admin/Returns.jsx';
+import AdminExpenses from './pages/admin/Expenses.jsx';
 import QuickView from './pages/QuickView.jsx';
 import { ToastProvider } from './components/ToastProvider.jsx';
 import { BottomNavProvider } from './context/BottomNavContext.jsx';
@@ -97,6 +98,7 @@ const App = () => {
                 <Route path="/admin/courier-management" element={<AdminCourierManagement />} />
                 <Route path="/admin/notifications" element={<AdminNotifications />} />
                 <Route path="/admin/returns" element={<AdminReturns />} />
+                <Route path="/admin/expenses" element={<AdminExpenses />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
