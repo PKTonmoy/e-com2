@@ -23,7 +23,7 @@ const HoldToCheckoutButton = ({
     onComplete,
     holdDuration = 2500,
     disabled = false,
-    buttonText = 'Hold to Place Order',
+    buttonText = 'Confirm Order',
     className = '',
 }) => {
     // ===== STATE =====
@@ -200,6 +200,8 @@ const HoldToCheckoutButton = ({
     font-display font-semibold text-xs sm:text-sm uppercase tracking-[0.1em]
     rounded-full
     transition-all duration-300 ease-out
+    select-none
+    touch-none
     focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-ivory dark:focus:ring-offset-matte
     ${disabled || isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
     ${isHolding ? 'scale-[0.98]' : 'hover:scale-[1.01]'}
@@ -263,14 +265,7 @@ const HoldToCheckoutButton = ({
                         <span className="text-xs sm:text-sm">Order Placed!</span>
                     </>
                 ) : (
-                    <>
-                        {/* Lock icon */}
-                        <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                            <path d="M7 11V7a5 5 0 0110 0v4" />
-                        </svg>
-                        <span>{buttonText}</span>
-                    </>
+                    <span>{buttonText}</span>
                 )}
             </span>
         </button>

@@ -157,6 +157,12 @@ const Checkout = () => {
       return;
     }
 
+    // Email is required for guest checkout (account creation)
+    if (!user && !shipping.email) {
+      addToast('Email is required for order confirmation and account creation', 'error');
+      return;
+    }
+
     if (!paymentMethod) {
       addToast('Please select a payment method', 'error');
       return;
@@ -178,8 +184,26 @@ const Checkout = () => {
         couponCode: coupon?.code,
       });
 
+      // If new account was created, store the token for auto-login
+      if (orderRes.data.accountCreated && orderRes.data.token) {
+        localStorage.setItem('token', orderRes.data.token);
+      }
+
       clearCart();
-      navigate('/order/thank-you');
+      // Navigate with order data and account creation info
+      navigate('/order/thank-you', {
+        state: {
+          orderNumber: orderRes.data.orderNumber,
+          isGuest: !user && !orderRes.data.accountCreated,
+          email: shipping.email,
+          phone: shipping.phone,
+          // Account creation info
+          accountCreated: orderRes.data.accountCreated,
+          existingAccount: orderRes.data.existingAccount,
+          tempPassword: orderRes.data.tempPassword,
+          userInfo: orderRes.data.user,
+        }
+      });
     } catch (err) {
       addToast(err.response?.data?.message || 'Failed to place order', 'error');
     }
@@ -456,13 +480,32 @@ const Checkout = () => {
         </div>
       </div>
 
-      {/* Fixed Mobile Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-        <div className="bg-white/98 dark:bg-zinc-900/98 backdrop-blur-xl border-t border-neutral-200 dark:border-zinc-800 px-3 sm:px-4 py-3 sm:py-4">
-          {/* Total */}
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <span className="text-xs sm:text-sm text-neutral-500">Total</span>
-            <span className="text-lg sm:text-xl font-bold text-gold">৳{total.toLocaleString()}</span>
+      {/* Fixed Mobile Bottom Bar - Premium Glass Design */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden z-40 px-3 pb-3" style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)' }}>
+        <div className="
+          relative overflow-hidden
+          bg-gradient-to-b from-white/98 to-ivory/98 dark:from-zinc-900/95 dark:to-black/98
+          backdrop-blur-2xl
+          rounded-3xl
+          border border-gold/30 dark:border-gold/20
+          shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1),0_0_15px_-5px_rgba(212,175,55,0.2)] dark:shadow-[0_-8px_30px_-5px_rgba(0,0,0,0.4),0_0_20px_-5px_rgba(212,175,55,0.15)]
+          px-5 py-4
+        ">
+          {/* Subtle gold shimmer at top */}
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+
+          {/* Order Summary Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-[0.15em] text-neutral-500 dark:text-neutral-400 font-medium">Order Total</span>
+              <span className="w-1 h-1 rounded-full bg-gold/60" />
+              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">{items.length} {items.length === 1 ? 'item' : 'items'}</span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-gold to-amber-600 dark:from-gold dark:via-amber-300 dark:to-gold">
+                ৳{total.toLocaleString()}
+              </span>
+            </div>
           </div>
 
           {/* Hold Button */}
@@ -472,7 +515,10 @@ const Checkout = () => {
             holdDuration={1800}
           />
 
-          <p className="text-[10px] text-center text-neutral-400 mt-1.5 sm:mt-2">Hold for 1.8s to place order</p>
+          {/* Hint text */}
+          <p className="text-[10px] text-center text-neutral-400 dark:text-neutral-500 mt-2.5 tracking-wide">
+            Press & hold to confirm your order
+          </p>
         </div>
       </div>
     </div>

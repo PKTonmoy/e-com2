@@ -2,8 +2,10 @@ import express from 'express';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Coupon from '../models/Coupon.js';
+import User from '../models/User.js';
 import { protect, requireRole } from '../middleware/auth.js';
 import { notifyOrderEvent } from '../services/notifications.js';
+import { signToken } from '../utils/jwt.js';
 import crypto from 'crypto';
 
 const router = express.Router();
@@ -13,6 +15,16 @@ const generateOrderNumber = () => {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const randomStr = crypto.randomBytes(3).toString('hex').toUpperCase();
   return `ORD-${dateStr}-${randomStr}`;
+};
+
+// Helper to generate a temporary password for auto-created accounts
+const generateTempPassword = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let password = '';
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
 };
 
 // Helper function to restore stock when order is cancelled
@@ -110,15 +122,18 @@ router.post('/', protect, async (req, res, next) => {
   }
 });
 
-// Guest order creation - no auth required
+// Guest order creation - auto-creates user account from checkout details
 router.post('/guest', async (req, res, next) => {
   try {
     const { items, shipping, paymentMethod = 'cod', shippingCharge = 0, couponCode } = req.body;
 
-    // Validate required shipping fields
-    if (!shipping?.name || !shipping?.phone || !shipping?.address ||
-      !shipping?.city || !shipping?.country || !shipping?.postalCode) {
+    // Validate required shipping fields - email is now required for account creation
+    if (!shipping?.name || !shipping?.phone || !shipping?.address || !shipping?.city) {
       return res.status(400).json({ message: 'Please fill in all shipping details' });
+    }
+
+    if (!shipping?.email) {
+      return res.status(400).json({ message: 'Email is required for order confirmation and account creation' });
     }
 
     // Validate items
@@ -128,11 +143,50 @@ router.post('/guest', async (req, res, next) => {
 
     let total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
     let discount = 0;
+    let userId = null;
+    let accountCreated = false;
+    let tempPassword = null;
+    let token = null;
+    let existingAccount = false;
 
-    // Handle coupon (guest can apply valid coupons but we can't track per-user usage)
+    // Check if user with this email already exists
+    let user = await User.findOne({ email: shipping.email.toLowerCase() });
+
+    if (user) {
+      // Link order to existing user (but don't auto-login for security)
+      userId = user._id;
+      existingAccount = true;
+      // No token issued - user must login manually to verify identity
+    } else {
+      // Create new user account from checkout details
+      tempPassword = generateTempPassword();
+
+      user = await User.create({
+        name: shipping.name,
+        email: shipping.email.toLowerCase(),
+        passwordHash: tempPassword,
+        phone: shipping.phone,
+        address: shipping.address,
+        city: shipping.city,
+        country: shipping.country || 'Bangladesh',
+        provider: 'local',
+        profileComplete: true,
+      });
+
+      userId = user._id;
+      accountCreated = true;
+      token = signToken(user);
+    }
+
+    // Handle coupon
     if (couponCode) {
       const coupon = await Coupon.findOne({ code: couponCode, active: true });
       if (coupon) {
+        // Check if user already used this coupon
+        if (coupon.usedBy.includes(userId)) {
+          return res.status(400).json({ message: 'You have already used this coupon' });
+        }
+
         // Validate expiry
         if (!coupon.expiresAt || new Date(coupon.expiresAt) > new Date()) {
           // Validate min purchase
@@ -146,12 +200,11 @@ router.post('/guest', async (req, res, next) => {
           }
         }
       }
-      // Note: For guests, we don't block on invalid coupon, just ignore it
     }
 
     const order = await Order.create({
-      userId: null,        // Guest order - no user ID
-      isGuest: true,       // Mark as guest order
+      userId,              // Link to user account
+      isGuest: false,      // No longer a guest order since account was created/linked
       orderNumber: generateOrderNumber(),
       items,
       shipping,
@@ -163,7 +216,7 @@ router.post('/guest', async (req, res, next) => {
       couponCode: discount > 0 ? couponCode : null
     });
 
-    // Decrease stock (same logic as authenticated orders)
+    // Decrease stock
     await Promise.all(
       items.map(async ({ productId, variantId, qty }) => {
         const product = await Product.findById(productId);
@@ -176,6 +229,14 @@ router.post('/guest', async (req, res, next) => {
       })
     );
 
+    // Mark coupon as used
+    if (couponCode && discount > 0) {
+      await Coupon.updateOne(
+        { code: couponCode },
+        { $addToSet: { usedBy: userId } }
+      );
+    }
+
     if (req.io) {
       req.io.emit('order:new', order);
     }
@@ -183,9 +244,57 @@ router.post('/guest', async (req, res, next) => {
     // Send notifications (async, don't wait)
     notifyOrderEvent(order, 'new').catch(err => console.error('Notification error:', err));
 
-    res.status(201).json(order);
+    // Build response with account info
+    const response = {
+      ...order.toObject(),
+      accountCreated,
+      existingAccount,
+    };
+
+    if (accountCreated) {
+      response.tempPassword = tempPassword;
+      response.token = token;
+      response.user = {
+        id: user._id,
+        customId: user.customId,
+        name: user.name,
+        email: user.email,
+      };
+    }
+
+    res.status(201).json(response);
   } catch (err) {
     console.error('Guest order creation error:', err);
+    next(err);
+  }
+});
+
+// Guest order tracking - by order number and email/phone
+router.post('/guest/track', async (req, res, next) => {
+  try {
+    const { orderNumber, email, phone } = req.body;
+
+    if (!orderNumber || (!email && !phone)) {
+      return res.status(400).json({ message: 'Order number and email or phone required' });
+    }
+
+    const order = await Order.findOne({ orderNumber, isGuest: true });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Verify identity by email or phone
+    const emailMatch = email && order.shipping?.email?.toLowerCase() === email.toLowerCase();
+    const phoneMatch = phone && order.shipping?.phone === phone;
+
+    if (!emailMatch && !phoneMatch) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (err) {
+    console.error('Guest order tracking error:', err);
     next(err);
   }
 });
