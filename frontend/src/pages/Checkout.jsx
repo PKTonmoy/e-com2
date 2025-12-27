@@ -457,7 +457,7 @@ const Checkout = () => {
                   disabled={!items.length || !paymentMethod || !deliveryAvailable || !!deliveryError || deliveryLoading}
                   holdDuration={1800}
                 />
-                <p className="text-xs text-center text-neutral-400 mt-3">Hold button for 1.8s to confirm</p>
+                <p className="text-xs text-center text-neutral-400 mt-3">Hold button to confirm</p>
               </div>
 
               {/* Trust Badges */}

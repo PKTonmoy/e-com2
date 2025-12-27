@@ -5,6 +5,7 @@ import Order from '../models/Order.js';
 import ActivityLog from '../models/ActivityLog.js';
 import CourierTariff from '../models/CourierTariff.js';
 import Settings from '../models/Settings.js';
+import { sendOrderConfirmationSMS } from '../utils/sendSMS.js';
 import {
   createSteadfastOrder,
   getSteadfastStatusByTrackingCode,
@@ -373,6 +374,19 @@ router.post(
       };
 
       await order.save();
+
+      // Send SMS notification to customer (non-blocking)
+      try {
+        const smsResult = await sendOrderConfirmationSMS(order);
+        if (smsResult.success) {
+          console.log('[SMS] Order confirmation sent for order:', orderId);
+        } else {
+          console.log('[SMS] Failed to send confirmation:', smsResult.error);
+        }
+      } catch (smsError) {
+        console.error('[SMS] Error sending confirmation:', smsError.message);
+        // SMS failure should not block the approval response
+      }
 
       await ActivityLog.create({
         actorId: req.user._id,

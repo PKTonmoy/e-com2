@@ -52,6 +52,13 @@ const orderSchema = new mongoose.Schema(
       lastSyncedAt: Date,
       error: String,
     },
+    // SMS notification tracking
+    sms: {
+      sent: { type: Boolean, default: false },
+      sentAt: Date,
+      error: String,
+      attempts: { type: Number, default: 0 },
+    },
     // Soft delete fields - allows independent visibility control
     hiddenFromUser: { type: Boolean, default: false },
     hiddenFromAdmin: { type: Boolean, default: false },

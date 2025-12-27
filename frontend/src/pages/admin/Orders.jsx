@@ -55,6 +55,17 @@ const AdminOrders = () => {
     },
   });
 
+  const resendSmsMutation = useMutation({
+    mutationFn: (orderId) => api.post(`/orders/${orderId}/send-confirmation-sms`),
+    onSuccess: () => {
+      qc.invalidateQueries(['admin-orders']);
+      addToast('SMS sent successfully!', 'success');
+    },
+    onError: (err) => {
+      addToast(err.response?.data?.message || 'Failed to send SMS', 'error');
+    },
+  });
+
   const deleteOrderMutation = useMutation({
     mutationFn: (orderId) => api.delete(`/admin/orders/${orderId}`),
     onSuccess: () => {
@@ -260,34 +271,36 @@ const AdminOrders = () => {
 
                   {order.courier && (
                     <div className="mt-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
+                      <div className="flex flex-wrap justify-between items-center gap-2 mb-2">
                         <p className="font-semibold text-sm text-slate-800 dark:text-slate-100">
                           Courier Details
                         </p>
-                        <button
-                          onClick={() => refreshCourierMutation.mutate(order._id)}
-                          className="text-xs px-3 py-1 rounded-full bg-slate-800 text-ivory hover:bg-slate-700 disabled:opacity-50"
-                          disabled={refreshCourierMutation.isLoading}
-                        >
-                          {refreshCourierMutation.isLoading ? 'Refreshing...' : 'Refresh Status'}
-                        </button>
-                        {order.courier.statusFriendly === 'Delivered' && (
+                        <div className="flex flex-wrap gap-2">
                           <button
-                            onClick={() => {
-                              const reason = window.prompt('Reason for return (optional):');
-                              if (reason !== null) {
-                                createReturnMutation.mutate({
-                                  consignmentId: order.courier.trackingId,
-                                  reason
-                                });
-                              }
-                            }}
-                            className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 disabled:opacity-50"
-                            disabled={createReturnMutation.isLoading}
+                            onClick={() => refreshCourierMutation.mutate(order._id)}
+                            className="text-xs px-3 py-1 rounded-full bg-slate-800 text-ivory hover:bg-slate-700 disabled:opacity-50"
+                            disabled={refreshCourierMutation.isLoading}
                           >
-                            {createReturnMutation.isLoading ? 'Requesting...' : 'Request Return'}
+                            {refreshCourierMutation.isLoading ? 'Refreshing...' : 'Refresh Status'}
                           </button>
-                        )}
+                          {order.courier.statusFriendly === 'Delivered' && (
+                            <button
+                              onClick={() => {
+                                const reason = window.prompt('Reason for return (optional):');
+                                if (reason !== null) {
+                                  createReturnMutation.mutate({
+                                    consignmentId: order.courier.trackingId,
+                                    reason
+                                  });
+                                }
+                              }}
+                              className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 disabled:opacity-50"
+                              disabled={createReturnMutation.isLoading}
+                            >
+                              {createReturnMutation.isLoading ? 'Requesting...' : 'Request Return'}
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200">
                         <p>
@@ -316,6 +329,41 @@ const AdminOrders = () => {
                             <span className="font-medium">Last Error:</span> {order.courier.error}
                           </p>
                         )}
+                      </div>
+
+                      {/* SMS Status Section */}
+                      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="font-medium text-slate-700 dark:text-slate-200">SMS Status:</span>
+                          {order.sms?.sent ? (
+                            <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              Sent {order.sms?.sentAt ? new Date(order.sms.sentAt).toLocaleString() : ''}
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                              </svg>
+                              {order.sms?.error || 'Not sent'}
+                            </span>
+                          )}
+                          {order.sms?.attempts > 0 && (
+                            <span className="text-neutral-400">({order.sms.attempts} attempt{order.sms.attempts > 1 ? 's' : ''})</span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => resendSmsMutation.mutate(order._id)}
+                          disabled={resendSmsMutation.isLoading}
+                          className="text-xs px-3 py-1 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          {resendSmsMutation.isLoading ? 'Sending...' : (order.sms?.sent ? 'Resend SMS' : 'Send SMS')}
+                        </button>
                       </div>
                     </div>
                   )}

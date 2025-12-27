@@ -12,6 +12,8 @@ const Settings = () => {
     const [emailEnabled, setEmailEnabled] = useState(true);
     const [telegramEnabled, setTelegramEnabled] = useState(true);
     const [whatsappEnabled, setWhatsappEnabled] = useState(false);
+    const [smsEnabled, setSmsEnabled] = useState(false);
+    const [smsTemplate, setSmsTemplate] = useState('');
 
     // Local state for shipping settings
     const [freeShippingEnabled, setFreeShippingEnabled] = useState(true);
@@ -45,6 +47,8 @@ const Settings = () => {
             setEmailEnabled(notificationSettings.emailEnabled ?? true);
             setTelegramEnabled(notificationSettings.telegramEnabled ?? true);
             setWhatsappEnabled(notificationSettings.whatsappEnabled ?? false);
+            setSmsEnabled(notificationSettings.smsEnabled ?? false);
+            setSmsTemplate(notificationSettings.smsTemplate || '');
         }
     }, [notificationSettings]);
 
@@ -98,6 +102,8 @@ const Settings = () => {
                     emailEnabled,
                     telegramEnabled,
                     whatsappEnabled,
+                    smsEnabled,
+                    smsTemplate,
                 }),
                 saveShippingMutation.mutateAsync({
                     freeShippingEnabled,
@@ -117,6 +123,8 @@ const Settings = () => {
             setEmailEnabled(notificationSettings.emailEnabled ?? true);
             setTelegramEnabled(notificationSettings.telegramEnabled ?? true);
             setWhatsappEnabled(notificationSettings.whatsappEnabled ?? false);
+            setSmsEnabled(notificationSettings.smsEnabled ?? false);
+            setSmsTemplate(notificationSettings.smsTemplate || '');
         }
         if (shippingSettings) {
             setFreeShippingEnabled(shippingSettings.freeShippingEnabled ?? true);
@@ -235,7 +243,7 @@ const Settings = () => {
                 </div>
 
                 {/* WhatsApp Toggle */}
-                <div className="flex items-center justify-between py-4">
+                <div className="flex items-center justify-between py-4 border-b border-neutral-200 dark:border-neutral-700">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 bg-green-100 dark:bg-green-900/30 rounded-xl">
                             <ChatBubbleLeftRightIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -258,6 +266,65 @@ const Settings = () => {
                         />
                     </button>
                 </div>
+
+                {/* SMS Toggle */}
+                <div className="flex items-center justify-between py-4">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                            <svg className="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-matte dark:text-ivory">SMS Notifications</h3>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                Send order confirmations via BulkSMSBD
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => handleToggle(setSmsEnabled, smsEnabled)}
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 ${smsEnabled ? 'bg-gold' : 'bg-neutral-300 dark:bg-neutral-600'
+                            }`}
+                    >
+                        <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${smsEnabled ? 'translate-x-8' : 'translate-x-1'
+                                }`}
+                        />
+                    </button>
+                </div>
+
+                {/* SMS Template Editor */}
+                {smsEnabled && (
+                    <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700 animate-fadeIn">
+                        <label className="block text-sm font-medium text-matte dark:text-ivory mb-2">
+                            SMS Template
+                        </label>
+                        <div className="relative">
+                            <textarea
+                                value={smsTemplate}
+                                onChange={(e) => handleChange(setSmsTemplate, e.target.value)}
+                                rows={6}
+                                className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-gold/50 font-mono text-sm"
+                                placeholder="Enter SMS template..."
+                            />
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {['[Customer Name]', '[Order Number]', '[Tracking ID]', '[Tracking Link]', '[Total Amount]'].map((tag) => (
+                                    <button
+                                        key={tag}
+                                        onClick={() => handleChange(setSmsTemplate, smsTemplate + ' ' + tag)}
+                                        className="text-xs px-2 py-1 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded text-neutral-600 dark:text-neutral-300 transition-colors"
+                                    >
+                                        {tag}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="mt-2 text-xs text-neutral-500">
+                                Click tags to insert variables. Available variables will be replaced with actual order data.
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Shipping Settings */}

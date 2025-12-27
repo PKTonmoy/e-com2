@@ -18,12 +18,14 @@ router.get('/notifications', protect, requireRole('admin'), async (req, res) => 
 // Update notification settings
 router.put('/notifications', protect, requireRole('admin'), async (req, res) => {
     try {
-        const { emailEnabled, telegramEnabled, whatsappEnabled } = req.body;
+        const { emailEnabled, telegramEnabled, whatsappEnabled, smsEnabled, smsTemplate } = req.body;
 
         const settings = {
             emailEnabled: Boolean(emailEnabled),
             telegramEnabled: Boolean(telegramEnabled),
             whatsappEnabled: Boolean(whatsappEnabled),
+            smsEnabled: Boolean(smsEnabled),
+            smsTemplate: String(smsTemplate || ''),
         };
 
         await Settings.setNotificationSettings(settings);

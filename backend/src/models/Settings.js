@@ -36,6 +36,15 @@ settingsSchema.statics.getNotificationSettings = async function () {
         emailEnabled: true,
         telegramEnabled: true,
         whatsappEnabled: false,
+        smsTemplate: `🎉 Order Confirmed!
+
+Dear [Customer Name],
+Your order (#[Order Number]) has been approved!
+
+📦 Tracking ID: [Tracking ID]
+[Tracking Link]
+
+Thank you for shopping with us!`,
     };
 
     const saved = await this.findOne({ key: 'notifications' });

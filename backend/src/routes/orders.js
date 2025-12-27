@@ -5,6 +5,7 @@ import Coupon from '../models/Coupon.js';
 import User from '../models/User.js';
 import { protect, requireRole } from '../middleware/auth.js';
 import { notifyOrderEvent } from '../services/notifications.js';
+import { sendOrderConfirmationSMS } from '../utils/sendSMS.js';
 import { signToken } from '../utils/jwt.js';
 import crypto from 'crypto';
 
@@ -408,6 +409,50 @@ router.delete('/:id', protect, async (req, res) => {
 
   req.io.emit('order:userDelete', { orderId: req.params.id });
   res.json({ message: 'Order removed from your history' });
+});
+
+// Manual SMS resend - admin can trigger SMS for orders with tracking ID
+router.post('/:id/send-confirmation-sms', protect, requireRole('staff', 'manager', 'admin'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Require tracking ID to exist
+    if (!order.courier?.trackingId) {
+      return res.status(400).json({ message: 'Order does not have a tracking ID yet. Approve the order first.' });
+    }
+
+    // Check for recent SMS (prevent duplicates within 5 minutes)
+    if (order.sms?.sent && order.sms?.sentAt) {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      if (order.sms.sentAt > fiveMinutesAgo) {
+        const waitSeconds = Math.ceil((order.sms.sentAt.getTime() + 5 * 60 * 1000 - Date.now()) / 1000);
+        return res.status(429).json({
+          message: `SMS was already sent recently. Please wait ${waitSeconds} seconds before resending.`,
+          lastSentAt: order.sms.sentAt
+        });
+      }
+    }
+
+    const result = await sendOrderConfirmationSMS(order);
+
+    if (result.success) {
+      res.json({
+        message: 'SMS sent successfully',
+        sentAt: order.sms?.sentAt
+      });
+    } else {
+      res.status(500).json({
+        message: 'Failed to send SMS',
+        error: result.error
+      });
+    }
+  } catch (err) {
+    console.error('SMS resend error:', err);
+    res.status(500).json({ message: 'Failed to send SMS', error: err.message });
+  }
 });
 
 export default router;
