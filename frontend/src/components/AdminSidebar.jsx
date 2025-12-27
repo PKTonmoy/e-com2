@@ -20,22 +20,52 @@ import {
     CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 
-const adminLinks = [
-    { to: '/admin', label: 'Dashboard', icon: Squares2X2Icon, end: true },
-    { to: '/admin/products', label: 'Products', icon: ShoppingBagIcon },
-    { to: '/admin/orders', label: 'Orders', icon: ClipboardDocumentListIcon },
-    { to: '/admin/returns', label: 'Returns', icon: ArrowPathIcon },
-    { to: '/admin/users', label: 'Users', icon: UsersIcon },
-    { to: '/admin/reviews', label: 'Reviews', icon: StarIcon },
-    { to: '/admin/coupons', label: 'Coupons', icon: TicketIcon },
-    { to: '/admin/blog', label: 'Blog', icon: NewspaperIcon },
-    { to: '/admin/analytics', label: 'Analytics', icon: ChartBarIcon },
-    { to: '/admin/courier-tariffs', label: 'Courier Tariffs', icon: TruckIcon },
-    { to: '/admin/courier-management', label: 'Courier Management', icon: WalletIcon },
-    { to: '/admin/notifications', label: 'Notifications', icon: BellIcon },
-    { to: '/admin/content', label: 'Content', icon: DocumentTextIcon },
-    { to: '/admin/settings', label: 'Settings', icon: Cog6ToothIcon },
-    { to: '/admin/expenses', label: 'Expenses', icon: CurrencyDollarIcon },
+const adminMenu = [
+    {
+        title: 'Overview',
+        items: [
+            { to: '/admin', label: 'Dashboard', icon: Squares2X2Icon, end: true },
+        ]
+    },
+    {
+        title: 'Commerce',
+        items: [
+            { to: '/admin/orders', label: 'Orders', icon: ClipboardDocumentListIcon },
+            { to: '/admin/returns', label: 'Returns', icon: ArrowPathIcon },
+            { to: '/admin/products', label: 'Products', icon: ShoppingBagIcon },
+            { to: '/admin/coupons', label: 'Coupons', icon: TicketIcon },
+        ]
+    },
+    {
+        title: 'Operations',
+        items: [
+            { to: '/admin/expenses', label: 'Expenses', icon: CurrencyDollarIcon },
+            { to: '/admin/analytics', label: 'Analytics', icon: ChartBarIcon },
+            { to: '/admin/courier-management', label: 'Courier Management', icon: WalletIcon },
+            { to: '/admin/courier-tariffs', label: 'Courier Tariffs', icon: TruckIcon },
+        ]
+    },
+    {
+        title: 'People',
+        items: [
+            { to: '/admin/users', label: 'Users', icon: UsersIcon },
+            { to: '/admin/reviews', label: 'Reviews', icon: StarIcon },
+        ]
+    },
+    {
+        title: 'Content',
+        items: [
+            { to: '/admin/blog', label: 'Blog', icon: NewspaperIcon },
+            { to: '/admin/content', label: 'Content', icon: DocumentTextIcon },
+            { to: '/admin/notifications', label: 'Notifications', icon: BellIcon },
+        ]
+    },
+    {
+        title: 'System',
+        items: [
+            { to: '/admin/settings', label: 'Settings', icon: Cog6ToothIcon },
+        ]
+    },
 ];
 
 const AdminSidebar = () => {
@@ -86,23 +116,34 @@ const AdminSidebar = () => {
                     </div>
 
                     {/* Navigation Links */}
-                    <nav className="p-4 space-y-1 overflow-y-auto flex-1">
-                        {adminLinks.map((link) => (
-                            <NavLink
-                                key={link.to}
-                                to={link.to}
-                                end={link.end}
-                                onClick={closeSidebar}
-                                className={({ isActive }) =>
-                                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                        ? 'bg-gold/10 text-gold font-medium'
-                                        : 'text-neutral-600 dark:text-neutral-400 hover:bg-gold/5 hover:text-gold'
-                                    }`
-                                }
-                            >
-                                <link.icon className="h-5 w-5" />
-                                {link.label}
-                            </NavLink>
+                    <nav className="p-4 space-y-6 overflow-y-auto flex-1">
+                        {adminMenu.map((group, idx) => (
+                            <div key={idx}>
+                                {group.title && (
+                                    <p className="px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
+                                        {group.title}
+                                    </p>
+                                )}
+                                <div className="space-y-1">
+                                    {group.items.map((link) => (
+                                        <NavLink
+                                            key={link.to}
+                                            to={link.to}
+                                            end={link.end}
+                                            onClick={closeSidebar}
+                                            className={({ isActive }) =>
+                                                `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+                                                    ? 'bg-gold/10 text-gold font-medium'
+                                                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-gold/5 hover:text-gold'
+                                                }`
+                                            }
+                                        >
+                                            <link.icon className="h-5 w-5" />
+                                            {link.label}
+                                        </NavLink>
+                                    ))}
+                                </div>
+                            </div>
                         ))}
                     </nav>
                 </div>
@@ -112,24 +153,35 @@ const AdminSidebar = () => {
             <aside className="w-64 flex-shrink-0 bg-white/50 dark:bg-matte/50 border-r border-gold/20 hidden lg:block min-h-[calc(100vh-73px)] sticky top-[73px] self-start overflow-y-auto">
                 <div className="p-6">
                     <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 mb-4 px-3">Admin Panel</p>
-                    <nav className="space-y-1">
-                        {adminLinks.map((link) => (
-                            <NavLink
-                                key={link.to}
-                                to={link.to}
-                                end={link.end}
-                                className={({ isActive }) =>
-                                    `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive
-                                        ? 'bg-gold/10 text-gold font-medium'
-                                        : 'text-neutral-600 dark:text-neutral-400 hover:bg-gold/5 hover:text-gold'
-                                    }`
-                                }
-                            >
-                                <link.icon className="h-5 w-5" />
-                                {link.label}
-                            </NavLink>
+                    <div className="space-y-6">
+                        {adminMenu.map((group, idx) => (
+                            <div key={idx}>
+                                {group.title && (
+                                    <p className="px-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
+                                        {group.title}
+                                    </p>
+                                )}
+                                <nav className="space-y-1">
+                                    {group.items.map((link) => (
+                                        <NavLink
+                                            key={link.to}
+                                            to={link.to}
+                                            end={link.end}
+                                            className={({ isActive }) =>
+                                                `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive
+                                                    ? 'bg-gold/10 text-gold font-medium'
+                                                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-gold/5 hover:text-gold'
+                                                }`
+                                            }
+                                        >
+                                            <link.icon className="h-5 w-5" />
+                                            {link.label}
+                                        </NavLink>
+                                    ))}
+                                </nav>
+                            </div>
                         ))}
-                    </nav>
+                    </div>
                 </div>
             </aside>
         </>
