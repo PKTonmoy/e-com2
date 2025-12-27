@@ -27,6 +27,27 @@ router.put('/users/:id/role', requireRole('manager', 'admin'), async (req, res) 
   res.json(user);
 });
 
+// Get activity logs
+router.get('/logs', async (req, res) => {
+  const logs = await ActivityLog.find()
+    .sort('-createdAt')
+    .limit(100)
+    .populate('actorId', 'name email');
+  res.json(logs);
+});
+
+// Delete activity log
+router.delete('/logs/:id', async (req, res) => {
+  await ActivityLog.findByIdAndDelete(req.params.id);
+  res.json({ message: 'Log deleted' });
+});
+
+// Delete ALL activity logs
+router.delete('/logs', async (req, res) => {
+  await ActivityLog.deleteMany({});
+  res.json({ message: 'All logs deleted' });
+});
+
 router.get('/orders', async (req, res) => {
   const orders = await Order.find({ hiddenFromAdmin: { $ne: true } })  // Exclude admin-soft-deleted orders
     .sort('-createdAt')
