@@ -28,87 +28,87 @@ const AdminProducts = () => {
   const [uploading, setUploading] = useState(false);
 
   // Handle image upload
- const handleImageUpload = async (e) => {
-  const files = e.target.files;
-  if (!files || files.length === 0) return;
+  const handleImageUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-  setUploading(true);
-  const uploadedUrls = [];
-  const totalFiles = files.length;
-  let uploadedCount = 0;
+    setUploading(true);
+    const uploadedUrls = [];
+    const totalFiles = files.length;
+    let uploadedCount = 0;
 
-  try {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        addToast(`${file.name} is too large (max 5MB)`, 'error');
-        continue;
-      }
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
-      const formData = new FormData();
-      formData.append('image', file);
-
-      try {
-        const res = await api.post('/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-
-        if (res.data.url) {
-          uploadedUrls.push(res.data.url);
-          uploadedCount++;
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+          addToast(`${file.name} is too large (max 5MB)`, 'error');
+          continue;
         }
-      } catch (err) {
-        console.error(`Failed to upload ${file.name}:`, err);
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+          const res = await api.post('/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+
+          if (res.data.url) {
+            uploadedUrls.push(res.data.url);
+            uploadedCount++;
+          }
+        } catch (err) {
+          console.error(`Failed to upload ${file.name}:`, err);
+        }
       }
+
+      if (uploadedUrls.length > 0) {
+        setForm(prev => ({
+          ...prev,
+          images: [...(prev.images || []), ...uploadedUrls]
+        }));
+        addToast(`${uploadedCount} image(s) uploaded successfully!`);
+      } else {
+        addToast('No images were uploaded', 'error');
+      }
+    } catch (err) {
+      addToast('Upload failed', 'error');
+    } finally {
+      setUploading(false);
+      // Reset file input
+      e.target.value = '';
     }
+  };
 
-    if (uploadedUrls.length > 0) {
-      setForm(prev => ({ 
-        ...prev, 
-        images: [...(prev.images || []), ...uploadedUrls] 
-      }));
-      addToast(`${uploadedCount} image(s) uploaded successfully!`);
-    } else {
-      addToast('No images were uploaded', 'error');
-    }
-  } catch (err) {
-    addToast('Upload failed', 'error');
-  } finally {
-    setUploading(false);
-    // Reset file input
-    e.target.value = '';
-  }
-};
+  // Remove image from array
+  const removeImage = (index) => {
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
 
-// Remove image from array
-const removeImage = (index) => {
-  setForm(prev => ({
-    ...prev,
-    images: prev.images.filter((_, i) => i !== index)
-  }));
-};
+  // Move image up
+  const moveImageUp = (index) => {
+    if (index === 0) return;
+    setForm(prev => {
+      const newImages = [...prev.images];
+      [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
+      return { ...prev, images: newImages };
+    });
+  };
 
-// Move image up
-const moveImageUp = (index) => {
-  if (index === 0) return;
-  setForm(prev => {
-    const newImages = [...prev.images];
-    [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
-    return { ...prev, images: newImages };
-  });
-};
-
-// Move image down
-const moveImageDown = (index) => {
-  if (index === form.images.length - 1) return;
-  setForm(prev => {
-    const newImages = [...prev.images];
-    [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
-    return { ...prev, images: newImages };
-  });
-};
+  // Move image down
+  const moveImageDown = (index) => {
+    if (index === form.images.length - 1) return;
+    setForm(prev => {
+      const newImages = [...prev.images];
+      [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+      return { ...prev, images: newImages };
+    });
+  };
 
   const { data: products = [] } = useQuery({
     queryKey: ['admin-products'],
@@ -155,22 +155,22 @@ const moveImageDown = (index) => {
     },
   });
 
- const resetForm = () => {
-  setForm({
-    title: '',
-    slug: '',
-    sku: '',
-    price: '',
-    stock: '',
-    category: '',
-    descriptionHTML: '',
-    images: [],
-    limitedEdition: false,
-    hasSizes: true,
-    sizes: ALL_SIZES,
-  });
-  setEditingProduct(null);
-};
+  const resetForm = () => {
+    setForm({
+      title: '',
+      slug: '',
+      sku: '',
+      price: '',
+      stock: '',
+      category: '',
+      descriptionHTML: '',
+      images: [],
+      limitedEdition: false,
+      hasSizes: true,
+      sizes: ALL_SIZES,
+    });
+    setEditingProduct(null);
+  };
 
 
   const handleEdit = (product) => {
@@ -203,11 +203,11 @@ const moveImageDown = (index) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-        // Validate that at least one image is uploaded
-  if (!form.images || form.images.length === 0) {
-    addToast('Please upload at least one image', 'error');
-    return;
-  }
+    // Validate that at least one image is uploaded
+    if (!form.images || form.images.length === 0) {
+      addToast('Please upload at least one image', 'error');
+      return;
+    }
 
     const data = {
       ...form,
@@ -317,21 +317,21 @@ const moveImageDown = (index) => {
               <div className="grid gap-4 sm:grid-cols-2">
                 <input
                   required
-                  className="border p-3 rounded-lg"
+                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Title"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
                 <input
                   required
-                  className="border p-3 rounded-lg"
+                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Slug (e.g., product-name)"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 />
                 <input
                   required
-                  className="border p-3 rounded-lg"
+                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="SKU"
                   value={form.sku}
                   onChange={(e) => setForm({ ...form, sku: e.target.value })}
@@ -340,7 +340,7 @@ const moveImageDown = (index) => {
                   required
                   type="number"
                   step="0.01"
-                  className="border p-3 rounded-lg"
+                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Price"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
@@ -348,95 +348,95 @@ const moveImageDown = (index) => {
                 <input
                   required
                   type="number"
-                  className="border p-3 rounded-lg"
+                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Stock"
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
                 />
                 <input
-                  className="border p-3 rounded-lg"
+                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Category"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
                 />
               </div>
 
-                <textarea
-  className="w-full border p-3 rounded-lg min-h-[100px]"
-  placeholder="Description HTML"
-  value={form.descriptionHTML}
-  onChange={(e) => setForm({ ...form, descriptionHTML: e.target.value })}
-/>
+              <textarea
+                className="w-full border border-gold/30 p-3 rounded-lg min-h-[100px] bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
+                placeholder="Description HTML"
+                value={form.descriptionHTML}
+                onChange={(e) => setForm({ ...form, descriptionHTML: e.target.value })}
+              />
 
-{/* Multiple Images Upload Section */}
-<div className="space-y-2 border border-gold/30 rounded-lg p-4 bg-gold/5">
-  <label className="block text-sm font-medium">Product Images (Multiple)</label>
-  <p className="text-xs text-neutral-500 mb-3">Upload multiple images. The first image will be the main product image.</p>
-  
-  <label className="lux-btn border border-gold/40 flex items-center gap-2 cursor-pointer justify-center py-3 hover:bg-gold/10 transition">
-    <ArrowUpTrayIcon className="h-4 w-4" />
-    {uploading ? 'Uploading...' : 'Upload Images'}
-    <input
-      type="file"
-      multiple
-      accept="image/*"
-      className="hidden"
-      onChange={handleImageUpload}
-      disabled={uploading}
-    />
-  </label>
+              {/* Multiple Images Upload Section */}
+              <div className="space-y-2 border border-gold/30 rounded-lg p-4 bg-gold/5">
+                <label className="block text-sm font-medium">Product Images (Multiple)</label>
+                <p className="text-xs text-neutral-500 mb-3">Upload multiple images. The first image will be the main product image.</p>
 
-  {/* Image Gallery */}
-  {form.images.length > 0 && (
-    <div className="mt-4 space-y-2">
-      <p className="text-xs font-medium text-neutral-600">Images ({form.images.length})</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {form.images.map((img, idx) => (
-          <div key={idx} className="relative group">
-            <img
-              src={getImageUrl(img)}
-              alt={`Product ${idx + 1}`}
-              className="w-full h-24 object-cover rounded-lg border border-gold/20"
-            />
-            {idx === 0 && (
-              <span className="absolute top-1 left-1 text-xs bg-gold text-matte px-1.5 py-0.5 rounded">Main</span>
-            )}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center gap-1">
-              {idx > 0 && (
-                <button
-                  type="button"
-                  onClick={() => moveImageUp(idx)}
-                  className="p-1.5 bg-gold/90 text-matte rounded hover:bg-gold transition text-xs"
-                  title="Move up"
-                >
-                  ↑
-                </button>
-              )}
-              {idx < form.images.length - 1 && (
-                <button
-                  type="button"
-                  onClick={() => moveImageDown(idx)}
-                  className="p-1.5 bg-gold/90 text-matte rounded hover:bg-gold transition text-xs"
-                  title="Move down"
-                >
-                  ↓
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => removeImage(idx)}
-                className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                title="Delete"
-              >
-                <XMarkIcon className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
+                <label className="lux-btn border border-gold/40 flex items-center gap-2 cursor-pointer justify-center py-3 hover:bg-gold/10 transition">
+                  <ArrowUpTrayIcon className="h-4 w-4" />
+                  {uploading ? 'Uploading...' : 'Upload Images'}
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                  />
+                </label>
+
+                {/* Image Gallery */}
+                {form.images.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-xs font-medium text-neutral-600">Images ({form.images.length})</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {form.images.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img
+                            src={getImageUrl(img)}
+                            alt={`Product ${idx + 1}`}
+                            className="w-full h-24 object-cover rounded-lg border border-gold/20"
+                          />
+                          {idx === 0 && (
+                            <span className="absolute top-1 left-1 text-xs bg-gold text-matte px-1.5 py-0.5 rounded">Main</span>
+                          )}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center gap-1">
+                            {idx > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => moveImageUp(idx)}
+                                className="p-1.5 bg-gold/90 text-matte rounded hover:bg-gold transition text-xs"
+                                title="Move up"
+                              >
+                                ↑
+                              </button>
+                            )}
+                            {idx < form.images.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => moveImageDown(idx)}
+                                className="p-1.5 bg-gold/90 text-matte rounded hover:bg-gold transition text-xs"
+                                title="Move down"
+                              >
+                                ↓
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeImage(idx)}
+                              className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                              title="Delete"
+                            >
+                              <XMarkIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Limited Edition Toggle */}
               <div className="flex items-center gap-3 p-4 border border-gold/30 rounded-lg bg-gold/5">

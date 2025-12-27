@@ -8,6 +8,7 @@ import Checkout from './pages/Checkout.jsx';
 import OrderThankYou from './pages/OrderThankYou.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
+import TrackOrder from './pages/TrackOrder.jsx';
 import GoogleCallback from './pages/GoogleCallback.jsx';
 import Profile from './pages/Profile.jsx';
 import Orders from './pages/Orders.jsx';
@@ -64,6 +65,7 @@ const App = () => {
               </Route>
 
               <Route path="/order/thank-you" element={<OrderThankYou />} />
+              <Route path="/order/track" element={<TrackOrder />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/auth/google/callback" element={<GoogleCallback />} />

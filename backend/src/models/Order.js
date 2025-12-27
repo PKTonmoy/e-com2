@@ -26,6 +26,8 @@ const orderSchema = new mongoose.Schema(
       email: String,
       address: String,
       city: String,
+      country: String,
+      postalCode: String,
     },
     paymentMethod: { type: String, enum: ['cod', 'online'], default: 'cod' },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'refunded'], default: 'pending' },

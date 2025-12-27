@@ -68,7 +68,7 @@ const AdminSidebar = () => {
 
                 {/* Sidebar Panel */}
                 <div
-                    className={`absolute left-0 top-0 h-full w-72 bg-white dark:bg-matte shadow-xl transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+                    className={`absolute left-0 top-0 h-full w-72 bg-white dark:bg-matte shadow-xl transform transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'
                         }`}
                 >
                     {/* Close Button */}
@@ -84,7 +84,7 @@ const AdminSidebar = () => {
                     </div>
 
                     {/* Navigation Links */}
-                    <nav className="p-4 space-y-1">
+                    <nav className="p-4 space-y-1 overflow-y-auto flex-1">
                         {adminLinks.map((link) => (
                             <NavLink
                                 key={link.to}
