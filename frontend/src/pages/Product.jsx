@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { useEffect, useState } from 'react';
 import { HeartIcon, StarIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
@@ -493,8 +494,8 @@ const Product = () => {
       </div>
 
       {/* Size Guide Modal */}
-      {showSizeGuide && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowSizeGuide(false)}>
+      {showSizeGuide && createPortal(
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100]" onClick={() => setShowSizeGuide(false)}>
           <div className="bg-white dark:bg-matte rounded-2xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-display text-xl mb-4">Size Guide</h3>
             <table className="w-full text-sm">
@@ -526,12 +527,13 @@ const Product = () => {
               Close
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Review Modal */}
-      {showReviewModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowReviewModal(false)}>
+      {showReviewModal && createPortal(
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100]" onClick={() => setShowReviewModal(false)}>
           <div className="bg-white dark:bg-matte rounded-2xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-display text-xl mb-4">Write a Review</h3>
             <div className="space-y-4">
@@ -555,7 +557,7 @@ const Product = () => {
                   value={reviewForm.comment}
                   onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
                   placeholder="Share your experience with this product..."
-                  className="w-full border border-gold/30 rounded-lg p-3 min-h-[100px] text-sm"
+                  className="w-full border border-gold/30 rounded-lg p-3 min-h-[100px] text-sm bg-white dark:bg-neutral-800 text-matte dark:text-ivory focus:outline-none focus:ring-1 focus:ring-gold"
                 />
               </div>
               <div className="flex gap-3">
@@ -568,7 +570,8 @@ const Product = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Selection Modal */}

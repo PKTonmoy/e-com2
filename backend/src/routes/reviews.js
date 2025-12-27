@@ -46,16 +46,16 @@ router.get('/can-review/:productId', protect, async (req, res) => {
             return res.json({ canReview: false, reason: 'already_reviewed', review: existingReview });
         }
 
-        // Check if user has purchased this product
-        const orders = await Order.find({
-            userId: req.user._id,
-            'items.productId': req.params.productId,
-            paymentStatus: 'paid',
-        });
+        // Check if user has purchased this product (optional, for badge only)
+        // const orders = await Order.find({
+        //     userId: req.user._id,
+        //     'items.productId': req.params.productId,
+        //     paymentStatus: 'paid',
+        // });
 
-        if (orders.length === 0) {
-            return res.json({ canReview: false, reason: 'not_purchased' });
-        }
+        // if (orders.length === 0) {
+        //     return res.json({ canReview: false, reason: 'not_purchased' });
+        // }
 
         res.json({ canReview: true });
     } catch (err) {
@@ -134,12 +134,12 @@ router.post('/:productId', protect, async (req, res) => {
 
         const purchaseVerified = orders.length > 0;
 
-        if (!purchaseVerified) {
-            return res.status(403).json({
-                message: 'You must purchase this product before reviewing',
-                redirectToPurchase: true,
-            });
-        }
+        // if (!purchaseVerified) {
+        //     return res.status(403).json({
+        //         message: 'You must purchase this product before reviewing',
+        //         redirectToPurchase: true,
+        //     });
+        // }
 
         const review = new Review({
             productId: req.params.productId,
