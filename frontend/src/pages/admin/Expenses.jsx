@@ -114,51 +114,53 @@ const AdminExpenses = () => {
                 <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 print:bg-white print:border-black">
                     <h3 className="font-semibold text-lg print:text-black">Cost Breakdown</h3>
                 </div>
-                <table className="w-full text-sm text-left print:text-black">
-                    <thead className="bg-gray-50 dark:bg-gray-900/50 text-gray-500 font-medium print:bg-gray-100 print:text-black">
-                        <tr>
-                            <th className="px-6 py-3 print:border-b print:border-black">Category</th>
-                            <th className="px-6 py-3 print:border-b print:border-black">Metric</th>
-                            <th className="px-6 py-3 text-right print:border-b print:border-black">Unit Cost</th>
-                            <th className="px-6 py-3 text-right print:border-b print:border-black">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800 print:divide-black">
-                        {/* Courier Delivery */}
-                        <tr>
-                            <td className="px-6 py-3 font-medium print:text-black">Delivery Fees</td>
-                            <td className="px-6 py-3 print:text-black">{expenses?.breakdown.courier.delivered} Delivered Orders</td>
-                            <td className="px-6 py-3 text-right print:text-black">৳{expenses?.breakdown.courier.unitDeliveryFee}</td>
-                            <td className="px-6 py-3 text-right print:text-black">৳{expenses?.breakdown.courier.deliveryExpenses.toLocaleString()}</td>
-                        </tr>
-                        {/* Courier Returns */}
-                        <tr>
-                            <td className="px-6 py-3 font-medium print:text-black">Return Charges</td>
-                            <td className="px-6 py-3 print:text-black">{expenses?.breakdown.courier.returned} Returned Orders</td>
-                            <td className="px-6 py-3 text-right print:text-black">৳{expenses?.breakdown.courier.unitReturnFee}</td>
-                            <td className="px-6 py-3 text-right print:text-black">৳{expenses?.breakdown.courier.returnExpenses.toLocaleString()}</td>
-                        </tr>
-                        {/* COD Charges */}
-                        <tr>
-                            <td className="px-6 py-3 font-medium print:text-black">COD Cashout Fees</td>
-                            <td className="px-6 py-3 print:text-black">1% of COD Collection</td>
-                            <td className="px-6 py-3 text-right print:text-black">1%</td>
-                            <td className="px-6 py-3 text-right print:text-black">৳{expenses?.breakdown.courier.codExpenses.toLocaleString()}</td>
-                        </tr>
-                        {/* SMS */}
-                        <tr className="bg-gray-50/50 dark:bg-gray-900/20 print:bg-transparent">
-                            <td className="px-6 py-3 font-medium print:text-black">SMS Notifications</td>
-                            <td className="px-6 py-3 print:text-black">{expenses?.breakdown.sms.count} Messages Sent</td>
-                            <td className="px-6 py-3 text-right print:text-black">৳{expenses?.breakdown.sms.unitCost}</td>
-                            <td className="px-6 py-3 text-right print:text-black">৳{expenses?.breakdown.sms.total.toLocaleString()}</td>
-                        </tr>
-                        {/* Grand Total */}
-                        <tr className="bg-gray-100 dark:bg-gray-800 font-bold text-base print:bg-gray-100 print:text-black">
-                            <td className="px-6 py-4" colSpan="3">Grand Total</td>
-                            <td className="px-6 py-4 text-right">৳{expenses?.summary.totalExpense.toLocaleString()}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left print:text-black min-w-[600px] sm:min-w-0">
+                        <thead className="bg-gray-50 dark:bg-gray-900/50 text-gray-500 font-medium print:bg-gray-100 print:text-black">
+                            <tr>
+                                <th className="px-6 py-3 print:border-b print:border-black whitespace-nowrap">Category</th>
+                                <th className="px-6 py-3 print:border-b print:border-black whitespace-nowrap">Metric</th>
+                                <th className="px-6 py-3 text-right print:border-b print:border-black whitespace-nowrap">Unit Cost</th>
+                                <th className="px-6 py-3 text-right print:border-b print:border-black whitespace-nowrap">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800 print:divide-black">
+                            {/* Courier Delivery */}
+                            <tr>
+                                <td className="px-6 py-3 font-medium print:text-black whitespace-nowrap">Delivery Fees</td>
+                                <td className="px-6 py-3 print:text-black whitespace-nowrap">{expenses?.breakdown.courier.delivered} Delivered Orders</td>
+                                <td className="px-6 py-3 text-right print:text-black whitespace-nowrap">৳{expenses?.breakdown.courier.unitDeliveryFee}</td>
+                                <td className="px-6 py-3 text-right print:text-black whitespace-nowrap">৳{expenses?.breakdown.courier.deliveryExpenses.toLocaleString()}</td>
+                            </tr>
+                            {/* Courier Returns */}
+                            <tr>
+                                <td className="px-6 py-3 font-medium print:text-black whitespace-nowrap">Return Charges</td>
+                                <td className="px-6 py-3 print:text-black whitespace-nowrap">{expenses?.breakdown.courier.returned} Returned Orders</td>
+                                <td className="px-6 py-3 text-right print:text-black whitespace-nowrap">৳{expenses?.breakdown.courier.unitReturnFee}</td>
+                                <td className="px-6 py-3 text-right print:text-black whitespace-nowrap">৳{expenses?.breakdown.courier.returnExpenses.toLocaleString()}</td>
+                            </tr>
+                            {/* COD Charges */}
+                            <tr>
+                                <td className="px-6 py-3 font-medium print:text-black whitespace-nowrap">COD Cashout Fees</td>
+                                <td className="px-6 py-3 print:text-black whitespace-nowrap">1% of COD Collection</td>
+                                <td className="px-6 py-3 text-right print:text-black whitespace-nowrap">1%</td>
+                                <td className="px-6 py-3 text-right print:text-black whitespace-nowrap">৳{expenses?.breakdown.courier.codExpenses.toLocaleString()}</td>
+                            </tr>
+                            {/* SMS */}
+                            <tr className="bg-gray-50/50 dark:bg-gray-900/20 print:bg-transparent">
+                                <td className="px-6 py-3 font-medium print:text-black whitespace-nowrap">SMS Notifications</td>
+                                <td className="px-6 py-3 print:text-black whitespace-nowrap">{expenses?.breakdown.sms.count} Messages Sent</td>
+                                <td className="px-6 py-3 text-right print:text-black whitespace-nowrap">৳{expenses?.breakdown.sms.unitCost}</td>
+                                <td className="px-6 py-3 text-right print:text-black whitespace-nowrap">৳{expenses?.breakdown.sms.total.toLocaleString()}</td>
+                            </tr>
+                            {/* Grand Total */}
+                            <tr className="bg-gray-100 dark:bg-gray-800 font-bold text-base print:bg-gray-100 print:text-black">
+                                <td className="px-6 py-4 whitespace-nowrap" colSpan="3">Grand Total</td>
+                                <td className="px-6 py-4 text-right whitespace-nowrap">৳{expenses?.summary.totalExpense.toLocaleString()}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Settings Modal */}

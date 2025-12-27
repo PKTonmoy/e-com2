@@ -10,7 +10,7 @@ import Settings from '../models/Settings.js';
 export const calculateExpenses = async (startDate, endDate) => {
     // 1. Get Unit Costs from Settings
     const defaultSettings = {
-        smsCost: 1.50, // BDT per SMS
+        smsCost: 1.05, // BDT per SMS
         deliveryFee: 120, // Avg cost per delivery if not tracked
         returnFee: 60, // Avg cost per return
         codChargePercentage: 0.01, // 1% COD charge
