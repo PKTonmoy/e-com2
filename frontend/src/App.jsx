@@ -21,7 +21,7 @@ import Contact from './pages/Contact.jsx';
 import FAQ from './pages/FAQ.jsx';
 import Search from './pages/Search.jsx';
 import NotificationsPage from './pages/NotificationsPage.jsx';
-import AdminDashboard from './pages/admin/Dashboard.jsx';
+import AdminDashboard from './pages/admin/AdminDashboardV2.jsx';
 import AdminProducts from './pages/admin/Products.jsx';
 import AdminOrders from './pages/admin/Orders.jsx';
 import AdminUsers from './pages/admin/Users.jsx';

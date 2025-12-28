@@ -137,7 +137,7 @@ const AdminOrders = () => {
                         status: e.target.value,
                       });
                     }}
-                    className="border border-gold/30 rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-ivory/80 dark:bg-matte font-body"
+                    className="border border-primary-500/30 rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-ivory/80 dark:bg-matte font-body"
                   >
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>
@@ -147,7 +147,7 @@ const AdminOrders = () => {
                   </select>
                   <button
                     onClick={() => setExpandedOrder(isExpanded ? null : order._id)}
-                    className="text-xs text-gold hover:underline flex items-center gap-1"
+                    className="text-xs text-primary-600 hover:underline flex items-center gap-1"
                   >
                     {isExpanded ? (
                       <>
@@ -175,7 +175,7 @@ const AdminOrders = () => {
               </div>
 
               {isExpanded && (
-                <div className="mt-4 border-t border-gold/20 pt-4 space-y-4">
+                <div className="mt-4 border-t border-primary-500/20 pt-4 space-y-4">
                   {/* Contact & Order Info Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Contact Information */}
@@ -193,12 +193,12 @@ const AdminOrders = () => {
                         </p>
                         <p className="flex items-center gap-2">
                           <span className="text-neutral-500 dark:text-neutral-400">Phone:</span>
-                          <a href={`tel:${order.shipping?.phone}`} className="font-medium text-gold hover:underline">{order.shipping?.phone || 'N/A'}</a>
+                          <a href={`tel:${order.shipping?.phone}`} className="font-medium text-primary-600 hover:underline">{order.shipping?.phone || 'N/A'}</a>
                         </p>
                         {order.shipping?.email && (
                           <p className="flex items-center gap-2">
                             <span className="text-neutral-500 dark:text-neutral-400">Email:</span>
-                            <a href={`mailto:${order.shipping?.email}`} className="font-medium text-gold hover:underline text-xs">{order.shipping.email}</a>
+                            <a href={`mailto:${order.shipping?.email}`} className="font-medium text-primary-600 hover:underline text-xs">{order.shipping.email}</a>
                           </p>
                         )}
                       </div>
@@ -261,7 +261,7 @@ const AdminOrders = () => {
                         )}
                         <p className="flex justify-between border-t border-green-200 dark:border-green-800 pt-2 mt-2">
                           <span className="font-semibold">Grand Total:</span>
-                          <span className="font-bold text-gold">
+                          <span className="font-bold text-primary-600">
                             ৳{(order.total + (order.shippingCharge || 0)).toFixed(0)}
                           </span>
                         </p>
@@ -369,15 +369,15 @@ const AdminOrders = () => {
                   )}
 
                   {!order.courier?.trackingId && order.orderStatus !== 'cancelled' && (
-                    <div className="mt-4 p-4 bg-gold/5 border border-gold/20 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="mt-4 p-4 bg-primary-500/5 border border-primary-500/20 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
                       <div className="text-sm">
-                        <p className="font-semibold text-gold">Awaiting Courier Approval</p>
+                        <p className="font-semibold text-primary-600">Awaiting Courier Approval</p>
                         <p className="text-neutral-500 text-xs">Review shipping details before sending to Steadfast</p>
                       </div>
                       <button
                         onClick={() => approveOrderMutation.mutate(order._id)}
                         disabled={approveOrderMutation.isLoading}
-                        className="w-full sm:w-auto px-6 py-2 bg-gold text-matte font-bold text-xs uppercase tracking-widest rounded-full shadow-lg shadow-gold/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                        className="w-full sm:w-auto px-6 py-2 bg-primary-500 text-matte font-bold text-xs uppercase tracking-widest rounded-full shadow-lg shadow-primary-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                       >
                         {approveOrderMutation.isLoading ? 'Processing...' : 'Approve & Send to Courier'}
                       </button>
@@ -411,7 +411,7 @@ const AdminOrders = () => {
                               </span>
                             )}
                             {item.selectedSize && (
-                              <span className="px-2 py-0.5 text-[10px] bg-gold/20 text-gold rounded-full font-medium">
+                              <span className="px-2 py-0.5 text-[10px] bg-primary-500/20 text-primary-600 rounded-full font-medium">
                                 Size: {item.selectedSize}
                               </span>
                             )}
@@ -421,7 +421,7 @@ const AdminOrders = () => {
                         </div>
                         {/* Price */}
                         <div className="text-right flex-shrink-0">
-                          <p className="font-semibold text-sm text-gold">৳{(item.price * item.qty).toFixed(0)}</p>
+                          <p className="font-semibold text-sm text-primary-600">৳{(item.price * item.qty).toFixed(0)}</p>
                           <p className="text-[10px] text-neutral-400">৳{item.price?.toFixed(0)} each</p>
                         </div>
                       </div>

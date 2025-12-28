@@ -11,6 +11,8 @@ import MobileHeader from '../components/MobileHeader';
 import ProductSelectionModal from '../components/ProductSelectionModal.jsx';
 import { useNavigate } from 'react-router-dom';
 import AnimatedButton from '../components/AnimatedButton.jsx';
+import MobileProductCard from '../components/MobileProductCard.jsx';
+import DesktopProductCard from '../components/DesktopProductCard.jsx';
 
 const DEFAULT_CONTENT = {
   title: 'The Collection',
@@ -104,7 +106,11 @@ const Shop = () => {
       const result = addItem(activeProduct, activeProduct.variants?.[0]?.id, activeProduct.stock, data.size);
       if (result.success) {
         setIsBuyNowOpen(false);
-        addToast(`${activeProduct.title} added to bag!`);
+        addToast(`${activeProduct.title} has been added to your bag!`, {
+          image: getImageUrl(activeProduct.images?.[0]),
+          actionLabel: 'View your Bag',
+          actionLink: '/cart'
+        });
         setAddedProducts(prev => ({ ...prev, [activeProduct._id]: true }));
         setTimeout(() => {
           setAddedProducts(prev => ({ ...prev, [activeProduct._id]: false }));
@@ -272,55 +278,15 @@ const Shop = () => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 pb-24 px-2">
               {products.map((product) => (
-                <Link
+                <MobileProductCard
                   key={product._id}
-                  to={`/product/${product.slug}`}
-                  className="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden shadow-sm"
-                >
-                  <div className="aspect-square overflow-hidden bg-neutral-50 dark:bg-neutral-800 relative">
-                    <img src={getImageUrl(product.images?.[0])} alt={product.title} className="w-full h-full object-cover" />
-                    {product.limitedEdition && (
-                      <span className="absolute top-2 left-2 inline-flex items-center gap-0.5 text-[10px] font-body font-medium text-gold bg-gold/10 backdrop-blur-sm px-2 py-1 rounded-full">
-                        <SparklesIcon className="h-3 w-3" />
-                        Limited
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-3 space-y-1">
-                    <h3 className="font-display text-sm leading-tight line-clamp-1">{product.title}</h3>
-                    <p className="text-[11px] font-body text-neutral-400 line-clamp-1">{product.category}</p>
-                    <div className="flex items-end justify-between pt-1">
-                      <div className="flex flex-col">
-                        {product.salePrice && <span className="text-[10px] font-body text-neutral-400 line-through">৳ {product.price}</span>}
-                        <span className="font-body font-semibold text-matte dark:text-ivory leading-none"><span className="text-sm">৳</span> {product.salePrice || product.price}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => handleBuyNowClick(e, product)}
-                          disabled={product.stock <= 0}
-                          className="p-1.5 rounded-full bg-gold text-white hover:scale-110 shadow-lg shadow-gold/20 transition-transform active:scale-95 disabled:opacity-40"
-                          title="Buy Now"
-                        >
-                          <ShoppingCartIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={(e) => handleAddToCart(e, product)}
-                          disabled={product.stock <= 0}
-                          className={`p-1.5 rounded-full transition-colors ${addedProducts[product._id]
-                            ? 'bg-emerald-500 text-white'
-                            : product.stock <= 0
-                              ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400'
-                              : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-gold hover:text-white shadow-sm'
-                            }`}
-                        >
-                          {addedProducts[product._id] ? <CheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  onBuyNow={handleBuyNowClick}
+                  isAddedToCart={!!addedProducts[product._id]}
+                />
               ))}
             </div>
           )}
@@ -456,81 +422,15 @@ const Shop = () => {
                   <p className="text-neutral-400 font-body text-sm">Try adjusting your filters or search.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
                   {products.map((product) => (
-                    <Link
+                    <DesktopProductCard
                       key={product._id}
-                      to={`/product/${product.slug}`}
-                      className="group bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800 hover:shadow-xl hover:border-gold/30 transition-all duration-300"
-                    >
-                      {/* Product Image */}
-                      <div className="aspect-[4/5] overflow-hidden bg-neutral-50 dark:bg-neutral-800 relative">
-                        <img
-                          src={getImageUrl(product.images?.[0])}
-                          alt={product.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-
-                        {/* Limited Badge */}
-                        {product.limitedEdition && (
-                          <span className="absolute top-3 left-3 inline-flex items-center gap-1 text-xs font-body font-medium text-gold bg-white/90 dark:bg-matte/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
-                            <SparklesIcon className="h-3.5 w-3.5" />
-                            Limited
-                          </span>
-                        )}
-
-                        {/* Quick Actions */}
-                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => e.preventDefault()}
-                            className="p-2 bg-white dark:bg-matte rounded-full shadow-lg hover:bg-gold hover:text-white transition-colors"
-                          >
-                            <HeartIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Product Info */}
-                      <div className="p-4 space-y-2">
-                        <p className="text-xs font-body uppercase tracking-wider text-neutral-400">{product.category}</p>
-                        <h3 className="font-display text-base leading-tight group-hover:text-gold transition-colors line-clamp-2">
-                          {product.title}
-                        </h3>
-                        <div className="flex items-end justify-between pt-2">
-                          <div className="flex flex-col">
-                            {product.salePrice && (
-                              <span className="text-xs font-body text-neutral-400 line-through">৳ {product.price}</span>
-                            )}
-                            <span className="font-body font-semibold text-lg text-matte dark:text-ivory leading-none">
-                              <span className="text-lg">৳</span> {product.salePrice || product.price}
-                            </span>
-                          </div>
-                          <span className={`text-xs font-body ${product.stock > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Premium Animated Buttons */}
-                      <div className="px-4 pb-4 flex gap-2">
-                        <AnimatedButton
-                          text={addedProducts[product._id] ? 'In Bag' : 'Add to Bag'}
-                          onClick={(e) => { e.preventDefault(); handleAddToCart(e, product); }}
-                          disabled={product.stock <= 0}
-                          variant="secondary"
-                          size="compact"
-                          fullWidth
-                        />
-                        <AnimatedButton
-                          text="Buy Now"
-                          onClick={(e) => { e.preventDefault(); handleBuyNowClick(e, product); }}
-                          disabled={product.stock <= 0}
-                          variant="primary"
-                          size="compact"
-                          fullWidth
-                        />
-                      </div>
-                    </Link>
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                      onBuyNow={handleBuyNowClick}
+                      isAddedToCart={!!addedProducts[product._id]}
+                    />
                   ))}
                 </div>
               )}

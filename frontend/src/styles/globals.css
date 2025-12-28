@@ -2,18 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
-}
-
 html,
 body {
   overflow-x: hidden;
   max-width: 100vw;
 }
 
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: "Louis Vuitton Web", "Louis Vuitton Web Fallback", sans-serif;
+  letter-spacing: 0.4px;
 }
 
 /* Ensure form elements don't overflow containers */
@@ -357,24 +367,31 @@ html {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 0;
+  /* Sharp corners for luxury feel, or keep rounded? User said 'dont change animation like style' but usually premium = sharp or pill. The code had 999px (pill). Let's keep pill but make it sleek. */
   border-radius: 999px;
   font-family: "Playfair Display", serif;
-  font-weight: 600;
-  font-size: 0.8rem;
+  font-weight: 500;
+  /* Slightly lighter for elegance */
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.15em;
+  /* Wider tracking */
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.3s ease;
-  min-height: 42px;
-  border: 2px solid #C9A94F;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 44px;
+  border: 1px solid #C9A94F;
+  /* Thinner border */
 }
 
 /* Primary Button - Gold background */
 .animated-btn-primary {
   background-color: #C9A94F;
   color: #0B0B0B;
+  box-shadow: 0 4px 10px rgba(201, 169, 79, 0.2);
+  /* Subtle glow */
 }
 
 .animated-btn-primary .animated-btn-bg {
@@ -382,7 +399,12 @@ html {
   inset: 0;
   background: #0B0B0B;
   transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animated-btn-primary:hover {
+  box-shadow: 0 6px 15px rgba(201, 169, 79, 0.3);
+  border-color: #0B0B0B;
 }
 
 .animated-btn-primary:hover .animated-btn-bg {
@@ -413,12 +435,12 @@ html {
   display: inline-block;
   color: #C9A94F;
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-15px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .animated-btn-primary .animated-btn-letters span:nth-child(odd) {
-  transform: translateY(20px);
+  transform: translateY(15px);
 }
 
 .animated-btn-primary:hover .animated-btn-letters span {
@@ -430,6 +452,12 @@ html {
 .animated-btn-secondary {
   background-color: transparent;
   color: #C9A94F;
+  border-color: rgba(201, 169, 79, 0.5);
+}
+
+.animated-btn-secondary:hover {
+  border-color: #C9A94F;
+  background-color: rgba(201, 169, 79, 0.05);
 }
 
 .animated-btn-secondary .animated-btn-bg {
@@ -437,7 +465,7 @@ html {
   inset: 0;
   background: #C9A94F;
   transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animated-btn-secondary:hover .animated-btn-bg {
@@ -468,12 +496,12 @@ html {
   display: inline-block;
   color: #0B0B0B;
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-15px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .animated-btn-secondary .animated-btn-letters span:nth-child(odd) {
-  transform: translateY(20px);
+  transform: translateY(15px);
 }
 
 .animated-btn-secondary:hover .animated-btn-letters span {
@@ -483,11 +511,12 @@ html {
 
 /* Compact variant for product cards */
 .animated-btn-compact {
-  padding: 0.4rem 0.875rem;
-  font-size: 0.7rem;
-  min-height: 32px;
-  letter-spacing: 0.05em;
-  border-width: 1.5px;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  /* Increased from 0.65rem */
+  min-height: 36px;
+  letter-spacing: 0.12em;
+  border-width: 1px;
 }
 
 /* Disabled state */

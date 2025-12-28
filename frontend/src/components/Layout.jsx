@@ -14,7 +14,8 @@ import {
   InformationCircleIcon,
   ChatBubbleLeftRightIcon,
   QuestionMarkCircleIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline';
 import AdminSidebar from './AdminSidebar.jsx';
 import MobileBottomNav from './MobileBottomNav.jsx';
@@ -99,7 +100,7 @@ const Layout = ({ children }) => {
   }, [isMobileMenuOpen]);
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'dark bg-matte text-white' : 'bg-ivory text-matte'}`}>
+    <div className={`min-h-screen w-full overflow-x-hidden flex flex-col ${theme === 'dark' ? 'dark bg-matte text-white' : 'bg-ivory text-matte'}`}>
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-ivory/95 dark:bg-matte/95 border-b border-gold/20 flex-shrink-0">
         {/* Mobile Header - Hidden since we use bottom nav */}
         <div className="hidden">
@@ -191,6 +192,9 @@ const Layout = ({ children }) => {
                 )}
               </div>
 
+              <Link to="/wishlist" className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors">
+                <HeartIcon className="h-5 w-5" />
+              </Link>
               <Link to="/cart" className="rounded-full border border-gold/30 p-2 hover:bg-gold/10 transition-colors">
                 <ShoppingBagIcon className="h-5 w-5" />
               </Link>
@@ -307,9 +311,9 @@ const Layout = ({ children }) => {
 
       {/* Main Content Area */}
       {isAdminRoute ? (
-        <div className="flex flex-col lg:flex-row flex-1">
+        <div className="flex flex-col lg:flex-row flex-1 w-full overflow-x-hidden">
           <AdminSidebar />
-          <main className="flex-1 min-h-[calc(100vh-73px)] overflow-x-hidden">{children}</main>
+          <main className="flex-1 min-w-0 w-full overflow-x-hidden min-h-[calc(100vh-73px)]">{children}</main>
         </div>
       ) : (
         <>

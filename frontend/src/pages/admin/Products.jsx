@@ -244,7 +244,7 @@ const AdminProducts = () => {
           placeholder="Search products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full border border-gold/30 rounded-lg pl-10 pr-4 py-2.5 text-sm bg-ivory/80 dark:bg-matte font-body"
+          className="w-full border border-primary-500/30 rounded-lg pl-10 pr-4 py-2.5 text-sm bg-ivory/80 dark:bg-matte font-body"
         />
       </div>
 
@@ -262,12 +262,12 @@ const AdminProducts = () => {
           </thead>
           <tbody>
             {filteredProducts.map((p) => (
-              <tr key={p._id} className="border-t border-gold/20">
+              <tr key={p._id} className="border-t border-primary-500/20">
                 <td className="p-2">
                   <div className="flex items-center gap-2">
                     {p.title}
                     {p.limitedEdition && (
-                      <span className="text-xs bg-gold/20 text-gold px-1.5 py-0.5 rounded">LIMITED</span>
+                      <span className="text-xs bg-primary-500/20 text-primary-600 dark:text-primary-400 px-1.5 py-0.5 rounded">LIMITED</span>
                     )}
                   </div>
                 </td>
@@ -285,9 +285,9 @@ const AdminProducts = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(p)}
-                      className="p-1 hover:bg-gold/10 rounded transition"
+                      className="p-1 hover:bg-primary-500/10 rounded transition"
                     >
-                      <PencilIcon className="h-4 w-4 text-gold" />
+                      <PencilIcon className="h-4 w-4 text-primary-600 dark:text-primary-400" />
                     </button>
                     <button
                       onClick={() => {
@@ -317,21 +317,21 @@ const AdminProducts = () => {
               <div className="grid gap-4 sm:grid-cols-2">
                 <input
                   required
-                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
+                  className="border border-primary-500/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Title"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
                 <input
                   required
-                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
+                  className="border border-primary-500/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Slug (e.g., product-name)"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 />
                 <input
                   required
-                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
+                  className="border border-primary-500/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="SKU"
                   value={form.sku}
                   onChange={(e) => setForm({ ...form, sku: e.target.value })}
@@ -340,7 +340,7 @@ const AdminProducts = () => {
                   required
                   type="number"
                   step="0.01"
-                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
+                  className="border border-primary-500/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Price"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
@@ -348,13 +348,13 @@ const AdminProducts = () => {
                 <input
                   required
                   type="number"
-                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
+                  className="border border-primary-500/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Stock"
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
                 />
                 <input
-                  className="border border-gold/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
+                  className="border border-primary-500/30 p-3 rounded-lg bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                   placeholder="Category"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -362,18 +362,18 @@ const AdminProducts = () => {
               </div>
 
               <textarea
-                className="w-full border border-gold/30 p-3 rounded-lg min-h-[100px] bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
+                className="w-full border border-primary-500/30 p-3 rounded-lg min-h-[100px] bg-white dark:bg-matte/80 text-matte dark:text-ivory placeholder-neutral-400 dark:placeholder-neutral-500"
                 placeholder="Description HTML"
                 value={form.descriptionHTML}
                 onChange={(e) => setForm({ ...form, descriptionHTML: e.target.value })}
               />
 
               {/* Multiple Images Upload Section */}
-              <div className="space-y-2 border border-gold/30 rounded-lg p-4 bg-gold/5">
+              <div className="space-y-2 border border-primary-500/30 rounded-lg p-4 bg-primary-500/5">
                 <label className="block text-sm font-medium">Product Images (Multiple)</label>
                 <p className="text-xs text-neutral-500 mb-3">Upload multiple images. The first image will be the main product image.</p>
 
-                <label className="lux-btn border border-gold/40 flex items-center gap-2 cursor-pointer justify-center py-3 hover:bg-gold/10 transition">
+                <label className="lux-btn border border-primary-500/40 flex items-center gap-2 cursor-pointer justify-center py-3 hover:bg-primary-500/10 transition">
                   <ArrowUpTrayIcon className="h-4 w-4" />
                   {uploading ? 'Uploading...' : 'Upload Images'}
                   <input
@@ -396,17 +396,17 @@ const AdminProducts = () => {
                           <img
                             src={getImageUrl(img)}
                             alt={`Product ${idx + 1}`}
-                            className="w-full h-24 object-cover rounded-lg border border-gold/20"
+                            className="w-full h-24 object-cover rounded-lg border border-primary-500/20"
                           />
                           {idx === 0 && (
-                            <span className="absolute top-1 left-1 text-xs bg-gold text-matte px-1.5 py-0.5 rounded">Main</span>
+                            <span className="absolute top-1 left-1 text-xs bg-primary-500 text-matte px-1.5 py-0.5 rounded">Main</span>
                           )}
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center gap-1">
                             {idx > 0 && (
                               <button
                                 type="button"
                                 onClick={() => moveImageUp(idx)}
-                                className="p-1.5 bg-gold/90 text-matte rounded hover:bg-gold transition text-xs"
+                                className="p-1.5 bg-primary-500/90 text-matte rounded hover:bg-primary-500 transition text-xs"
                                 title="Move up"
                               >
                                 ↑
@@ -416,7 +416,7 @@ const AdminProducts = () => {
                               <button
                                 type="button"
                                 onClick={() => moveImageDown(idx)}
-                                className="p-1.5 bg-gold/90 text-matte rounded hover:bg-gold transition text-xs"
+                                className="p-1.5 bg-primary-500/90 text-matte rounded hover:bg-primary-500 transition text-xs"
                                 title="Move down"
                               >
                                 ↓
@@ -439,13 +439,13 @@ const AdminProducts = () => {
               </div>
 
               {/* Limited Edition Toggle */}
-              <div className="flex items-center gap-3 p-4 border border-gold/30 rounded-lg bg-gold/5">
+              <div className="flex items-center gap-3 p-4 border border-primary-500/30 rounded-lg bg-primary-500/5">
                 <input
                   type="checkbox"
                   id="limitedEdition"
                   checked={form.limitedEdition}
                   onChange={(e) => setForm({ ...form, limitedEdition: e.target.checked })}
-                  className="w-5 h-5 accent-gold rounded"
+                  className="w-5 h-5 accent-primary-500 rounded"
                 />
                 <label htmlFor="limitedEdition" className="flex flex-col cursor-pointer">
                   <span className="font-semibold text-sm">Limited Edition</span>
@@ -454,14 +454,14 @@ const AdminProducts = () => {
               </div>
 
               {/* Size Options Section */}
-              <div className="p-4 border border-gold/30 rounded-lg bg-gold/5 space-y-3">
+              <div className="p-4 border border-primary-500/30 rounded-lg bg-primary-500/5 space-y-3">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     id="hasSizes"
                     checked={form.hasSizes}
                     onChange={(e) => setForm({ ...form, hasSizes: e.target.checked })}
-                    className="w-5 h-5 accent-gold rounded"
+                    className="w-5 h-5 accent-primary-500 rounded"
                   />
                   <label htmlFor="hasSizes" className="flex flex-col cursor-pointer">
                     <span className="font-semibold text-sm">This product has sizes</span>
@@ -470,7 +470,7 @@ const AdminProducts = () => {
                 </div>
 
                 {form.hasSizes && (
-                  <div className="pt-3 border-t border-gold/20">
+                  <div className="pt-3 border-t border-primary-500/20">
                     <p className="text-sm font-medium mb-2">Available Sizes</p>
                     <div className="flex flex-wrap gap-2">
                       {ALL_SIZES.map((size) => (
@@ -479,8 +479,8 @@ const AdminProducts = () => {
                           type="button"
                           onClick={() => toggleSize(size)}
                           className={`w-12 h-10 rounded-lg border-2 font-semibold text-sm transition-all ${form.sizes.includes(size)
-                            ? 'bg-gold text-matte border-gold'
-                            : 'border-gold/40 hover:border-gold/70 bg-transparent'
+                            ? 'bg-primary-500 text-matte border-primary-500'
+                            : 'border-primary-500/40 hover:border-primary-500/70 bg-transparent'
                             }`}
                         >
                           {size}
@@ -501,7 +501,7 @@ const AdminProducts = () => {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="lux-btn border border-gold/40"
+                  className="lux-btn border border-primary-500/40"
                 >
                   Cancel
                 </button>
