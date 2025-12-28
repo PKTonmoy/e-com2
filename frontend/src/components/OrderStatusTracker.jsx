@@ -124,7 +124,7 @@ const OrderStatusTracker = ({ status }) => {
                                         <CheckCircleIcon
                                             className={`
                         w-5 h-5 transition-all duration-300
-                        ${state === 'completed'
+                        ${state === 'completed' || (state === 'active' && step.key === 'delivered')
                                                     ? 'text-emerald-500'
                                                     : 'text-emerald-500 animate-pulse'
                                                 }
