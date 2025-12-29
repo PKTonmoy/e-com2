@@ -109,7 +109,7 @@ const Home = () => {
     queryKey: ['featured'],
     queryFn: async () => {
       const res = await api.get('/products', { params: { limitedEdition: true } });
-      return res.data;
+      return res.data.products || [];
     },
   });
 

@@ -11,13 +11,37 @@ const validate = (req, res) => {
 };
 
 router.get('/', async (req, res) => {
-  const { category, limitedEdition, q, sort = '-createdAt' } = req.query;
+  const { category, limitedEdition, q, sort = '-createdAt', page = 1, limit = 20 } = req.query;
+
+  // Parse pagination params
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
+  const skip = (pageNum - 1) * limitNum;
+
+  // Build filter
   const filter = {};
   if (category) filter.category = category;
   if (limitedEdition) filter.limitedEdition = limitedEdition === 'true';
   if (q) filter.title = { $regex: q, $options: 'i' };
-  const products = await Product.find(filter).sort(sort).limit(100);
-  res.json(products);
+
+  // Get total count for pagination
+  const totalProducts = await Product.countDocuments(filter);
+  const totalPages = Math.ceil(totalProducts / limitNum);
+
+  // Get paginated products
+  const products = await Product.find(filter)
+    .sort(sort)
+    .skip(skip)
+    .limit(limitNum);
+
+  res.json({
+    products,
+    currentPage: pageNum,
+    totalPages,
+    totalProducts,
+    hasNextPage: pageNum < totalPages,
+    hasPrevPage: pageNum > 1
+  });
 });
 
 router.get('/:slug', async (req, res) => {

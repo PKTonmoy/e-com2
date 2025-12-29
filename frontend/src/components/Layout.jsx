@@ -323,7 +323,7 @@ const Layout = ({ children }) => {
       )}
 
       {!isAdminRoute && (
-        <footer className="border-t border-gold/30 bg-white/60 dark:bg-matte/60 flex-shrink-0">
+        <footer className="border-t border-gold/30 bg-white/60 dark:bg-matte/60 flex-shrink-0 pb-24 md:pb-0">
           <div className="lux-container py-10 grid gap-8 md:grid-cols-3">
             <div>
               <p className="font-display text-xl mb-2">PRELUX</p>

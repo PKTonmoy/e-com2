@@ -112,7 +112,10 @@ const AdminProducts = () => {
 
   const { data: products = [] } = useQuery({
     queryKey: ['admin-products'],
-    queryFn: async () => (await api.get('/products')).data,
+    queryFn: async () => {
+      const res = await api.get('/products', { params: { limit: 1000 } });
+      return res.data.products || [];
+    },
   });
 
   // Filter products based on search query

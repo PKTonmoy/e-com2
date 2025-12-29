@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { SparklesIcon, XMarkIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, PlusIcon, HeartIcon, ChevronDownIcon, CheckIcon, ShoppingBagIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect, useRef } from 'react';
+import { SparklesIcon, XMarkIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, PlusIcon, HeartIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, CheckIcon, ShoppingBagIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 import { useCart } from '../store/useCart.js';
 import { useToast } from '../components/ToastProvider.jsx';
@@ -63,6 +63,9 @@ const Shop = () => {
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
   const [activeProduct, setActiveProduct] = useState(null);
   const [selectionMode, setSelectionMode] = useState('checkout');
+  const [currentPage, setCurrentPage] = useState(1);
+  const prevPageRef = useRef(1);
+  const paginationRef = useRef(null);
   const navigate = useNavigate();
   const setItems = useCart((s) => s.setItems);
 
@@ -155,20 +158,21 @@ const Shop = () => {
 
   const content = cmsContent || DEFAULT_CONTENT;
 
-  // Fetch all products to get complete category list
-  const { data: allProducts = [] } = useQuery({
+  // Fetch all products to get complete category list (limit=100 to get all categories)
+  const { data: allProductsData } = useQuery({
     queryKey: ['all-products'],
     queryFn: async () => {
-      const res = await api.get('/products');
+      const res = await api.get('/products', { params: { limit: 100 } });
       return res.data;
     },
   });
+  const allProducts = allProductsData?.products || [];
 
-  // Fetch filtered products with search
-  const { data: products = [], isFetching } = useQuery({
-    queryKey: ['products', category, limitedEdition, sort, debouncedSearch],
+  // Fetch filtered products with search and pagination
+  const { data: productsData, isFetching } = useQuery({
+    queryKey: ['products', category, limitedEdition, sort, debouncedSearch, currentPage],
     queryFn: async () => {
-      const params = {};
+      const params = { page: currentPage, limit: 20 };
       if (category) params.category = category;
       if (limitedEdition) params.limitedEdition = limitedEdition;
       if (sort) params.sort = sort;
@@ -178,6 +182,12 @@ const Shop = () => {
     },
   });
 
+  const products = productsData?.products || [];
+  const totalPages = productsData?.totalPages || 1;
+  const totalProducts = productsData?.totalProducts || 0;
+  const hasNextPage = productsData?.hasNextPage || false;
+  const hasPrevPage = productsData?.hasPrevPage || false;
+
   // Extract all categories from allProducts instead of filtered products
   const categories = [...new Set(allProducts.map((p) => p.category).filter(Boolean))];
 
@@ -186,11 +196,30 @@ const Shop = () => {
     setLimitedEdition('');
     setSort('-createdAt');
     setSearchQuery('');
+    setCurrentPage(1);
   };
 
   const clearSearch = () => {
     setSearchQuery('');
+    setCurrentPage(1);
   };
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, limitedEdition, sort, debouncedSearch]);
+
+  // Handle scroll on page change
+  useEffect(() => {
+    if (currentPage > prevPageRef.current) {
+      // Next page: Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (currentPage < prevPageRef.current) {
+      // Previous page: Scroll to pagination/bottom
+      paginationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+    prevPageRef.current = currentPage;
+  }, [currentPage]);
 
   const hasActiveFilters = category || limitedEdition || searchQuery;
 
@@ -278,7 +307,7 @@ const Shop = () => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 pb-24 px-2">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 px-2">
               {products.map((product) => (
                 <MobileProductCard
                   key={product._id}
@@ -288,6 +317,54 @@ const Shop = () => {
                   isAddedToCart={!!addedProducts[product._id]}
                 />
               ))}
+            </div>
+          )}
+
+          {/* Mobile Pagination */}
+          {totalPages > 1 && (
+            <div ref={paginationRef} className="flex items-center justify-center gap-2 py-8 pb-28">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={!hasPrevPage}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              >
+                <ChevronLeftIcon className="h-5 w-5 text-matte dark:text-ivory" />
+              </button>
+
+              <div className="flex items-center gap-1 px-3">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-9 h-9 rounded-full text-sm font-medium transition-colors ${currentPage === pageNum
+                        ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte'
+                        : 'bg-white dark:bg-neutral-800 text-matte dark:text-ivory'
+                        }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={!hasNextPage}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              >
+                <ChevronRightIcon className="h-5 w-5 text-matte dark:text-ivory" />
+              </button>
             </div>
           )}
         </div>
@@ -301,7 +378,7 @@ const Shop = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="font-display text-3xl text-matte dark:text-ivory">{content.title}</h1>
-                <p className="text-neutral-500 font-body text-sm mt-1">{products.length} products</p>
+                <p className="text-neutral-500 font-body text-sm mt-1">{totalProducts} products</p>
               </div>
 
               {/* Desktop Search */}
@@ -432,6 +509,56 @@ const Shop = () => {
                       isAddedToCart={!!addedProducts[product._id]}
                     />
                   ))}
+                </div>
+              )}
+
+              {/* Desktop Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-800">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={!hasPrevPage}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                  >
+                    <ChevronLeftIcon className="h-4 w-4" />
+                    <span className="text-sm font-medium">Previous</span>
+                  </button>
+
+                  <div className="flex items-center gap-1 px-4">
+                    {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 7) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 4) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 3) {
+                        pageNum = totalPages - 6 + i;
+                      } else {
+                        pageNum = currentPage - 3 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`min-w-[40px] h-10 px-3 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
+                            ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte'
+                            : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-matte dark:text-ivory'
+                            }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={!hasNextPage}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                  >
+                    <span className="text-sm font-medium">Next</span>
+                    <ChevronRightIcon className="h-4 w-4" />
+                  </button>
                 </div>
               )}
             </div>

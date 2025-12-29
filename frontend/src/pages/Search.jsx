@@ -9,7 +9,7 @@ const Search = () => {
     queryKey: ['search', q],
     queryFn: async () => {
       const res = await api.get('/products', { params: { q } });
-      return res.data;
+      return res.data.products || [];
     },
   });
 

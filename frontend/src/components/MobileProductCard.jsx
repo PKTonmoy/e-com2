@@ -47,12 +47,12 @@ const MobileProductCard = ({
                     className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                 />
 
-                {/* Badges - Top Left - Styled to match screenshot (Dark Rect + Gold Text) */}
-                <div className="absolute top-3 left-3 flex flex-col gap-1">
+                {/* Badges - Top Left - Smaller for mobile */}
+                <div className="absolute top-2 left-2 flex flex-col gap-1">
                     {product.limitedEdition && (
-                        <div className="flex items-center justify-center rounded bg-[#333333]/90 px-2 py-1 shadow-sm backdrop-blur-md">
-                            <SparklesIcon className="mr-1 h-3 w-3 text-[#D4AF37]" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">Limited</span>
+                        <div className="flex items-center justify-center rounded px-1.5 py-0.5 bg-[#333333]/90 backdrop-blur-md">
+                            <SparklesIcon className="mr-0.5 h-2.5 w-2.5 text-[#D4AF37]" />
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-[#D4AF37]">Limited</span>
                         </div>
                     )}
                 </div>
