@@ -75,9 +75,10 @@ const Shop = () => {
   const { hideBottomNav, showBottomNav } = useBottomNav();
 
   // Desktop filter dropdowns state
+  // Desktop filter dropdowns state
   const [openFilters, setOpenFilters] = useState({
-    sort: true,
-    category: true,
+    sort: false,
+    category: false,
     type: false
   });
 
@@ -402,7 +403,7 @@ const Shop = () => {
 
             {/* Desktop Sidebar Filters - Sticky with Dropdowns */}
             <aside className="w-60 flex-shrink-0">
-              <div className="sticky top-24 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+              <div className="sticky top-28 z-30 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-y-auto max-h-[calc(100vh-8rem)] scrollbar-hide">
                 <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
                   <h2 className="font-display text-lg">Filters</h2>
                 </div>

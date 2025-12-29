@@ -100,7 +100,7 @@ const Layout = ({ children }) => {
   }, [isMobileMenuOpen]);
 
   return (
-    <div className={`min-h-screen w-full overflow-x-hidden flex flex-col ${theme === 'dark' ? 'dark bg-matte text-white' : 'bg-ivory text-matte'}`}>
+    <div className={`min-h-screen w-full flex flex-col ${theme === 'dark' ? 'dark bg-matte text-white' : 'bg-ivory text-matte'}`}>
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-ivory/95 dark:bg-matte/95 border-b border-gold/20 flex-shrink-0">
         {/* Mobile Header - Hidden since we use bottom nav */}
         <div className="hidden">
