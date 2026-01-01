@@ -102,7 +102,7 @@ app.use((req, res, next) => {
 });
 
 // Health check with database status
-app.get('/health', async (req, res) => {
+app.get('/health-detailed', async (req, res) => {
   const dbState = mongoose.connection.readyState;
   const dbStates = {
     0: 'disconnected',
@@ -118,6 +118,10 @@ app.get('/health', async (req, res) => {
     database: dbStates[dbState] || 'unknown',
     timestamp: new Date().toISOString(),
   });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
 });
 
 // API Routes
