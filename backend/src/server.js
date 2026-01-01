@@ -33,6 +33,7 @@ import adminNotificationRoutes from './routes/adminNotificationRoutes.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import ensureAdmin from './utils/ensureAdmin.js';
 import syncCourierStatuses from './cron/courierSync.js';
+import startSelfPing from './cron/selfPing.js';
 
 dotenv.config();
 
@@ -186,7 +187,11 @@ if (process.env.NODE_ENV !== 'test') {
     // Schedule courier sync every 3 hours (production-safe, idempotent)
     const intervalMs = Number(process.env.COURIER_SYNC_INTERVAL_MS || 3 * 60 * 60 * 1000);
 
+    // Start self-ping cron
+    startSelfPing(PORT);
+
     setInterval(() => {
+
       syncCourierStatuses()
         .then(() => {
           console.log('[Courier Sync] Completed');

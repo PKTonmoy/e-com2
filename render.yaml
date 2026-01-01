@@ -12,3 +12,5 @@ services:
         generateValue: true
       - key: NODE_ENV
         value: production
+      - key: SERVER_URL
+        value: https://prelux-store.onrender.com
