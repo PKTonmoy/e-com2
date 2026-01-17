@@ -47,6 +47,24 @@ const uploadToCloudinary = (buffer, options = {}) => {
             {
                 folder: 'prelux',
                 resource_type: 'image',
+                // ============================================
+                // AUTOMATIC IMAGE OPTIMIZATION
+                // ============================================
+                // These transformations reduce file size by 50-80%
+                transformation: [
+                    {
+                        quality: 'auto:good',     // Smart quality optimization
+                        fetch_format: 'auto',      // Serve WebP/AVIF to supported browsers
+                        flags: 'progressive',      // Progressive loading (appears faster)
+                    }
+                ],
+                // Eager transformations: pre-generate common sizes
+                eager: [
+                    { width: 400, crop: 'limit', quality: 'auto', fetch_format: 'auto' },  // Thumbnail
+                    { width: 800, crop: 'limit', quality: 'auto', fetch_format: 'auto' },  // Product card
+                    { width: 1200, crop: 'limit', quality: 'auto', fetch_format: 'auto' }, // Product detail
+                ],
+                eager_async: true, // Generate sizes in background
                 ...options
             },
             (error, result) => {

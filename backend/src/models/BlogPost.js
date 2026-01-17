@@ -15,6 +15,14 @@ const blogPostSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+blogPostSchema.index({ publishedAt: -1 });       // Sort by publish date
+blogPostSchema.index({ category: 1 });           // Filter by category
+blogPostSchema.index({ tags: 1 });               // Filter by tags
+blogPostSchema.index({ authorId: 1 });           // Filter by author
+
 const BlogPost = mongoose.model('BlogPost', blogPostSchema);
 export default BlogPost;
 

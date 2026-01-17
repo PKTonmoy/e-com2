@@ -730,3 +730,19 @@ Method: GET
 Path: /police_stations
 
 Method: GET
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+source .venv/bin/activate
+python tools/get_channels.py

@@ -1,12 +1,45 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronUpIcon, ExclamationTriangleIcon, TruckIcon } from '@heroicons/react/24/outline';
 import api from '../../lib/api.js';
 import { useToast } from '../../components/ToastProvider.jsx';
+import { useCourierService } from '../../contexts/CourierServiceContext.jsx';
+import { Link } from 'react-router-dom';
+
+// Warning banner shown when courier service is disabled
+const CourierDisabledBanner = () => {
+  const { courierEnabled } = useCourierService();
+
+  if (courierEnabled) return null;
+
+  return (
+    <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border border-amber-200 dark:border-amber-700 rounded-xl p-4">
+      <div className="flex items-start gap-3">
+        <TruckIcon className="h-6 w-6 text-amber-500 flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <h3 className="font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-2">
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            Courier Service Disabled
+          </h3>
+          <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+            The courier service is currently off. You can still process orders manually, but automatic courier dispatch is disabled.
+          </p>
+          <Link
+            to="/admin/courier-management"
+            className="inline-flex items-center gap-1 mt-2 text-sm font-medium text-amber-600 dark:text-amber-400 hover:underline"
+          >
+            Enable Courier Service →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AdminOrders = () => {
   const qc = useQueryClient();
   const { addToast } = useToast();
+  const { courierEnabled } = useCourierService();
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
 
@@ -102,6 +135,9 @@ const AdminOrders = () => {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-4 max-w-7xl mx-auto">
       <h1 className="font-display text-xl sm:text-2xl text-matte dark:text-ivory">Admin Orders</h1>
+
+      {/* Courier Disabled Warning Banner */}
+      <CourierDisabledBanner />
       <div className="space-y-3">
         {orders.map((order) => {
           const isExpanded = expandedOrder === order._id;
@@ -369,18 +405,33 @@ const AdminOrders = () => {
                   )}
 
                   {!order.courier?.trackingId && order.orderStatus !== 'cancelled' && (
-                    <div className="mt-4 p-4 bg-primary-500/5 border border-primary-500/20 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className={`mt-4 p-4 ${courierEnabled ? 'bg-primary-500/5 border-primary-500/20' : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'} border rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4`}>
                       <div className="text-sm">
-                        <p className="font-semibold text-primary-600">Awaiting Courier Approval</p>
-                        <p className="text-neutral-500 text-xs">Review shipping details before sending to Steadfast</p>
+                        <p className={`font-semibold ${courierEnabled ? 'text-primary-600' : 'text-neutral-500'}`}>
+                          {courierEnabled ? 'Awaiting Courier Approval' : 'Courier Service Disabled'}
+                        </p>
+                        <p className="text-neutral-500 text-xs">
+                          {courierEnabled
+                            ? 'Review shipping details before sending to Steadfast'
+                            : 'Enable courier service to send orders automatically'}
+                        </p>
                       </div>
-                      <button
-                        onClick={() => approveOrderMutation.mutate(order._id)}
-                        disabled={approveOrderMutation.isLoading}
-                        className="w-full sm:w-auto px-6 py-2 bg-primary-500 text-matte font-bold text-xs uppercase tracking-widest rounded-full shadow-lg shadow-primary-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                      >
-                        {approveOrderMutation.isLoading ? 'Processing...' : 'Approve & Send to Courier'}
-                      </button>
+                      {courierEnabled ? (
+                        <button
+                          onClick={() => approveOrderMutation.mutate(order._id)}
+                          disabled={approveOrderMutation.isLoading}
+                          className="w-full sm:w-auto px-6 py-2 bg-primary-500 text-matte font-bold text-xs uppercase tracking-widest rounded-full shadow-lg shadow-primary-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                        >
+                          {approveOrderMutation.isLoading ? 'Processing...' : 'Approve & Send to Courier'}
+                        </button>
+                      ) : (
+                        <Link
+                          to="/admin/courier-management"
+                          className="w-full sm:w-auto px-6 py-2 bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 font-bold text-xs uppercase tracking-widest rounded-full text-center"
+                        >
+                          Enable Courier
+                        </Link>
+                      )}
                     </div>
                   )}
 

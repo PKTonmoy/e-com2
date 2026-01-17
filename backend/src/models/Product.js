@@ -35,6 +35,25 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+// These indexes dramatically improve query speed as your product count grows
+
+// Single field indexes for common queries
+productSchema.index({ category: 1 });           // Category filtering
+productSchema.index({ createdAt: -1 });         // Sorting by newest
+productSchema.index({ limitedEdition: 1 });     // Limited edition filter
+productSchema.index({ price: 1 });              // Price sorting/filtering
+productSchema.index({ salePrice: 1 });          // Sale price queries
+
+// Compound indexes for common filter + sort combinations
+productSchema.index({ category: 1, createdAt: -1 });  // Category page sorted by newest
+productSchema.index({ limitedEdition: 1, createdAt: -1 }); // Limited edition sorted
+
+// Text index for search functionality (title search)
+productSchema.index({ title: 'text', tags: 'text' });
+
 const Product = mongoose.model('Product', productSchema);
 export default Product;
 

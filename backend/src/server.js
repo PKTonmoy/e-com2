@@ -33,7 +33,7 @@ import adminNotificationRoutes from './routes/adminNotificationRoutes.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import ensureAdmin from './utils/ensureAdmin.js';
 import syncCourierStatuses from './cron/courierSync.js';
-import startSelfPing from './cron/selfPing.js';
+import startSelfPing, { getKeepAliveStatus } from './cron/selfPing.js';
 
 dotenv.config();
 
@@ -122,6 +122,11 @@ app.get('/health-detailed', async (req, res) => {
 
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
+});
+
+// Keep-alive status endpoint for monitoring
+app.get("/health/keep-alive-status", (req, res) => {
+  res.json(getKeepAliveStatus());
 });
 
 // API Routes

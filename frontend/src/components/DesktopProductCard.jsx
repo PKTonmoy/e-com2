@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { HeartIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
-import { getImageUrl } from '../utils/imageUrl';
+import { getImageUrl, getCardImageUrl, getThumbnailUrl, getImageSrcSet } from '../utils/imageUrl';
 import { useWishlist } from '../store/useWishlist';
 import { useToast } from './ToastProvider';
 
@@ -39,9 +39,12 @@ const DesktopProductCard = ({
                 {/* Product Image - Full bleed/Cover for maximum size */}
                 <div className="h-full w-full">
                     <img
-                        src={getImageUrl(product.images?.[0])}
+                        src={getCardImageUrl(product.images?.[0])}
+                        srcSet={getImageSrcSet(product.images?.[0])}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         alt={product.title}
                         loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.33,1,0.68,1)] group-hover:scale-105"
                     />
                 </div>

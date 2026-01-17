@@ -20,6 +20,11 @@ const cartSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+cartSchema.index({ userId: 1 });  // Fast cart lookup by user
+
 const Cart = mongoose.model('Cart', cartSchema);
 export default Cart;
 

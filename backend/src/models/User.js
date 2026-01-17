@@ -77,5 +77,13 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+userSchema.index({ role: 1 });                  // Filter users by role (admin panel)
+userSchema.index({ createdAt: -1 });            // Sort by registration date
+userSchema.index({ provider: 1 });              // Filter OAuth vs local users
+userSchema.index({ lastLogin: -1 });            // Find recently active users
+
 const User = mongoose.model('User', userSchema);
 export default User;

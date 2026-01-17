@@ -68,6 +68,18 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ============================================
+// DATABASE INDEXES FOR PERFORMANCE
+// ============================================
+orderSchema.index({ userId: 1 });                    // User's orders lookup
+orderSchema.index({ createdAt: -1 });                // Sort by newest
+orderSchema.index({ orderStatus: 1 });               // Filter by status
+orderSchema.index({ orderNumber: 1 });               // Order lookup by number
+orderSchema.index({ paymentStatus: 1 });             // Payment filtering
+orderSchema.index({ 'shipping.email': 1 });          // Guest order lookup
+orderSchema.index({ hiddenFromAdmin: 1, createdAt: -1 }); // Admin dashboard
+orderSchema.index({ userId: 1, createdAt: -1 });     // User order history
+
 const Order = mongoose.model('Order', orderSchema);
 export default Order;
 

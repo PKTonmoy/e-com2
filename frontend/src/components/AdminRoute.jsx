@@ -1,6 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api.js';
+import { CourierServiceProvider } from '../contexts/CourierServiceContext.jsx';
+import CourierDisabledPopup from './CourierDisabledPopup.jsx';
 
 const AdminRoute = () => {
     const location = useLocation();
@@ -30,7 +32,12 @@ const AdminRoute = () => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    return <Outlet />;
+    return (
+        <CourierServiceProvider>
+            <CourierDisabledPopup />
+            <Outlet />
+        </CourierServiceProvider>
+    );
 };
 
 export default AdminRoute;

@@ -73,6 +73,44 @@ router.put('/shipping', protect, requireRole('admin'), async (req, res) => {
     }
 });
 
+// Get courier service settings
+router.get('/courier', protect, requireRole('admin'), async (req, res) => {
+    try {
+        const defaults = {
+            enabled: true,
+            disabledReason: '',
+            disabledAt: null,
+        };
+        const saved = await Settings.get('courier');
+        res.json(saved ? { ...defaults, ...saved } : defaults);
+    } catch (error) {
+        console.error('Error getting courier settings:', error);
+        res.status(500).json({ message: 'Failed to get courier settings' });
+    }
+});
+
+// Update courier service settings (toggle on/off)
+router.put('/courier', protect, requireRole('admin'), async (req, res) => {
+    try {
+        const { enabled, disabledReason } = req.body;
+
+        const settings = {
+            enabled: Boolean(enabled),
+            disabledReason: enabled ? '' : String(disabledReason || 'Disabled by admin'),
+            disabledAt: enabled ? null : new Date().toISOString(),
+        };
+
+        await Settings.set('courier', settings);
+
+        console.log(`[Courier Settings] Service ${enabled ? 'ENABLED' : 'DISABLED'} by admin`);
+
+        res.json({ message: `Courier service ${enabled ? 'enabled' : 'disabled'}`, settings });
+    } catch (error) {
+        console.error('Error updating courier settings:', error);
+        res.status(500).json({ message: 'Failed to update courier settings' });
+    }
+});
+
 // Get all settings (generic)
 router.get('/:key', protect, requireRole('admin'), async (req, res) => {
     try {
