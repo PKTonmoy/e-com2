@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { SparklesIcon, XMarkIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon, PlusIcon, HeartIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, CheckIcon, ShoppingBagIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import api from '../lib/api.js';
 import { useCart } from '../store/useCart.js';
@@ -159,16 +159,6 @@ const Shop = () => {
 
   const content = cmsContent || DEFAULT_CONTENT;
 
-  // Fetch all products to get complete category list (limit=100 to get all categories)
-  const { data: allProductsData } = useQuery({
-    queryKey: ['all-products'],
-    queryFn: async () => {
-      const res = await api.get('/products', { params: { limit: 100 } });
-      return res.data;
-    },
-  });
-  const allProducts = allProductsData?.products || [];
-
   // Fetch filtered products with search and pagination
   const { data: productsData, isFetching } = useQuery({
     queryKey: ['products', category, limitedEdition, sort, debouncedSearch, currentPage],
@@ -189,8 +179,18 @@ const Shop = () => {
   const hasNextPage = productsData?.hasNextPage || false;
   const hasPrevPage = productsData?.hasPrevPage || false;
 
-  // Extract all categories from allProducts instead of filtered products
-  const categories = [...new Set(allProducts.map((p) => p.category).filter(Boolean))];
+  // Fetch categories separately (cached, only when needed)
+  const { data: categoriesData } = useQuery({
+    queryKey: ['product-categories'],
+    queryFn: async () => {
+      const res = await api.get('/products', { params: { limit: 100 } });
+      const allProducts = res.data?.products || [];
+      return [...new Set(allProducts.map((p) => p.category).filter(Boolean))];
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes - categories don't change often
+  });
+
+  const categories = categoriesData || [];
 
   const clearFilters = () => {
     setCategory('');
@@ -567,96 +567,105 @@ const Shop = () => {
         </div>
       </div>
 
-      {/* ========== MOBILE FILTER MODAL ========== */}
-      <div data-modal-overlay className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${isFilterOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterOpen(false)} />
-        <div className={`absolute bottom-0 left-0 right-0 bg-ivory dark:bg-neutral-900 rounded-t-3xl transform transition-transform duration-300 ${isFilterOpen ? 'translate-y-0' : 'translate-y-full'}`}>
-          <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 bg-neutral-300 dark:bg-neutral-700 rounded-full" />
-          </div>
-          <div className="px-6 pb-8 max-h-[70vh] overflow-y-auto">
-            {/* Sort By */}
-            <div className="mb-6">
-              <h3 className="font-display text-lg mb-3 text-matte dark:text-ivory">Sort By</h3>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { value: '-createdAt', label: 'Newest' },
-                  { value: 'price', label: 'Price ↑' },
-                  { value: '-price', label: 'Price ↓' },
-                  { value: 'title', label: 'A-Z' },
-                ].map((option) => (
+      {/* ========== MOBILE FILTER MODAL - Only render when open for performance ========== */}
+      {isFilterOpen && (
+        <div data-modal-overlay className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setIsFilterOpen(false)}
+            style={{ willChange: 'opacity' }}
+          />
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-ivory dark:bg-neutral-900 rounded-t-3xl"
+            style={{ willChange: 'transform' }}
+          >
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-10 h-1 bg-neutral-300 dark:bg-neutral-700 rounded-full" />
+            </div>
+            <div className="px-6 pb-8 max-h-[70vh] overflow-y-auto">
+              {/* Sort By */}
+              <div className="mb-6">
+                <h3 className="font-display text-lg mb-3 text-matte dark:text-ivory">Sort By</h3>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: '-createdAt', label: 'Newest' },
+                    { value: 'price', label: 'Price ↑' },
+                    { value: '-price', label: 'Price ↓' },
+                    { value: 'title', label: 'A-Z' },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSort(option.value)}
+                      className={`px-4 py-2 rounded-full text-sm font-body font-medium transition-colors ${sort === option.value ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte' : 'bg-white dark:bg-neutral-800'
+                        }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Categories */}
+              <div className="mb-6">
+                <h3 className="font-display text-lg mb-3 text-matte dark:text-ivory">Category</h3>
+                <div className="flex flex-wrap gap-2">
                   <button
-                    key={option.value}
-                    onClick={() => setSort(option.value)}
-                    className={`px-4 py-2 rounded-full text-sm font-body font-medium transition-colors ${sort === option.value ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte' : 'bg-white dark:bg-neutral-800'
-                      }`}
+                    onClick={() => setCategory('')}
+                    className={`px-4 py-2 rounded-full text-sm font-body font-medium ${category === '' ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte' : 'bg-white dark:bg-neutral-800'}`}
                   >
-                    {option.label}
+                    All
                   </button>
-                ))}
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setCategory(cat)}
+                      className={`px-4 py-2 rounded-full text-sm font-body font-medium ${category === cat ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte' : 'bg-white dark:bg-neutral-800'}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Categories */}
-            <div className="mb-6">
-              <h3 className="font-display text-lg mb-3 text-matte dark:text-ivory">Category</h3>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setCategory('')}
-                  className={`px-4 py-2 rounded-full text-sm font-body font-medium ${category === '' ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte' : 'bg-white dark:bg-neutral-800'}`}
-                >
-                  All
-                </button>
-                {categories.map((cat) => (
+              {/* Type */}
+              <div className="mb-6">
+                <h3 className="font-display text-lg mb-3 text-matte dark:text-ivory">Type</h3>
+                <div className="flex flex-wrap gap-2">
                   <button
-                    key={cat}
-                    onClick={() => setCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-body font-medium ${category === cat ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte' : 'bg-white dark:bg-neutral-800'}`}
+                    onClick={() => setLimitedEdition('')}
+                    className={`px-4 py-2 rounded-full text-sm font-body font-medium ${limitedEdition === '' ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte' : 'bg-white dark:bg-neutral-800'}`}
                   >
-                    {cat}
+                    All Types
                   </button>
-                ))}
+                  <button
+                    onClick={() => setLimitedEdition('true')}
+                    className={`px-4 py-2 rounded-full text-sm font-body font-medium flex items-center gap-1 ${limitedEdition === 'true' ? 'bg-gold text-white' : 'bg-white dark:bg-neutral-800'}`}
+                  >
+                    <SparklesIcon className="h-4 w-4" />
+                    Limited Edition
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Type */}
-            <div className="mb-6">
-              <h3 className="font-display text-lg mb-3 text-matte dark:text-ivory">Type</h3>
-              <div className="flex flex-wrap gap-2">
+              {/* Actions */}
+              <div className="flex gap-3 pt-4 border-t border-neutral-200 dark:border-neutral-800">
                 <button
-                  onClick={() => setLimitedEdition('')}
-                  className={`px-4 py-2 rounded-full text-sm font-body font-medium ${limitedEdition === '' ? 'bg-matte dark:bg-ivory text-ivory dark:text-matte' : 'bg-white dark:bg-neutral-800'}`}
+                  onClick={() => { clearFilters(); setIsFilterOpen(false); }}
+                  className="flex-1 py-3.5 bg-white dark:bg-neutral-800 rounded-xl font-body font-medium"
                 >
-                  All Types
+                  Reset
                 </button>
                 <button
-                  onClick={() => setLimitedEdition('true')}
-                  className={`px-4 py-2 rounded-full text-sm font-body font-medium flex items-center gap-1 ${limitedEdition === 'true' ? 'bg-gold text-white' : 'bg-white dark:bg-neutral-800'}`}
+                  onClick={() => setIsFilterOpen(false)}
+                  className="flex-1 py-3.5 bg-matte dark:bg-ivory text-ivory dark:text-matte rounded-xl font-body font-medium"
                 >
-                  <SparklesIcon className="h-4 w-4" />
-                  Limited Edition
+                  Apply
                 </button>
               </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-              <button
-                onClick={() => { clearFilters(); setIsFilterOpen(false); }}
-                className="flex-1 py-3.5 bg-white dark:bg-neutral-800 rounded-xl font-body font-medium"
-              >
-                Reset
-              </button>
-              <button
-                onClick={() => setIsFilterOpen(false)}
-                className="flex-1 py-3.5 bg-matte dark:bg-ivory text-ivory dark:text-matte rounded-xl font-body font-medium"
-              >
-                Apply
-              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Selection Modal */}
       <ProductSelectionModal
