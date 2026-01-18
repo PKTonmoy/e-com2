@@ -19,11 +19,12 @@
  * />
  */
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import styles from './LimitedDropsCarousel.module.css';
 import LimitedDropCard from './LimitedDropCard';
+
+// Removed framer-motion import for better mobile performance
 
 const LimitedDropsCarousel = ({ items = [] }) => {
     const scrollRef = useRef(null);
@@ -278,26 +279,13 @@ const LimitedDropsCarousel = ({ items = [] }) => {
                                     aria-selected={isActive}
                                     aria-label={`Go to slide ${idx + 1} of ${totalItems}`}
                                 >
-                                    {/* Inactive Dot (Base) */}
-                                    {!isActive && (
-                                        <motion.div
-                                            layoutId={`dot-base-${idx}`}
-                                            className={`${styles.indicatorDot} opacity-40 group-hover:opacity-70`}
-                                        />
-                                    )}
-
-                                    {/* Active "Butter" Pill */}
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="activePill"
-                                            className={styles.indicatorDotActive}
-                                            transition={{
-                                                type: "spring",
-                                                stiffness: 300,
-                                                damping: 30
-                                            }}
-                                        />
-                                    )}
+                                    {/* Using CSS transitions instead of framer-motion for better mobile performance */}
+                                    <div
+                                        className={`transition-all duration-300 ease-out ${isActive
+                                                ? styles.indicatorDotActive
+                                                : `${styles.indicatorDot} opacity-40 group-hover:opacity-70`
+                                            }`}
+                                    />
                                 </button>
                             );
                         });

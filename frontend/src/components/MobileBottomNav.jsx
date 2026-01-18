@@ -1,7 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
     HomeIcon,
     Squares2X2Icon,
@@ -23,7 +22,7 @@ import {
 import { useBottomNav } from '../context/BottomNavContext.jsx';
 import api from '../lib/api.js';
 
-const MotionNavLink = motion(NavLink);
+// Removed motion wrapper for better mobile performance - using CSS transitions instead
 
 const baseNavItems = [
     { to: '/', label: 'Home', icon: HomeIcon, iconActive: HomeIconSolid },
@@ -40,40 +39,48 @@ const MobileBottomNav = () => {
     const location = useLocation();
     const { isBottomNavVisible } = useBottomNav();
     const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const debounceTimer = useRef(null);
 
-    // Auto-detect popups/modals in the DOM
+    // Debounced popup detection - OPTIMIZED to prevent mobile lag
+    const checkForPopups = useCallback(() => {
+        const modalOverlays = document.querySelectorAll('[data-modal-overlay]');
+        const visibleOverlays = Array.from(modalOverlays).filter(overlay => {
+            const classes = overlay.className;
+            if (classes.includes('pointer-events-none')) return false;
+            if (classes.includes('opacity-0')) return false;
+            return true;
+        });
+        setIsPopupOpen(visibleOverlays.length > 0);
+    }, []);
+
+    // Auto-detect popups/modals with DEBOUNCED observer
     useEffect(() => {
-        const checkForPopups = () => {
-            // Look for modal overlays that are actually visible (not pointer-events-none)
-            const modalOverlays = document.querySelectorAll('[data-modal-overlay]');
-
-            // Filter to only include visible overlays (not hidden with pointer-events-none or opacity-0)
-            const visibleOverlays = Array.from(modalOverlays).filter(overlay => {
-                const classes = overlay.className;
-                // Skip if it has pointer-events-none (meaning it's hidden)
-                if (classes.includes('pointer-events-none')) return false;
-                // Skip if it has opacity-0 (meaning it's hidden)
-                if (classes.includes('opacity-0')) return false;
-                return true;
-            });
-
-            setIsPopupOpen(visibleOverlays.length > 0);
-        };
-
         // Check immediately
         checkForPopups();
 
-        // Set up mutation observer to detect DOM changes
-        const observer = new MutationObserver(checkForPopups);
+        // Debounced callback to prevent excessive re-renders
+        const debouncedCheck = () => {
+            if (debounceTimer.current) {
+                clearTimeout(debounceTimer.current);
+            }
+            debounceTimer.current = setTimeout(checkForPopups, 100);
+        };
+
+        // Only observe attribute changes on specific elements, not entire DOM
+        const observer = new MutationObserver(debouncedCheck);
         observer.observe(document.body, {
             childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['class'],
+            subtree: false, // CHANGED: Don't watch entire subtree
+            attributes: false, // CHANGED: Don't watch attribute changes
         });
 
-        return () => observer.disconnect();
-    }, []);
+        return () => {
+            observer.disconnect();
+            if (debounceTimer.current) {
+                clearTimeout(debounceTimer.current);
+            }
+        };
+    }, [checkForPopups]);
 
     // Fetch current user to check admin role
     const { data: user } = useQuery({
@@ -104,11 +111,9 @@ const MobileBottomNav = () => {
     const shouldShowNav = isBottomNavVisible && !isPopupOpen;
 
     return (
-        <motion.nav
-            initial={{ y: 100 }}
-            animate={{ y: shouldShowNav ? 0 : 100 }}
-            transition={{ type: "spring", damping: 20, stiffness: 100 }}
-            className={`fixed bottom-4 left-4 right-4 z-40 md:hidden ${!shouldShowNav ? 'pointer-events-none' : ''}`}
+        <nav
+            className={`fixed bottom-4 left-4 right-4 z-40 md:hidden transition-transform duration-300 ease-out ${shouldShowNav ? 'translate-y-0' : 'translate-y-28'} ${!shouldShowNav ? 'pointer-events-none' : ''}`}
+            style={{ willChange: 'transform' }}
         >
             <div className="bg-white/40 dark:bg-matte/40 backdrop-blur-xl rounded-full border border-black/5 dark:border-white/5 shadow-2xl shadow-black/10 dark:shadow-black/30">
                 <ul className="flex justify-between items-center px-4 py-2">
@@ -118,33 +123,27 @@ const MobileBottomNav = () => {
 
                         return (
                             <li key={item.to} className="relative">
-                                <MotionNavLink
+                                <NavLink
                                     to={item.to}
-                                    className="flex items-center justify-center w-12 h-12 relative z-20"
-                                    whileTap={{ scale: 0.9 }}
+                                    className="flex items-center justify-center w-12 h-12 relative z-20 active:scale-90 transition-transform duration-150"
                                 >
+                                    {/* Active indicator - using CSS instead of framer-motion */}
                                     {isActive && (
-                                        <motion.div
-                                            layoutId="activeTab"
-                                            className="absolute inset-0 rounded-full border border-gold bg-gold/10 shadow-[0_0_15px_-4px_rgba(212,175,55,0.5)] backdrop-blur-md"
-                                            transition={{
-                                                type: "spring",
-                                                bounce: 0.2,
-                                                duration: 0.6
-                                            }}
+                                        <div
+                                            className="absolute inset-0 rounded-full border border-gold bg-gold/10 shadow-[0_0_15px_-4px_rgba(212,175,55,0.5)] backdrop-blur-md transition-all duration-300"
                                         />
                                     )}
                                     <Icon
-                                        className={`w-6 h-6 transition-all duration-300 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] dark:drop-shadow-none ${isActive ? 'text-gray-900 dark:text-white scale-110' : 'text-gray-700 dark:text-gray-400 stroke-2 scale-90'
+                                        className={`w-6 h-6 transition-all duration-300 relative z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] dark:drop-shadow-none ${isActive ? 'text-gray-900 dark:text-white scale-110' : 'text-gray-700 dark:text-gray-400 stroke-2 scale-90'
                                             }`}
                                     />
-                                </MotionNavLink>
+                                </NavLink>
                             </li>
                         );
                     })}
                 </ul>
             </div>
-        </motion.nav>
+        </nav>
     );
 };
 

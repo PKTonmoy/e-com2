@@ -163,13 +163,14 @@ const Home = () => {
         <div className="lux-container">
           <div className="grid grid-cols-12 gap-4 lg:gap-6 items-center">
 
-            {/* Left Image - Large */}
+            {/* Left Image - Large (First image, no lazy load for LCP) */}
             <div className="col-span-12 md:col-span-4 lg:col-span-3">
               <div className="aspect-[3/4] overflow-hidden rounded-lg bg-neutral-200">
                 <img
                   src={heroImages[0]?.url}
                   alt={heroImages[0]?.alt || 'Fashion image 1'}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  fetchPriority="high"
                 />
               </div>
             </div>
@@ -206,35 +207,41 @@ const Home = () => {
                   </Link>
                 </div>
 
-                {/* Small Image Top Right */}
+                {/* Small Image Top Right - Lazy loaded */}
                 <div className="hidden lg:block w-36 aspect-[3/4] overflow-hidden rounded-lg bg-neutral-200">
                   <img
                     src={heroImages[1]?.url}
                     alt={heroImages[1]?.alt || 'Fashion image 2'}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               </div>
 
-              {/* Bottom Center Image */}
+              {/* Bottom Center Image - Lazy loaded */}
               <div className="flex justify-center">
                 <div className="w-48 lg:w-56 aspect-[4/5] overflow-hidden rounded-lg bg-neutral-200">
                   <img
                     src={heroImages[2]?.url}
                     alt={heroImages[2]?.alt || 'Fashion image 3'}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Right Image - Large */}
+            {/* Right Image - Large - Lazy loaded */}
             <div className="col-span-12 md:col-span-12 lg:col-span-3">
               <div className="aspect-[3/4] overflow-hidden rounded-lg bg-neutral-200">
                 <img
                   src={heroImages[3]?.url}
                   alt={heroImages[3]?.alt || 'Fashion image 4'}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>
@@ -337,6 +344,8 @@ const Home = () => {
                         src={getImageUrl(post.coverImage)}
                         alt={post.title}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                   ) : (
