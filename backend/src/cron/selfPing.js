@@ -168,16 +168,19 @@ const performKeepAlivePing = async (healthUrl) => {
  * @param {number} port - The server port (used for local URL construction)
  */
 const startSelfPing = (port) => {
-    // Get the Render external URL (automatically set by Render)
-    const renderUrl = process.env.RENDER_EXTERNAL_URL;
+    // Get the server URL - check multiple sources for flexibility
+    // Priority: RENDER_EXTERNAL_URL (auto-set by Render) > SERVER_URL (custom) > BACKEND_URL
+    const serverUrl = process.env.RENDER_EXTERNAL_URL
+        || process.env.SERVER_URL
+        || process.env.BACKEND_URL;
 
-    // Only run if we have a Render URL (i.e., we're deployed on Render)
-    if (!renderUrl) {
+    // Only run if we have a server URL and we're in production
+    if (!serverUrl) {
         if (process.env.NODE_ENV === 'production') {
-            console.log('[KeepAlive] ⚠️ RENDER_EXTERNAL_URL not set - keep-alive disabled');
-            console.log('[KeepAlive] 💡 Tip: Set RENDER_EXTERNAL_URL to your service URL to enable keep-alive');
+            console.log('[KeepAlive] ⚠️ No server URL found - keep-alive disabled');
+            console.log('[KeepAlive] 💡 Tip: Set RENDER_EXTERNAL_URL or SERVER_URL to enable keep-alive');
         } else {
-            console.log('[KeepAlive] ⏸️ Skipped - Not running on Render (development mode)');
+            console.log('[KeepAlive] ⏸️ Skipped - Development mode (no external URL configured)');
         }
         return;
     }
@@ -188,7 +191,7 @@ const startSelfPing = (port) => {
         return;
     }
 
-    const healthUrl = `${renderUrl}/health`;
+    const healthUrl = `${serverUrl.replace(/\/$/, '')}/health`;
     stats.startTime = new Date();
     isRunning = true;
 

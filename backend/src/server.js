@@ -33,7 +33,7 @@ import adminNotificationRoutes from './routes/adminNotificationRoutes.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import ensureAdmin from './utils/ensureAdmin.js';
 import syncCourierStatuses from './cron/courierSync.js';
-import startSelfPing, { getKeepAliveStatus } from './cron/selfPing.js';
+import startSelfPing, { getKeepAliveStatus, stopSelfPing } from './cron/selfPing.js';
 
 dotenv.config();
 
@@ -188,6 +188,39 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   // Keep the server running, don't exit
 });
+
+// Graceful shutdown handling (like Python's lifespan pattern)
+const gracefulShutdown = (signal) => {
+  console.log(`\n[Server] ${signal} received. Starting graceful shutdown...`);
+
+  // Stop keep-alive pinger first
+  console.log('[Server] Stopping keep-alive pinger...');
+  stopSelfPing();
+
+  // Close server to stop accepting new connections
+  server.close(() => {
+    console.log('[Server] HTTP server closed');
+
+    // Close database connection
+    mongoose.connection.close(false).then(() => {
+      console.log('[Server] MongoDB connection closed');
+      console.log('[Server] Graceful shutdown complete');
+      process.exit(0);
+    }).catch((err) => {
+      console.error('[Server] Error closing MongoDB:', err);
+      process.exit(1);
+    });
+  });
+
+  // Force exit after 30 seconds if graceful shutdown doesn't complete
+  setTimeout(() => {
+    console.error('[Server] Forced shutdown after timeout');
+    process.exit(1);
+  }, 30000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 if (process.env.NODE_ENV !== 'test') {
   server.listen(PORT, () => {

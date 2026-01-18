@@ -290,26 +290,63 @@ router.get('/status/:trackingId', protect, async (req, res, next) => {
 });
 
 // Expose Steadfast destinations (police stations) for frontend dropdown
+// This endpoint serves cached data when courier service is disabled or API fails
 // Rajshahi is considered the origin in our pricing rules; this endpoint only returns destinations.
 router.get('/destinations', optionalProtect, async (req, res, next) => {
   try {
-    const data = await getSteadfastDestinations();
+    // Check if courier service is enabled
+    const courierSettings = await Settings.get('courier') || { enabled: true };
+    const courierEnabled = courierSettings.enabled !== false;
 
-    // Steadfast typically returns an array of police stations; normalize a bit for the frontend
-    const list = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.data)
-        ? data.data
-        : [];
+    let destinations = [];
+    let fromCache = false;
 
-    const destinations = list.map((item) => ({
-      id: item.id || item._id || item.code || String(item.station_id || ''),
-      name: item.name || item.thana || item.police_station || '',
-      district: item.district || item.district_name || '',
-      raw: item,
-    }));
+    // Try to get fresh data if courier is enabled
+    if (courierEnabled) {
+      try {
+        const data = await getSteadfastDestinations();
 
-    return res.json({ destinations });
+        // Steadfast typically returns an array of police stations; normalize a bit for the frontend
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+            ? data.data
+            : [];
+
+        destinations = list.map((item) => ({
+          id: item.id || item._id || item.code || String(item.station_id || ''),
+          name: item.name || item.thana || item.police_station || '',
+          district: item.district || item.district_name || '',
+          raw: item,
+        }));
+
+        // Cache the destinations for when courier is disabled
+        if (destinations.length > 0) {
+          await Settings.set('cached_destinations', {
+            destinations,
+            cachedAt: new Date().toISOString(),
+          });
+        }
+      } catch (apiError) {
+        console.warn('[Destinations] API call failed, falling back to cache:', apiError.message);
+        // Fall through to use cached data
+      }
+    }
+
+    // If no fresh data, try to get cached data
+    if (destinations.length === 0) {
+      const cached = await Settings.get('cached_destinations');
+      if (cached && Array.isArray(cached.destinations)) {
+        destinations = cached.destinations;
+        fromCache = true;
+      }
+    }
+
+    return res.json({
+      destinations,
+      fromCache,
+      courierEnabled,
+    });
   } catch (err) {
     return next(err);
   }

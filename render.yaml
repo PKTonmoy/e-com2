@@ -14,3 +14,5 @@ services:
         value: production
       - key: SERVER_URL
         value: https://prelux-store.onrender.com
+      - key: RENDER_EXTERNAL_URL
+        value: https://prelux-store.onrender.com
