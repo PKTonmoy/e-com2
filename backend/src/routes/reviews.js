@@ -3,6 +3,7 @@ import Review from '../models/Review.js';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import { protect, requireRole } from '../middleware/auth.js';
+import { cacheMiddleware, invalidateCache, CACHE_TTL } from '../utils/cache.js';
 
 const router = express.Router();
 
@@ -63,8 +64,8 @@ router.get('/can-review/:productId', protect, async (req, res) => {
     }
 });
 
-// Get all reviews for a product (public) - MUST BE LAST due to :productId param
-router.get('/:productId', async (req, res) => {
+// Get all reviews for a product (public) - cached for 5 minutes
+router.get('/:productId', cacheMiddleware(CACHE_TTL.MEDIUM), async (req, res) => {
     try {
         const reviews = await Review.find({ productId: req.params.productId })
             .populate('userId', 'name email')
@@ -152,7 +153,7 @@ router.post('/:productId', protect, async (req, res) => {
         await review.save();
 
         const populatedReview = await Review.findById(review._id).populate('userId', 'name email');
-
+        invalidateCache('reviews');
         res.status(201).json(populatedReview);
     } catch (err) {
         if (err.code === 11000) {

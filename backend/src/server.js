@@ -34,6 +34,7 @@ import { errorHandler, notFound } from './middleware/error.js';
 import ensureAdmin from './utils/ensureAdmin.js';
 import syncCourierStatuses from './cron/courierSync.js';
 import startSelfPing, { getKeepAliveStatus, stopSelfPing } from './cron/selfPing.js';
+import cache from './utils/cache.js';
 
 dotenv.config();
 
@@ -127,6 +128,14 @@ app.get("/health", (req, res) => {
 // Keep-alive status endpoint for monitoring
 app.get("/health/keep-alive-status", (req, res) => {
   res.json(getKeepAliveStatus());
+});
+
+// Cache status endpoint for monitoring
+app.get("/health/cache-status", (req, res) => {
+  res.json({
+    ...cache.getStats(),
+    message: 'Check X-Cache header on API responses (HIT = cached, MISS = fresh)'
+  });
 });
 
 // API Routes

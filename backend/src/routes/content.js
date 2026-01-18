@@ -1,11 +1,12 @@
 import express from 'express';
 import ContentBlock from '../models/ContentBlock.js';
 import { protect, requireRole } from '../middleware/auth.js';
+import { cacheMiddleware, invalidateCache, CACHE_TTL } from '../utils/cache.js';
 
 const router = express.Router();
 
-// GET content by key
-router.get('/:key', async (req, res) => {
+// GET content by key (cached for 30 minutes - content changes rarely)
+router.get('/:key', cacheMiddleware(CACHE_TTL.LONG), async (req, res) => {
   try {
     const block = await ContentBlock.findOne({ key: req.params.key });
     res.json(block || { key: req.params.key, content: {} });
@@ -38,6 +39,7 @@ router.post('/:key', protect, requireRole('staff', 'manager', 'admin'), async (r
     );
 
     console.log(`[Content] Updated: ${req.params.key}`);
+    invalidateCache('content'); // Clear content cache
     res.json(block);
   } catch (err) {
     console.error('[Content] Error updating:', err);
